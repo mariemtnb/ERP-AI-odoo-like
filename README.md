@@ -26,6 +26,14 @@ docker compose exec ollama ollama pull qwen3:32b   # first time only
 - API docs (Swagger): http://localhost:8000/api/docs/
 - AI service readiness: http://localhost:8001/ready
 
+## AI agent
+
+The assistant (sidebar → AI Assistant) is a LangGraph ReAct agent running on a
+local Ollama model. Its tools call this same REST API with the logged-in
+user's JWT, so RBAC applies to the agent exactly as to the UI. Write actions
+(create customer/sale, update stock…) pause for explicit user approval in the
+chat, and every executed tool call is recorded in the audit log.
+
 ## Repository layout
 
 ```
