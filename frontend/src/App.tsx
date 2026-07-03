@@ -5,6 +5,7 @@ import { AuthProvider } from "@/features/auth/AuthContext";
 import LoginPage from "@/features/auth/LoginPage";
 import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
 import InventoryPage from "@/features/inventory/InventoryPage";
+import DocumentsPage from "@/features/documents/DocumentsPage";
 import PartnersPage from "@/features/partners/PartnersPage";
 import ProductsPage from "@/features/products/ProductsPage";
 import UsersPage from "@/features/users/UsersPage";
@@ -32,8 +33,14 @@ export default function App() {
                   path="suppliers"
                   element={<PartnersPage kind="suppliers" title="Suppliers" />}
                 />
-                <Route path="purchases" element={<Placeholder title="Purchases" />} />
-                <Route path="sales" element={<Placeholder title="Sales" />} />
+                <Route
+                  path="purchases"
+                  element={<DocumentsPage kind="purchases" title="Purchases" />}
+                />
+                <Route
+                  path="sales"
+                  element={<DocumentsPage kind="sales" title="Sales" />}
+                />
                 <Route path="assistant" element={<Placeholder title="AI Assistant" />} />
                 <Route element={<ProtectedRoute roles={["admin"]} />}>
                   <Route path="users" element={<UsersPage />} />

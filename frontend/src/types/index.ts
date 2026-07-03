@@ -57,6 +57,35 @@ export interface Partner {
   created_at: string;
 }
 
+export interface DocLine {
+  id?: number;
+  product: number;
+  product_sku?: string;
+  product_name?: string;
+  quantity: string;
+  unit_price: string;
+  subtotal?: string;
+}
+
+export interface BusinessDoc {
+  id: number;
+  number: string;
+  status: string;
+  total_amount: string;
+  created_by_email: string;
+  lines: DocLine[];
+  created_at: string;
+  // purchases
+  supplier?: number;
+  supplier_name?: string;
+  order_date?: string;
+  received_date?: string | null;
+  // sales
+  customer?: number;
+  customer_name?: string;
+  sale_date?: string;
+}
+
 export interface Paginated<T> {
   count: number;
   next: string | null;
