@@ -46,6 +46,17 @@ export interface StockMovement {
   created_at: string;
 }
 
+export interface Partner {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  notes: string;
+  is_active: boolean;
+  created_at: string;
+}
+
 export interface Paginated<T> {
   count: number;
   next: string | null;
