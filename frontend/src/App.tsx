@@ -5,7 +5,9 @@ import { AuthProvider } from "@/features/auth/AuthContext";
 import LoginPage from "@/features/auth/LoginPage";
 import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
 import InventoryPage from "@/features/inventory/InventoryPage";
+import DashboardPage from "@/features/dashboard/DashboardPage";
 import DocumentsPage from "@/features/documents/DocumentsPage";
+import ReportsPage from "@/features/reports/ReportsPage";
 import PartnersPage from "@/features/partners/PartnersPage";
 import ProductsPage from "@/features/products/ProductsPage";
 import UsersPage from "@/features/users/UsersPage";
@@ -22,7 +24,10 @@ export default function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route element={<ProtectedRoute />}>
               <Route element={<Layout />}>
-                <Route index element={<Placeholder title="Dashboard" />} />
+                <Route index element={<DashboardPage />} />
+                <Route element={<ProtectedRoute roles={["admin", "manager"]} />}>
+                  <Route path="reports" element={<ReportsPage />} />
+                </Route>
                 <Route path="products" element={<ProductsPage />} />
                 <Route path="inventory" element={<InventoryPage />} />
                 <Route

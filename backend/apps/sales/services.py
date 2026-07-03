@@ -65,4 +65,21 @@ def cancel(sale: Sale, user) -> Sale:
     return sale
 
 
-__all__ = ["confirm", "cancel", "next_number", "InvalidTransition", "InsufficientStock"]
+def generate_invoice(sale: Sale):
+    """Create (or return) the invoice for a confirmed sale."""
+    from .models import Invoice
+
+    if sale.status != Sale.Status.CONFIRMED:
+        raise InvalidTransition("Invoices can only be generated for confirmed sales.")
+    invoice = getattr(sale, "invoice", None)
+    if invoice:
+        return invoice
+    year = timezone.now().year
+    count = Invoice.objects.filter(number__startswith=f"INV-{year}-").count()
+    return Invoice.objects.create(sale=sale, number=f"INV-{year}-{count + 1:04d}")
+
+
+__all__ = [
+    "confirm", "cancel", "next_number", "generate_invoice",
+    "InvalidTransition", "InsufficientStock",
+]

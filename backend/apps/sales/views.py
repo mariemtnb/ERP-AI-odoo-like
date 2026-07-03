@@ -39,3 +39,22 @@ class SaleViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"])
     def cancel(self, request, pk=None):
         return self._transition(request, services.cancel)
+
+    @action(detail=True, methods=["get", "post"])
+    def invoice(self, request, pk=None):
+        """POST: generate (idempotent). GET: download the PDF."""
+        from django.http import HttpResponse
+
+        from apps.reporting.pdf import render_pdf
+
+        sale = self.get_object()
+        try:
+            invoice = services.generate_invoice(sale)
+        except services.InvalidTransition as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_409_CONFLICT)
+        if request.method == "POST":
+            return Response({"number": invoice.number, "issued_at": invoice.issued_at})
+        pdf = render_pdf("reports/invoice.html", {"invoice": invoice, "sale": sale})
+        response = HttpResponse(pdf, content_type="application/pdf")
+        response["Content-Disposition"] = f'attachment; filename="{invoice.number}.pdf"'
+        return response

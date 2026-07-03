@@ -1,7 +1,8 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2 } from "lucide-react";
+import { FileText, Plus, Trash2 } from "lucide-react";
 import { documentsApi } from "@/api/documents";
+import { downloadInvoice, generateInvoice } from "@/api/reports";
 import { listProducts } from "@/api/catalog";
 import { partnersApi } from "@/api/partners";
 import { Badge } from "@/components/ui/badge";
@@ -323,6 +324,17 @@ export default function DocumentsPage({
             {actionError && <p className="text-sm text-red-400">{actionError}</p>}
             {canWrite && (
               <div className="flex justify-end gap-2">
+                {!isPurchase && viewDoc.status === "confirmed" && (
+                  <Button
+                    variant="outline"
+                    onClick={async () => {
+                      const inv = await generateInvoice(viewDoc.id);
+                      await downloadInvoice(viewDoc.id, inv.number);
+                    }}
+                  >
+                    <FileText className="h-4 w-4" /> Invoice PDF
+                  </Button>
+                )}
                 {viewDoc.status === "draft" && (
                   <Button
                     onClick={() => actionMutation.mutate({ id: viewDoc.id, name: "confirm" })}
