@@ -34,6 +34,15 @@ class Sale(TimeStampedModel):
         self.save(update_fields=["total_amount", "updated_at"])
 
 
+class Invoice(models.Model):
+    number = models.CharField(max_length=20, unique=True)
+    sale = models.OneToOneField(Sale, on_delete=models.PROTECT, related_name="invoice")
+    issued_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.number
+
+
 class SaleLine(models.Model):
     sale = models.ForeignKey(Sale, on_delete=models.CASCADE, related_name="lines")
     product = models.ForeignKey(

@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from "react-router-dom";
 import {
   Boxes,
+  FileText,
   LayoutDashboard,
   LogOut,
   MessageSquare,
@@ -23,6 +24,7 @@ const nav: { to: string; label: string; icon: typeof Users; roles?: Role[] }[] =
   { to: "/suppliers", label: "Suppliers", icon: Truck },
   { to: "/purchases", label: "Purchases", icon: ShoppingCart },
   { to: "/sales", label: "Sales", icon: ShoppingCart },
+  { to: "/reports", label: "Reports", icon: FileText, roles: ["admin", "manager"] },
   { to: "/assistant", label: "AI Assistant", icon: MessageSquare },
   { to: "/users", label: "Users", icon: Users, roles: ["admin"] },
 ];
