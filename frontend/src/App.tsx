@@ -4,6 +4,8 @@ import Layout from "@/components/Layout";
 import { AuthProvider } from "@/features/auth/AuthContext";
 import LoginPage from "@/features/auth/LoginPage";
 import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
+import InventoryPage from "@/features/inventory/InventoryPage";
+import ProductsPage from "@/features/products/ProductsPage";
 import UsersPage from "@/features/users/UsersPage";
 import Placeholder from "@/pages/Placeholder";
 
@@ -19,8 +21,8 @@ export default function App() {
             <Route element={<ProtectedRoute />}>
               <Route element={<Layout />}>
                 <Route index element={<Placeholder title="Dashboard" />} />
-                <Route path="products" element={<Placeholder title="Products" />} />
-                <Route path="inventory" element={<Placeholder title="Inventory" />} />
+                <Route path="products" element={<ProductsPage />} />
+                <Route path="inventory" element={<InventoryPage />} />
                 <Route path="customers" element={<Placeholder title="Customers" />} />
                 <Route path="suppliers" element={<Placeholder title="Suppliers" />} />
                 <Route path="purchases" element={<Placeholder title="Purchases" />} />
