@@ -5,6 +5,7 @@ import { AuthProvider } from "@/features/auth/AuthContext";
 import LoginPage from "@/features/auth/LoginPage";
 import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
 import InventoryPage from "@/features/inventory/InventoryPage";
+import PartnersPage from "@/features/partners/PartnersPage";
 import ProductsPage from "@/features/products/ProductsPage";
 import UsersPage from "@/features/users/UsersPage";
 import Placeholder from "@/pages/Placeholder";
@@ -23,8 +24,14 @@ export default function App() {
                 <Route index element={<Placeholder title="Dashboard" />} />
                 <Route path="products" element={<ProductsPage />} />
                 <Route path="inventory" element={<InventoryPage />} />
-                <Route path="customers" element={<Placeholder title="Customers" />} />
-                <Route path="suppliers" element={<Placeholder title="Suppliers" />} />
+                <Route
+                  path="customers"
+                  element={<PartnersPage kind="customers" title="Customers" />}
+                />
+                <Route
+                  path="suppliers"
+                  element={<PartnersPage kind="suppliers" title="Suppliers" />}
+                />
                 <Route path="purchases" element={<Placeholder title="Purchases" />} />
                 <Route path="sales" element={<Placeholder title="Sales" />} />
                 <Route path="assistant" element={<Placeholder title="AI Assistant" />} />
