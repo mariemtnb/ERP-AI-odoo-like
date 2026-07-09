@@ -19,6 +19,10 @@ services:
       context: .
       dockerfile: docker/backend-laravel.Dockerfile
     env_file: .env
+    environment:
+      # artisan serve is single-threaded by default; the AI agent's tool calls
+      # re-enter this API mid-request, so we need parallel workers.
+      PHP_CLI_SERVER_WORKERS: 8
     volumes:
       - ./backend:/app
     ports:

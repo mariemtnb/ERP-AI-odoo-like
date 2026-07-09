@@ -9,7 +9,7 @@ actions. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 | Service | Tech | Dev port |
 |---|---|---|
 | `frontend` | React + TypeScript + Tailwind + shadcn/ui (Vite) | 5173 |
-| `backend` | Django REST Framework + PostgreSQL + JWT | 8000 |
+| `backend` | Laravel 12 (PHP 8.4) + PostgreSQL + JWT | 8000 |
 | `ai-service` | FastAPI + LangGraph + LangChain | 8001 |
 | `ollama` | Ollama (qwen3:32b) | 11434 |
 | `db` | PostgreSQL 16 | 5432 |
@@ -20,7 +20,13 @@ actions. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 cp .env.example .env        # then edit secrets
 docker compose up --build
 docker compose exec ollama ollama pull qwen3:32b   # first time only
+docker compose exec backend php artisan db:seed --class=DemoSeeder --force
 ```
+
+Demo accounts: `admin@erp.local` / `Admin123!`, `manager@erp.local` /
+`Manager123!`, `employee@erp.local` / `Employee123!`.
+
+Backend tests: `docker compose exec backend php artisan test`.
 
 - Frontend: http://localhost:5173
 - API docs (Swagger): http://localhost:8000/api/docs/
