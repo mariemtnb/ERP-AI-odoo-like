@@ -2,7 +2,9 @@
 
 **Project:** Intelligent ERP with Conversational AI Agent
 **Author:** Mariem Tanabene (Internship Project)
-**Version:** 1.0 — Draft for validation
+**Version:** 1.1 — Backend stack changed from Django REST Framework to Laravel
+(same REST contract, routes and RBAC matrix; JWT via php-open-source-saver/jwt-auth;
+PDFs via dompdf; stock ledger and document lifecycles preserved 1:1)
 **Date:** 2026-07-02
 
 ---
