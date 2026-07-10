@@ -40,6 +40,15 @@ Route::prefix('v1')->group(function () {
         Route::get('stock/movements', [StockMovementController::class, 'index']);
         Route::get('stock/movements/{movement}', [StockMovementController::class, 'show']);
 
+        // --- warehouses: everyone reads; managers/admins manage & transfer ---
+        Route::get('warehouses', [\App\Http\Controllers\WarehouseController::class, 'index']);
+        Route::get('warehouses/stock', [\App\Http\Controllers\WarehouseController::class, 'stock']);
+        Route::middleware('role:admin,manager')->group(function () {
+            Route::post('warehouses', [\App\Http\Controllers\WarehouseController::class, 'store']);
+            Route::match(['put', 'patch'], 'warehouses/{warehouse}', [\App\Http\Controllers\WarehouseController::class, 'update']);
+            Route::post('warehouses/transfer', [\App\Http\Controllers\WarehouseController::class, 'transfer']);
+        });
+
         Route::middleware('role:admin,manager')->group(function () {
             Route::post('categories', [CategoryController::class, 'store']);
             Route::match(['put', 'patch'], 'categories/{category}', [CategoryController::class, 'update']);
@@ -81,6 +90,21 @@ Route::prefix('v1')->group(function () {
             Route::post('purchases/{purchase}/receive', [PurchaseOrderController::class, 'receive']);
             Route::post('purchases/{purchase}/cancel', [PurchaseOrderController::class, 'cancel']);
         });
+        // Hierarchical approval of large orders: admin only.
+        Route::middleware('role:admin')->group(function () {
+            Route::post('purchases/{purchase}/approve', [PurchaseOrderController::class, 'approve']);
+            Route::post('purchases/{purchase}/reject', [PurchaseOrderController::class, 'reject']);
+        });
+
+        // --- CRM: whole sales team works leads; deletion manager/admin ---
+        Route::get('leads', [\App\Http\Controllers\LeadController::class, 'index']);
+        Route::post('leads', [\App\Http\Controllers\LeadController::class, 'store']);
+        Route::get('leads/{lead}', [\App\Http\Controllers\LeadController::class, 'show']);
+        Route::match(['put', 'patch'], 'leads/{lead}', [\App\Http\Controllers\LeadController::class, 'update']);
+        Route::post('leads/{lead}/activities', [\App\Http\Controllers\LeadController::class, 'addActivity']);
+        Route::post('leads/{lead}/convert', [\App\Http\Controllers\LeadController::class, 'convert']);
+        Route::delete('leads/{lead}', [\App\Http\Controllers\LeadController::class, 'destroy'])
+            ->middleware('role:admin,manager');
 
         // --- sales: everyone reads & creates/confirms (employees sell) ---
         Route::get('sales', [SaleController::class, 'index']);

@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createMovement, listMovements } from "@/api/inventory";
 import { listProducts } from "@/api/catalog";
+import { listWarehouses, transferStock } from "@/api/crm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +13,91 @@ import { Table, TBody, Td, Th, THead } from "@/components/ui/table";
 import { useAuth } from "@/features/auth/AuthContext";
 
 const typeTone: Record<string, string> = { in: "green", out: "red", adjustment: "manager" };
+
+function TransferCard({
+  warehouses,
+  products,
+}: {
+  warehouses: import("@/types").Warehouse[];
+  products: import("@/types").Product[];
+}) {
+  const qc = useQueryClient();
+  const [form, setForm] = useState({ product: "", from: "", to: "", quantity: "" });
+  const [error, setError] = useState("");
+
+  const mutation = useMutation({
+    mutationFn: () =>
+      transferStock({
+        product: Number(form.product),
+        from_warehouse: Number(form.from),
+        to_warehouse: Number(form.to),
+        quantity: form.quantity,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["movements"] });
+      qc.invalidateQueries({ queryKey: ["products"] });
+      setForm((f) => ({ ...f, quantity: "" }));
+      setError("");
+    },
+    onError: (e: any) =>
+      setError(e?.response?.data?.detail ?? "Transfer failed."),
+  });
+
+  const set = (k: keyof typeof form) => (e: { target: { value: string } }) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Warehouse transfer</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form
+          className="space-y-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            mutation.mutate();
+          }}
+        >
+          <Select value={form.product} onChange={set("product")} required aria-label="transfer-product">
+            <option value="">Product…</option>
+            {products.map((p) => (
+              <option key={p.id} value={p.id}>{p.sku} — {p.name}</option>
+            ))}
+          </Select>
+          <div className="grid grid-cols-2 gap-3">
+            <Select value={form.from} onChange={set("from")} required aria-label="transfer-from">
+              <option value="">From…</option>
+              {warehouses.map((w) => (
+                <option key={w.id} value={w.id}>{w.name}</option>
+              ))}
+            </Select>
+            <Select value={form.to} onChange={set("to")} required aria-label="transfer-to">
+              <option value="">To…</option>
+              {warehouses.map((w) => (
+                <option key={w.id} value={w.id}>{w.name}</option>
+              ))}
+            </Select>
+          </div>
+          <Input
+            type="number"
+            step="0.001"
+            min="0.001"
+            placeholder="Quantity"
+            value={form.quantity}
+            onChange={set("quantity")}
+            required
+            aria-label="transfer-quantity"
+          />
+          {error && <p className="text-sm text-red-400">{error}</p>}
+          <Button type="submit" className="w-full" disabled={mutation.isPending}>
+            {mutation.isPending ? "Transferring…" : "Transfer"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function InventoryPage() {
   const { user } = useAuth();
@@ -30,8 +116,12 @@ export default function InventoryPage() {
     queryKey: ["products", "all"],
     queryFn: () => listProducts({ page_size: 100, is_active: "true" }),
   });
+  const { data: warehouses = [] } = useQuery({
+    queryKey: ["warehouses"],
+    queryFn: listWarehouses,
+  });
 
-  const [form, setForm] = useState({ product: "", movement_type: "in", quantity: "", reason: "" });
+  const [form, setForm] = useState({ product: "", movement_type: "in", quantity: "", reason: "", warehouse: "" });
   const [error, setError] = useState("");
 
   const mutation = useMutation({
@@ -41,7 +131,8 @@ export default function InventoryPage() {
         movement_type: form.movement_type,
         quantity: form.quantity,
         reason: form.reason,
-      }),
+        ...(form.warehouse ? { warehouse: Number(form.warehouse) } : {}),
+      } as any),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["movements"] });
       qc.invalidateQueries({ queryKey: ["products"] });
@@ -117,6 +208,20 @@ export default function InventoryPage() {
                   </div>
                 </div>
                 <div className="space-y-1.5">
+                  <Label htmlFor="warehouse">Warehouse</Label>
+                  <Select
+                    id="warehouse"
+                    value={form.warehouse}
+                    onChange={(e) => setForm((f) => ({ ...f, warehouse: e.target.value }))}
+                  >
+                    {warehouses.filter((w) => w.is_active).map((w) => (
+                      <option key={w.id} value={w.is_default ? "" : w.id}>
+                        {w.name}{w.is_default ? " (default)" : ""}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
                   <Label htmlFor="reason">Reason</Label>
                   <Input
                     id="reason"
@@ -134,7 +239,11 @@ export default function InventoryPage() {
           </Card>
         )}
 
-        <Card className={canWrite ? "lg:col-span-2" : "lg:col-span-3"}>
+        {canWrite && warehouses.length > 1 && (
+          <TransferCard warehouses={warehouses} products={products?.results ?? []} />
+        )}
+
+        <Card className={canWrite ? (warehouses.length > 1 ? "" : "lg:col-span-2") : "lg:col-span-3"}>
           <CardHeader>
             <CardTitle>
               Low stock alerts{" "}
@@ -177,6 +286,7 @@ export default function InventoryPage() {
                 <Th>Product</Th>
                 <Th>Type</Th>
                 <Th className="text-right">Qty</Th>
+                <Th>Warehouse</Th>
                 <Th>Reason</Th>
                 <Th>Source</Th>
                 <Th>By</Th>
@@ -196,6 +306,7 @@ export default function InventoryPage() {
                     <Badge tone={typeTone[m.movement_type]}>{m.movement_type}</Badge>
                   </Td>
                   <Td className="text-right">{Number(m.quantity)}</Td>
+                  <Td className="text-slate-400">{m.warehouse_name ?? "—"}</Td>
                   <Td className="text-slate-400">{m.reason || "—"}</Td>
                   <Td className="text-slate-400">{m.reference_type}</Td>
                   <Td className="text-xs text-slate-400">{m.created_by_email}</Td>

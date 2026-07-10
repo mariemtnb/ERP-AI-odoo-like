@@ -16,7 +16,7 @@ class StockMovement extends Model
 
     protected $fillable = [
         'product_id', 'movement_type', 'quantity', 'reason',
-        'reference_type', 'reference_id', 'created_by',
+        'reference_type', 'reference_id', 'created_by', 'warehouse_id',
     ];
 
     protected function casts(): array
@@ -34,6 +34,11 @@ class StockMovement extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function warehouse(): BelongsTo
+    {
+        return $this->belongsTo(Warehouse::class);
+    }
+
     public function toApi(): array
     {
         return [
@@ -47,6 +52,8 @@ class StockMovement extends Model
             'reference_type' => $this->reference_type,
             'reference_id' => $this->reference_id,
             'created_by_email' => $this->creator?->email,
+            'warehouse' => $this->warehouse_id,
+            'warehouse_name' => $this->warehouse?->name,
             'created_at' => $this->created_at?->toISOString(),
         ];
     }

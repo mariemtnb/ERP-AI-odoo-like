@@ -18,7 +18,7 @@ from app.config import API
 WRITE_TOOL_NAMES = {
     "create_customer", "update_customer", "create_supplier", "create_product",
     "update_stock", "create_purchase_order", "create_sale", "confirm_sale",
-    "generate_invoice",
+    "generate_invoice", "transfer_stock", "create_lead",
 }
 
 
@@ -108,6 +108,23 @@ def build_tools(token: str) -> list:
         """Predictive analytics: 14-day revenue projection (trend over the
         last 30 days) and per-product estimated days until stockout."""
         return _fmt(http.get("/dashboard/forecast/"))
+
+    @tool
+    def get_warehouse_stock(product_id: int | None = None) -> dict:
+        """Stock breakdown per warehouse; optionally for one product id."""
+        params = {"product": product_id} if product_id else {}
+        return _fmt(http.get("/warehouses/stock", params=params))
+
+    @tool
+    def search_leads(query: str = "", status: str = "") -> dict:
+        """Search CRM leads by name/company/email, optionally filtered by
+        status (new, contacted, qualified, won, lost)."""
+        params = {}
+        if query:
+            params["search"] = query
+        if status:
+            params["status"] = status
+        return _fmt(http.get("/leads", params=params))
 
     @tool
     def search_documents(query: str) -> dict:
@@ -235,6 +252,34 @@ def build_tools(token: str) -> list:
         return _fmt(http.post(f"/sales/{sale_id}/confirm/"))
 
     @tool
+    def transfer_stock(
+        product_id: int, from_warehouse_id: int, to_warehouse_id: int,
+        quantity: float, reason: str = "",
+    ) -> dict:
+        """Transfer stock between two warehouses (out at source, in at
+        destination). Use get_warehouse_stock first to check availability."""
+        payload = {
+            "product": product_id, "from_warehouse": from_warehouse_id,
+            "to_warehouse": to_warehouse_id, "quantity": str(quantity),
+            "reason": reason,
+        }
+        _confirm("transfer_stock", payload)
+        return _fmt(http.post("/warehouses/transfer", json=payload))
+
+    @tool
+    def create_lead(
+        name: str, company: str = "", email: str = "", phone: str = "",
+        source: str = "", notes: str = "",
+    ) -> dict:
+        """Create a CRM lead (prospect) to follow up commercially."""
+        payload = {
+            "name": name, "company": company, "email": email,
+            "phone": phone, "source": source, "notes": notes,
+        }
+        _confirm("create_lead", payload)
+        return _fmt(http.post("/leads", json=payload))
+
+    @tool
     def generate_invoice(sale_id: int) -> dict:
         """Generate the invoice for a confirmed sale. Returns the invoice
         number; the user can download the PDF from the Sales page."""
@@ -245,7 +290,8 @@ def build_tools(token: str) -> list:
         search_product, get_low_stock_products, search_customer, search_supplier,
         get_customer_history, get_dashboard_statistics, get_sales_report,
         get_sales_forecast, get_stock_report, list_recent_sales, search_documents,
+        get_warehouse_stock, search_leads,
         create_customer, update_customer, create_supplier, create_product,
         update_stock, create_purchase_order, create_sale, confirm_sale,
-        generate_invoice,
+        generate_invoice, transfer_stock, create_lead,
     ]

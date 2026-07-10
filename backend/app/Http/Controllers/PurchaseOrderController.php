@@ -125,9 +125,25 @@ class PurchaseOrderController extends Controller
         return response()->json($purchase->load(self::WITH)->toApi());
     }
 
-    public function confirm(PurchaseOrder $purchase)
+    public function confirm(Request $request, PurchaseOrder $purchase)
     {
-        return $this->transition($purchase, fn ($po) => DocumentService::confirmPurchase($po));
+        return $this->transition(
+            $purchase,
+            fn ($po) => DocumentService::confirmPurchase($po, $request->user())
+        );
+    }
+
+    public function approve(Request $request, PurchaseOrder $purchase)
+    {
+        return $this->transition(
+            $purchase,
+            fn ($po) => DocumentService::approvePurchase($po, $request->user())
+        );
+    }
+
+    public function reject(PurchaseOrder $purchase)
+    {
+        return $this->transition($purchase, fn ($po) => DocumentService::rejectPurchase($po));
     }
 
     public function receive(Request $request, PurchaseOrder $purchase)

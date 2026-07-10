@@ -9,13 +9,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class PurchaseOrder extends Model
 {
     public const STATUS_DRAFT = 'draft';
+    public const STATUS_PENDING_APPROVAL = 'pending_approval';
     public const STATUS_CONFIRMED = 'confirmed';
     public const STATUS_RECEIVED = 'received';
     public const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [
         'number', 'supplier_id', 'status', 'order_date', 'received_date',
-        'total_amount', 'created_by',
+        'total_amount', 'created_by', 'approved_by', 'approved_at',
     ];
 
     protected $attributes = ['status' => self::STATUS_DRAFT, 'total_amount' => 0];
@@ -26,6 +27,7 @@ class PurchaseOrder extends Model
             'order_date' => 'date:Y-m-d',
             'received_date' => 'date:Y-m-d',
             'total_amount' => 'decimal:2',
+            'approved_at' => 'datetime',
         ];
     }
 
@@ -42,6 +44,11 @@ class PurchaseOrder extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function approver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 
     public function recomputeTotal(): void
@@ -62,6 +69,7 @@ class PurchaseOrder extends Model
             'received_date' => $this->received_date?->format('Y-m-d'),
             'total_amount' => $this->total_amount,
             'created_by_email' => $this->creator?->email,
+            'approved_by_email' => $this->approved_by ? $this->approver?->email : null,
             'lines' => $this->lines->map(fn ($l) => $l->toApi())->values()->all(),
             'created_at' => $this->created_at?->toISOString(),
         ];

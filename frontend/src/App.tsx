@@ -6,6 +6,7 @@ import LoginPage from "@/features/auth/LoginPage";
 import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
 import InventoryPage from "@/features/inventory/InventoryPage";
 import AssistantPage from "@/features/assistant/AssistantPage";
+import CrmPage from "@/features/crm/CrmPage";
 import DashboardPage from "@/features/dashboard/DashboardPage";
 import DocumentsPage from "@/features/documents/DocumentsPage";
 import ReportsPage from "@/features/reports/ReportsPage";
@@ -46,6 +47,7 @@ export default function App() {
                   path="sales"
                   element={<DocumentsPage kind="sales" title="Sales" />}
                 />
+                <Route path="crm" element={<CrmPage />} />
                 <Route path="assistant" element={<AssistantPage />} />
                 <Route element={<ProtectedRoute roles={["admin"]} />}>
                   <Route path="users" element={<UsersPage />} />

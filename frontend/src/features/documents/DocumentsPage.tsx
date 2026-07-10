@@ -17,6 +17,7 @@ import type { BusinessDoc } from "@/types";
 
 const statusTone: Record<string, string> = {
   draft: "manager",
+  pending_approval: "manager",
   confirmed: "admin",
   received: "green",
   cancelled: "red",
@@ -137,7 +138,7 @@ export default function DocumentsPage({
   });
 
   const actionMutation = useMutation({
-    mutationFn: ({ id, name }: { id: number; name: "confirm" | "receive" | "cancel" }) =>
+    mutationFn: ({ id, name }: { id: number; name: "confirm" | "receive" | "cancel" | "approve" | "reject" }) =>
       client.action(id, name),
     onSuccess: (doc) => {
       invalidate();
@@ -409,6 +410,28 @@ export default function DocumentsPage({
                   >
                     Confirm
                   </Button>
+                )}
+                {isPurchase && viewDoc.status === "pending_approval" && user!.role === "admin" && (
+                  <>
+                    <Button
+                      onClick={() => actionMutation.mutate({ id: viewDoc.id, name: "approve" })}
+                      disabled={actionMutation.isPending}
+                    >
+                      Approve order
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => actionMutation.mutate({ id: viewDoc.id, name: "reject" })}
+                      disabled={actionMutation.isPending}
+                    >
+                      Send back to draft
+                    </Button>
+                  </>
+                )}
+                {isPurchase && viewDoc.status === "pending_approval" && user!.role !== "admin" && (
+                  <p className="self-center text-sm text-amber-400">
+                    Awaiting admin approval (large order)
+                  </p>
                 )}
                 {isPurchase && viewDoc.status === "confirmed" && (
                   <Button
