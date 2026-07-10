@@ -30,7 +30,7 @@ export function documentsApi(kind: "purchases" | "sales") {
       const { data } = await api.post<BusinessDoc>(`/${kind}/`, payload);
       return data;
     },
-    async action(id: number, name: "confirm" | "receive" | "cancel") {
+    async action(id: number, name: "confirm" | "receive" | "cancel" | "approve" | "reject") {
       const { data } = await api.post<BusinessDoc>(`/${kind}/${id}/${name}/`);
       return data;
     },

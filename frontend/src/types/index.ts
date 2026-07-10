@@ -43,6 +43,8 @@ export interface StockMovement {
   reference_type: string;
   reference_id: number | null;
   created_by_email: string;
+  warehouse: number | null;
+  warehouse_name: string | null;
   created_at: string;
 }
 
@@ -84,6 +86,41 @@ export interface BusinessDoc {
   customer?: number;
   customer_name?: string;
   sale_date?: string;
+  approved_by_email?: string | null;
+}
+
+export interface Warehouse {
+  id: number;
+  name: string;
+  address: string;
+  is_default: boolean;
+  is_active: boolean;
+}
+
+export type LeadStatus = "new" | "contacted" | "qualified" | "won" | "lost";
+
+export interface LeadActivity {
+  id: number;
+  type: "call" | "email" | "meeting" | "note";
+  summary: string;
+  created_by_email: string;
+  created_at: string;
+}
+
+export interface Lead {
+  id: number;
+  name: string;
+  company: string;
+  email: string;
+  phone: string;
+  source: string;
+  status: LeadStatus;
+  notes: string;
+  assigned_to: number | null;
+  assigned_to_email: string | null;
+  customer_id: number | null;
+  created_at: string;
+  activities?: LeadActivity[];
 }
 
 export interface Paginated<T> {

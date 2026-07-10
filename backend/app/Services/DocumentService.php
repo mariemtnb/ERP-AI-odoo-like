@@ -26,7 +26,13 @@ class DocumentService
 
     // ---------- purchase orders ----------
 
-    public static function confirmPurchase(PurchaseOrder $po): PurchaseOrder
+    /** Orders at or above this amount need an admin's approval. */
+    public static function approvalThreshold(): float
+    {
+        return (float) env('PURCHASE_APPROVAL_THRESHOLD', 1000);
+    }
+
+    public static function confirmPurchase(PurchaseOrder $po, User $user): PurchaseOrder
     {
         if ($po->status !== PurchaseOrder::STATUS_DRAFT) {
             throw new InvalidTransition("Only draft orders can be confirmed (status: {$po->status}).");
@@ -34,7 +40,42 @@ class DocumentService
         if (! $po->lines()->exists()) {
             throw new InvalidTransition('Cannot confirm an order without lines.');
         }
-        $po->update(['status' => PurchaseOrder::STATUS_CONFIRMED]);
+
+        // Hierarchical validation: large orders confirmed by non-admins wait
+        // for an admin. Admins' own confirmations are auto-approved.
+        if ((float) $po->total_amount >= self::approvalThreshold() && ! $user->isAdmin()) {
+            $po->update(['status' => PurchaseOrder::STATUS_PENDING_APPROVAL]);
+        } else {
+            $po->update([
+                'status' => PurchaseOrder::STATUS_CONFIRMED,
+                'approved_by' => $user->isAdmin() ? $user->id : null,
+                'approved_at' => $user->isAdmin() ? now() : null,
+            ]);
+        }
+
+        return $po;
+    }
+
+    public static function approvePurchase(PurchaseOrder $po, User $admin): PurchaseOrder
+    {
+        if ($po->status !== PurchaseOrder::STATUS_PENDING_APPROVAL) {
+            throw new InvalidTransition("Only orders pending approval can be approved (status: {$po->status}).");
+        }
+        $po->update([
+            'status' => PurchaseOrder::STATUS_CONFIRMED,
+            'approved_by' => $admin->id,
+            'approved_at' => now(),
+        ]);
+
+        return $po;
+    }
+
+    public static function rejectPurchase(PurchaseOrder $po): PurchaseOrder
+    {
+        if ($po->status !== PurchaseOrder::STATUS_PENDING_APPROVAL) {
+            throw new InvalidTransition("Only orders pending approval can be rejected (status: {$po->status}).");
+        }
+        $po->update(['status' => PurchaseOrder::STATUS_DRAFT]);
 
         return $po;
     }
@@ -68,7 +109,12 @@ class DocumentService
 
     public static function cancelPurchase(PurchaseOrder $po): PurchaseOrder
     {
-        if (! in_array($po->status, [PurchaseOrder::STATUS_DRAFT, PurchaseOrder::STATUS_CONFIRMED], true)) {
+        $cancellable = [
+            PurchaseOrder::STATUS_DRAFT,
+            PurchaseOrder::STATUS_PENDING_APPROVAL,
+            PurchaseOrder::STATUS_CONFIRMED,
+        ];
+        if (! in_array($po->status, $cancellable, true)) {
             throw new InvalidTransition("Cannot cancel a {$po->status} order.");
         }
         $po->update(['status' => PurchaseOrder::STATUS_CANCELLED]);

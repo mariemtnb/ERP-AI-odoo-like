@@ -83,7 +83,7 @@ class DocumentFlowTest extends TestCase
     public function test_receive_purchase_creates_stock_in(): void
     {
         $po = $this->makePo('10');
-        DocumentService::confirmPurchase($po);
+        DocumentService::confirmPurchase($po, $this->user);
         DocumentService::receivePurchase($po, $this->user);
 
         $this->assertSame(10.0, $this->stock());
