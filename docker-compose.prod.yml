@@ -1,0 +1,67 @@
+# Production stack: single exposed port (web:8080). Everything else internal.
+#   docker compose -f docker-compose.prod.yml -p erp-prod up -d --build
+name: erp-prod
+
+services:
+  db:
+    image: postgres:16-alpine
+    env_file: .env
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend-prod.Dockerfile
+    env_file: .env
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  ollama:
+    image: ollama/ollama:latest
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+    volumes:
+      # Reuse the dev volume so the 20 GB model is not downloaded twice.
+      - erp-ai_ollama_data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  ai-service:
+    build: ./ai-service
+    env_file: .env
+    depends_on:
+      - ollama
+      - backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8001
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/frontend-prod.Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata_prod:
+  erp-ai_ollama_data:
+    external: true
