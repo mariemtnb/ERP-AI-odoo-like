@@ -45,6 +45,16 @@ Key sentences for the jury:
 - "The stock ledger is append-only; cancelling a confirmed sale writes a
   reversal movement instead of rewriting history."
 
+## 5bis. Phase 3 features (2 min, optional)
+1. **Voice**: click the mic in the chat and speak a request (Chrome/Edge).
+2. **Forecasting**: dashboard shows the 14-day revenue projection (sparkline)
+   and per-product days-until-stockout.
+3. **OCR**: Purchases → *Import from invoice* → upload an invoice photo →
+   the local vision model prefills supplier, quantities and prices.
+4. **RAG**: ask the assistant *"How many days do customers have to return a
+   product?"* → `search_documents` finds the answer in the ingested policy
+   (pgvector semantic search, local embeddings).
+
 ## 6. Architecture slide (1 min)
 Show diagrams/: ERD, use-case, agent sequence. Stack: React+TS, Laravel 12,
 PostgreSQL, FastAPI+LangGraph, Ollama (qwen3:32b), Docker.
