@@ -1,3 +1,121 @@
+@import "@fontsource-variable/inter";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ─────────────────────────────────────────────────────────────
+   Design tokens — the single source of truth for the whole UI.
+   Dark-first. Rich charcoal, soft surfaces, emerald accent.
+   ───────────────────────────────────────────────────────────── */
+:root {
+  color-scheme: dark; /* native controls (date pickers, scrollbars) in dark */
+
+  /* canvas & surfaces (never pure black) */
+  --bg: 216 22% 7%;            /* #0d1117-ish rich charcoal */
+  --surface: 217 19% 10%;      /* cards */
+  --surface-2: 216 16% 13%;    /* nested surfaces, inputs */
+  --surface-3: 215 14% 17%;    /* hover, active surfaces */
+  --overlay: 220 26% 4%;       /* modal scrim base */
+
+  /* strokes — hairlines, not walls */
+  --stroke: 215 15% 22%;
+  --stroke-soft: 216 15% 16%;
+
+  /* text (never pure white) */
+  --text: 214 30% 92%;
+  --text-2: 215 12% 64%;
+  --text-3: 215 10% 45%;
+
+  /* brand — premium emerald */
+  --accent: 160 84% 39%;       /* emerald-500 */
+  --accent-soft: 160 60% 45%;
+  --accent-strong: 158 90% 55%;
+
+  /* semantic */
+  --positive: 158 64% 52%;
+  --warning: 38 92% 58%;
+  --danger: 0 72% 62%;
+  --info: 217 91% 68%;
+
+  /* motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 150ms;
+  --dur: 220ms;
+  --dur-slow: 340ms;
+}
+
+@layer base {
+  html {
+    font-family: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background: hsl(var(--bg));
+    color: hsl(var(--text));
+  }
+
+  /* comfortable, consistent focus everywhere */
+  *:focus-visible {
+    outline: 2px solid hsl(var(--accent) / 0.7);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: hsl(var(--accent) / 0.3);
+  }
+
+  /* discreet scrollbars that match the canvas */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--stroke)) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: hsl(var(--stroke));
+    border-radius: 8px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* soft radial glow used behind hero numbers / the AI orb */
+  .glow-accent {
+    background: radial-gradient(
+      ellipse at center,
+      hsl(var(--accent) / 0.16) 0%,
+      transparent 70%
+    );
+  }
+
+  .text-gradient {
+    background: linear-gradient(
+      120deg,
+      hsl(var(--text)) 30%,
+      hsl(var(--accent-strong)) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* tabular numerals for data */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+}

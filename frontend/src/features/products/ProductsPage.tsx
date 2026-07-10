@@ -67,7 +67,7 @@ export default function ProductsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Products</h1>
+        <div />
         {canWrite && (
           <Button onClick={() => { setError(""); setDialog("create"); }}>
             <Plus className="h-4 w-4" /> New product
@@ -86,7 +86,7 @@ export default function ProductsPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-slate-400">Loading products…</p>
+        <p className="text-text-2">Loading products…</p>
       ) : (
         <Table>
           <THead>
@@ -133,7 +133,7 @@ export default function ProductsPage() {
                         size="icon"
                         onClick={() => deactivateMutation.mutate(p.id)}
                       >
-                        <Trash2 className="h-4 w-4 text-red-400" />
+                        <Trash2 className="h-4 w-4 text-danger" />
                       </Button>
                     )}
                   </Td>
@@ -214,13 +214,13 @@ function CategoriesManager({ canWrite }: { canWrite: boolean }) {
               </Button>
             </form>
           )}
-          {error && <p className="text-sm text-red-400">{error}</p>}
-          <ul className="divide-y divide-slate-800">
+          {error && <p className="text-sm text-danger">{error}</p>}
+          <ul className="divide-y divide-stroke-soft">
             {categories.map((c) => (
               <li key={c.id} className="flex items-center justify-between py-2">
                 <span>
                   {c.name}{" "}
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs text-text-3">
                     ({c.product_count} products)
                   </span>
                 </span>
@@ -230,7 +230,7 @@ function CategoriesManager({ canWrite }: { canWrite: boolean }) {
                     size="icon"
                     onClick={() => removeMutation.mutate(c.id)}
                   >
-                    <Trash2 className="h-4 w-4 text-red-400" />
+                    <Trash2 className="h-4 w-4 text-danger" />
                   </Button>
                 )}
               </li>

@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Bot, Check, Mic, MicOff, Send, Wrench, X } from "lucide-react";
+import { motion } from "framer-motion";
+import { Check, Mic, MicOff, Send, Sparkles, Wrench, X } from "lucide-react";
 import {
   sendApproval,
   sendMessage,
   type ChatMessage,
 } from "@/api/assistant";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -104,37 +104,81 @@ export default function AssistantPage() {
     void run(() => sendApproval(conversationId, approve));
   }
 
-  return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold">AI Assistant</h1>
-        <p className="text-sm text-slate-400">
-          Ask about your data or ask it to act — every action needs your approval
-          and respects your role.
-        </p>
-      </div>
+  const SUGGESTIONS = [
+    "Which products are low on stock?",
+    "Quel est le chiffre d'affaires de ce mois ?",
+    "Create a customer named Ahmed Ben Ali",
+    "How many days do customers have to return a product?",
+  ];
 
-      <div className="flex-1 space-y-4 overflow-y-auto pr-2">
+  function sendSuggestion(text: string) {
+    if (busy) return;
+    push({
+      id: nextLocalId--, role: "user", content: text,
+      tool_calls: null, pending_action: null, created_at: new Date().toISOString(),
+    });
+    void run(() => sendMessage(text, conversationId));
+  }
+
+  return (
+    <div className="mx-auto flex h-[calc(100dvh-8rem)] w-full max-w-3xl flex-col">
+      <div className="flex-1 space-y-5 overflow-y-auto pb-6 pr-1">
         {messages.length === 0 && (
-          <div className="mt-12 space-y-2 text-center text-sm text-slate-500">
-            <Bot className="mx-auto h-10 w-10" />
-            <p>Try: “Which products are low on stock?”</p>
-            <p>“Create a customer named Ahmed Ben Ali”</p>
-            <p>“Quel est le chiffre d'affaires de ce mois ?”</p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-col items-center gap-6 pt-16 text-center"
+          >
+            <div className="relative">
+              <div className="glow-accent absolute -inset-10" />
+              <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/15 shadow-[inset_0_0_0_1px_hsl(var(--accent)/0.35)]">
+                <Sparkles className="h-7 w-7 text-accent-strong" />
+              </div>
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight">
+                What can I do for your business today?
+              </h2>
+              <p className="mt-1.5 max-w-md text-sm leading-relaxed text-text-3">
+                I can read your data, run analyses, and execute actions — every
+                write waits for your approval and respects your role.
+              </p>
+            </div>
+            <div className="grid w-full max-w-lg gap-2 sm:grid-cols-2">
+              {SUGGESTIONS.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => sendSuggestion(s)}
+                  className="rounded-lg bg-surface px-4 py-3 text-left text-[13px] leading-snug text-text-2
+                             ring-1 ring-inset ring-white/[0.05] transition-all duration-200
+                             hover:-translate-y-0.5 hover:text-text hover:shadow-2 hover:ring-accent/25"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </motion.div>
         )}
         {messages.map((m) => (
           <MessageBubble key={m.id} message={m} />
         ))}
         {pending && !busy && (
-          <Card className="ml-11 max-w-lg border-amber-500/40 p-4">
-            <p className="mb-1 text-sm font-semibold text-amber-400">
-              Confirmation required — {pending.action}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97, y: 8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            className="ml-11 max-w-lg rounded-xl bg-surface p-5 shadow-2
+                       ring-1 ring-inset ring-warning/30"
+          >
+            <p className="flex items-center gap-2 text-sm font-semibold text-warning">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-warning" />
+              Approval needed · {pending.action.replaceAll("_", " ")}
             </p>
-            <pre className="mb-3 overflow-x-auto rounded bg-slate-950 p-2 text-xs text-slate-300">
+            <pre className="mt-3 overflow-x-auto rounded-lg bg-surface-2 p-3 text-xs leading-relaxed text-text-2">
               {JSON.stringify(pending.details, null, 2)}
             </pre>
-            <div className="flex gap-2">
+            <div className="mt-4 flex gap-2">
               <Button size="sm" onClick={() => answer(true)}>
                 <Check className="h-4 w-4" /> Approve
               </Button>
@@ -142,36 +186,52 @@ export default function AssistantPage() {
                 <X className="h-4 w-4" /> Reject
               </Button>
             </div>
-          </Card>
+          </motion.div>
         )}
         {busy && (
-          <div className="ml-11 flex items-center gap-2 text-sm text-slate-400">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-indigo-400" />
-            Thinking… (local model, this can take a while)
+          <div className="ml-11 flex items-center gap-2.5 text-sm text-text-3">
+            <span className="flex gap-1">
+              {[0, 1, 2].map((i) => (
+                <motion.span
+                  key={i}
+                  className="h-1.5 w-1.5 rounded-full bg-accent-strong"
+                  animate={{ opacity: [0.25, 1, 0.25] }}
+                  transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.18 }}
+                />
+              ))}
+            </span>
+            Thinking — local model, this can take a moment
           </div>
         )}
-        {error && <p className="ml-11 text-sm text-red-400">{error}</p>}
+        {error && <p className="ml-11 text-sm text-danger">{error}</p>}
         <div ref={bottomRef} />
       </div>
 
-      <form onSubmit={submit} className="flex gap-2">
+      {/* composer */}
+      <form
+        onSubmit={submit}
+        className="flex items-center gap-2 rounded-xl bg-surface p-2 shadow-2 ring-1 ring-inset ring-white/[0.06]
+                   transition-shadow duration-200 focus-within:ring-accent/40"
+      >
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask the assistant…"
+          placeholder="Ask anything about your business…"
           disabled={busy}
+          className="border-0 bg-transparent shadow-none hover:shadow-none focus:shadow-none"
         />
         {speech.supported && (
           <Button
             type="button"
-            variant={speech.listening ? "destructive" : "secondary"}
+            size="icon"
+            variant={speech.listening ? "destructive" : "ghost"}
             onClick={speech.toggle}
             title={speech.listening ? "Stop listening" : "Speak your request"}
           >
             {speech.listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
           </Button>
         )}
-        <Button type="submit" disabled={busy || !input.trim()}>
+        <Button type="submit" size="icon" disabled={busy || !input.trim()} aria-label="Send">
           <Send className="h-4 w-4" />
         </Button>
       </form>
@@ -183,32 +243,40 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === "user";
   if (!message.content && !message.tool_calls) return null;
   return (
-    <div className={cn("flex gap-3", isUser && "justify-end")}>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      className={cn("flex gap-3", isUser && "justify-end")}
+    >
       {!isUser && (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-600">
-          <Bot className="h-4 w-4" />
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/15 shadow-[inset_0_0_0_1px_hsl(var(--accent)/0.3)]">
+          <Sparkles className="h-4 w-4 text-accent-strong" />
         </div>
       )}
-      <div className={cn("max-w-2xl space-y-2", isUser && "text-right")}>
+      <div className={cn("max-w-[85%] space-y-2", isUser && "text-right")}>
         {message.tool_calls?.map((tc, i) => (
           <span
             key={i}
-            className="mr-1 inline-flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-1 text-xs text-slate-300"
+            className="mr-1 inline-flex items-center gap-1.5 rounded-full bg-accent/[0.08] px-2.5 py-1 text-[11px] font-medium text-accent-strong
+                       shadow-[inset_0_0_0_1px_hsl(var(--accent)/0.2)]"
           >
-            <Wrench className="h-3 w-3 text-indigo-400" /> {tc.name}
+            <Wrench className="h-3 w-3" /> {tc.name}
           </span>
         ))}
         {message.content && (
           <div
             className={cn(
-              "whitespace-pre-wrap rounded-xl px-4 py-2.5 text-sm",
-              isUser ? "bg-indigo-600 text-white" : "bg-slate-800 text-slate-100"
+              "whitespace-pre-wrap rounded-xl px-4 py-3 text-sm leading-relaxed",
+              isUser
+                ? "bg-accent font-medium text-bg shadow-[inset_0_1px_0_hsl(var(--accent-strong)/0.5)]"
+                : "bg-surface text-text shadow-2 ring-1 ring-inset ring-white/[0.045]"
             )}
           >
             {message.content}
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

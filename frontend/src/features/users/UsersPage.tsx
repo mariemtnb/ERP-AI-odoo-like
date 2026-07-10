@@ -11,12 +11,12 @@ export default function UsersPage() {
       (await api.get<Paginated<User>>("/users/")).data,
   });
 
-  if (isLoading) return <p className="text-slate-400">Loading users…</p>;
-  if (error) return <p className="text-red-400">Failed to load users.</p>;
+  if (isLoading) return <p className="text-text-2">Loading users…</p>;
+  if (error) return <p className="text-danger">Failed to load users.</p>;
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Users</h1>
+      <p className="text-sm text-text-3">Accounts, roles and access.</p>
       <Table>
         <THead>
           <tr>

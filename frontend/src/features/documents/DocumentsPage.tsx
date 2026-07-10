@@ -175,7 +175,11 @@ export default function DocumentsPage({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{title}</h1>
+        <p className="text-sm text-text-3">
+          {isPurchase
+            ? "Order, receive and approve supplier deliveries."
+            : `Record ${title.toLowerCase()}, confirm to move stock, invoice in one click.`}
+        </p>
         {canWrite && (
           <div className="flex gap-2">
             {isPurchase && (
@@ -209,7 +213,7 @@ export default function DocumentsPage({
       </div>
 
       {isLoading ? (
-        <p className="text-slate-400">Loading…</p>
+        <p className="text-text-2">Loading…</p>
       ) : (
         <Table>
           <THead>
@@ -226,19 +230,19 @@ export default function DocumentsPage({
             {data!.results.map((d) => (
               <tr
                 key={d.id}
-                className="cursor-pointer hover:bg-slate-900"
+                className="cursor-pointer hover:bg-white/[0.03]"
                 onClick={() => { setActionError(""); setViewDoc(d); }}
               >
                 <Td className="font-mono text-xs">{d.number}</Td>
                 <Td>{isPurchase ? d.supplier_name : d.customer_name}</Td>
-                <Td className="text-slate-400">
+                <Td className="text-text-2">
                   {isPurchase ? d.order_date : d.sale_date}
                 </Td>
                 <Td>
                   <Badge tone={statusTone[d.status]}>{d.status}</Badge>
                 </Td>
                 <Td className="text-right">{Number(d.total_amount).toFixed(2)}</Td>
-                <Td className="text-xs text-slate-400">{d.created_by_email}</Td>
+                <Td className="text-xs text-text-2">{d.created_by_email}</Td>
               </tr>
             ))}
           </TBody>
@@ -254,7 +258,7 @@ export default function DocumentsPage({
       >
         <form onSubmit={submit} className="space-y-4">
           {scanNote && (
-            <p className="rounded-md border border-indigo-500/40 bg-indigo-500/10 p-2 text-xs text-indigo-300">
+            <p className="rounded-md border border-accent/40 bg-accent/10 p-2 text-xs text-accent-strong">
               {scanNote}
             </p>
           )}
@@ -319,7 +323,7 @@ export default function DocumentsPage({
                   disabled={lines.length === 1}
                   onClick={() => setLines((ls) => ls.filter((_, j) => j !== i))}
                 >
-                  <Trash2 className="h-4 w-4 text-red-400" />
+                  <Trash2 className="h-4 w-4 text-danger" />
                 </Button>
               </div>
             ))}
@@ -335,10 +339,10 @@ export default function DocumentsPage({
             </Button>
           </div>
 
-          <p className="text-right text-sm text-slate-300">
+          <p className="text-right text-sm text-text-2">
             Total: <span className="font-semibold">{total.toFixed(2)}</span>
           </p>
-          {error && <p className="break-all text-sm text-red-400">{error}</p>}
+          {error && <p className="break-all text-sm text-danger">{error}</p>}
           <Button type="submit" className="w-full" disabled={createMutation.isPending}>
             {createMutation.isPending ? "Saving…" : "Create draft"}
           </Button>
@@ -359,7 +363,7 @@ export default function DocumentsPage({
                 {isPurchase ? viewDoc.supplier_name : viewDoc.customer_name} —{" "}
                 <Badge tone={statusTone[viewDoc.status]}>{viewDoc.status}</Badge>
               </span>
-              <span className="text-slate-400">
+              <span className="text-text-2">
                 by {viewDoc.created_by_email}
               </span>
             </div>
@@ -376,7 +380,7 @@ export default function DocumentsPage({
                 {viewDoc.lines.map((l) => (
                   <tr key={l.id}>
                     <Td>
-                      <span className="font-mono text-xs text-slate-400">{l.product_sku}</span>{" "}
+                      <span className="font-mono text-xs text-text-2">{l.product_sku}</span>{" "}
                       {l.product_name}
                     </Td>
                     <Td className="text-right">{Number(l.quantity)}</Td>
@@ -389,7 +393,7 @@ export default function DocumentsPage({
             <p className="text-right font-semibold">
               Total: {Number(viewDoc.total_amount).toFixed(2)}
             </p>
-            {actionError && <p className="text-sm text-red-400">{actionError}</p>}
+            {actionError && <p className="text-sm text-danger">{actionError}</p>}
             {canWrite && (
               <div className="flex justify-end gap-2">
                 {!isPurchase && viewDoc.status === "confirmed" && (
@@ -429,7 +433,7 @@ export default function DocumentsPage({
                   </>
                 )}
                 {isPurchase && viewDoc.status === "pending_approval" && user!.role !== "admin" && (
-                  <p className="self-center text-sm text-amber-400">
+                  <p className="self-center text-sm text-warning">
                     Awaiting admin approval (large order)
                   </p>
                 )}

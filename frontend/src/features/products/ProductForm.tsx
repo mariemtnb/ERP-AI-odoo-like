@@ -126,7 +126,7 @@ export function ProductForm({
         <Label htmlFor="description">Description</Label>
         <Input id="description" value={values.description} onChange={set("description")} />
       </div>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
       <Button type="submit" className="w-full" disabled={busy}>
         {busy ? "Saving…" : "Save product"}
       </Button>
