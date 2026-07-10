@@ -1,0 +1,70 @@
+@startuml use-case
+title Intelligent ERP — Use Case Diagram
+
+left to right direction
+skinparam actorStyle awesome
+
+actor "Employee" as employee
+actor "Manager" as manager
+actor "Administrator" as admin
+actor "AI Agent" as agent <<system>>
+
+manager --|> employee
+admin --|> manager
+
+rectangle "Intelligent ERP" {
+  usecase "UC-01 Authenticate\n(login / refresh / logout)" as UC01
+  usecase "UC-02 Manage users & roles" as UC02
+  usecase "UC-03 Manage products\n& categories" as UC03
+  usecase "UC-04 Record stock movement" as UC04
+  usecase "UC-05a Create customer" as UC05a
+  usecase "UC-05b Manage customers\n& suppliers" as UC05b
+  usecase "UC-06 Create & receive\npurchase order" as UC06
+  usecase "UC-07 Create & confirm sale" as UC07
+  usecase "UC-08 View dashboard" as UC08
+  usecase "UC-09 Generate reports\n& export PDF" as UC09
+  usecase "UC-10 Generate invoice" as UC10
+  usecase "UC-11 Chat with AI assistant" as UC11
+  usecase "UC-12 Approve / reject\nagent action" as UC12
+  usecase "Consult data & history" as UCREAD
+}
+
+employee --> UC01
+employee --> UCREAD
+employee --> UC05a
+employee --> UC07
+employee --> UC08
+employee --> UC11
+
+manager --> UC03
+manager --> UC04
+manager --> UC05b
+manager --> UC06
+manager --> UC09
+manager --> UC10
+
+admin --> UC02
+
+UC11 ..> UC12 : <<extend>>\nwrite action proposed
+UC12 ..> agent : resumes
+agent --> UCREAD : via REST API\n(user's JWT)
+agent --> UC05a
+agent --> UC04
+agent --> UC06
+agent --> UC07
+agent --> UC10
+
+note right of agent
+  The agent acts ON BEHALF of the
+  logged-in user: every tool call is an
+  HTTP request with the user's JWT, so
+  RBAC applies identically. Write tools
+  pause for UC-12 confirmation and are
+  recorded in the audit log.
+end note
+
+UC06 ..> UC04 : <<include>>\nreceipt = stock IN
+UC07 ..> UC04 : <<include>>\nconfirm = stock OUT
+UC10 ..> UC07 : <<extend>>\nconfirmed sales only
+
+@enduml
