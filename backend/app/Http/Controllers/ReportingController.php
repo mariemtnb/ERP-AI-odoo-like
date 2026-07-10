@@ -138,6 +138,97 @@ class ReportingController extends Controller
         ]);
     }
 
+    /**
+     * Predictive analytics (Phase 3):
+     * - revenue forecast: least-squares trend over the last 30 days of
+     *   confirmed sales, projected 14 days ahead;
+     * - stockout risk: average daily consumption (OUT movements, last 30
+     *   days) per product → estimated days until stockout.
+     */
+    public function forecast(Request $request)
+    {
+        $days = 30;
+        $horizon = 14;
+        $from = now()->subDays($days - 1)->format('Y-m-d');
+
+        // --- revenue trend ---
+        $daily = Sale::where('status', Sale::STATUS_CONFIRMED)
+            ->where('sale_date', '>=', $from)
+            ->groupBy('sale_date')
+            ->orderBy('sale_date')
+            ->get(['sale_date', DB::raw('SUM(total_amount) as revenue')])
+            ->map(fn ($r) => [
+                'date' => $r->sale_date->format('Y-m-d'),
+                'revenue' => (float) $r->revenue,
+            ]);
+
+        // Least squares y = a + b*x over day index (missing days count as 0).
+        $series = [];
+        for ($i = 0; $i < $days; $i++) {
+            $date = now()->subDays($days - 1 - $i)->format('Y-m-d');
+            $series[] = (float) ($daily->firstWhere('date', $date)['revenue'] ?? 0);
+        }
+        $n = count($series);
+        $sumX = $n * ($n - 1) / 2;
+        $sumY = array_sum($series);
+        $sumXY = 0;
+        $sumX2 = 0;
+        foreach ($series as $x => $y) {
+            $sumXY += $x * $y;
+            $sumX2 += $x * $x;
+        }
+        $den = $n * $sumX2 - $sumX * $sumX;
+        $b = $den != 0 ? ($n * $sumXY - $sumX * $sumY) / $den : 0;
+        $a = ($sumY - $b * $sumX) / $n;
+
+        $projection = [];
+        for ($i = 0; $i < $horizon; $i++) {
+            $x = $n + $i;
+            $projection[] = [
+                'date' => now()->addDays($i + 1)->format('Y-m-d'),
+                'revenue' => round(max(0, $a + $b * $x), 2),
+            ];
+        }
+
+        // --- stockout risk ---
+        $consumption = DB::table('stock_movements')
+            ->where('movement_type', 'out')
+            ->where('created_at', '>=', $from)
+            ->groupBy('product_id')
+            ->pluck(DB::raw('SUM(quantity) as consumed'), 'product_id');
+
+        $risk = Product::where('is_active', true)->get()
+            ->map(function (Product $p) use ($consumption, $days) {
+                $perDay = (float) ($consumption[$p->id] ?? 0) / $days;
+                $daysLeft = $perDay > 0
+                    ? (int) floor((float) $p->quantity_in_stock / $perDay)
+                    : null;
+
+                return [
+                    'id' => $p->id,
+                    'sku' => $p->sku,
+                    'name' => $p->name,
+                    'quantity_in_stock' => $p->quantity_in_stock,
+                    'daily_consumption' => round($perDay, 3),
+                    'days_until_stockout' => $daysLeft,
+                ];
+            })
+            ->filter(fn ($r) => $r['days_until_stockout'] !== null)
+            ->sortBy('days_until_stockout')
+            ->values()
+            ->take(10);
+
+        return response()->json([
+            'window_days' => $days,
+            'horizon_days' => $horizon,
+            'daily_revenue' => $daily->values()->all(),
+            'trend_per_day' => round($b, 2),
+            'projection' => $projection,
+            'projected_total' => round(array_sum(array_column($projection, 'revenue')), 2),
+            'stockout_risk' => $risk->all(),
+        ]);
+    }
+
     public function stockReport(Request $request)
     {
         $rows = Product::with('category')

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getDashboardStats } from "@/api/reports";
+import { getDashboardStats, getForecast } from "@/api/reports";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,10 @@ export default function DashboardPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["dashboard", from, to],
     queryFn: () => getDashboardStats({ from, to }),
+  });
+  const { data: forecast } = useQuery({
+    queryKey: ["forecast"],
+    queryFn: getForecast,
   });
 
   return (
@@ -106,9 +110,89 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </div>
+
+          {forecast && (
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Revenue forecast (next {forecast.horizon_days} days)</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <p className="text-3xl font-bold text-indigo-400">
+                    {forecast.projected_total.toFixed(2)}
+                  </p>
+                  <p className="text-sm text-slate-400">
+                    Trend{" "}
+                    <span className={forecast.trend_per_day >= 0 ? "text-emerald-400" : "text-red-400"}>
+                      {forecast.trend_per_day >= 0 ? "+" : ""}
+                      {forecast.trend_per_day.toFixed(2)}/day
+                    </span>{" "}
+                    · least-squares over the last {forecast.window_days} days of confirmed sales
+                  </p>
+                  <Sparkline
+                    history={forecast.daily_revenue.map((d) => d.revenue)}
+                    projection={forecast.projection.map((d) => d.revenue)}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Stockout risk</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {forecast.stockout_risk.length === 0 ? (
+                    <p className="text-sm text-slate-400">
+                      No consumption recorded in the last {forecast.window_days} days.
+                    </p>
+                  ) : (
+                    <ul className="divide-y divide-slate-800 text-sm">
+                      {forecast.stockout_risk.map((r) => (
+                        <li key={r.id} className="flex justify-between py-2">
+                          <span>
+                            <span className="font-mono text-xs text-slate-400">{r.sku}</span> {r.name}
+                          </span>
+                          <span className={r.days_until_stockout <= 14 ? "text-red-400" : "text-slate-300"}>
+                            ~{r.days_until_stockout} days left
+                            <span className="ml-2 text-xs text-slate-500">
+                              ({r.daily_consumption}/day)
+                            </span>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </>
       )}
     </div>
+  );
+}
+
+function Sparkline({ history, projection }: { history: number[]; projection: number[] }) {
+  const all = [...history, ...projection];
+  const max = Math.max(...all, 1);
+  const w = 300;
+  const h = 48;
+  const step = w / Math.max(all.length - 1, 1);
+  const y = (v: number) => h - (v / max) * (h - 4) - 2;
+  const path = (values: number[], offset: number) =>
+    values.map((v, i) => `${i === 0 ? "M" : "L"}${((offset + i) * step).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} className="h-12 w-full" preserveAspectRatio="none">
+      <path d={path(history, 0)} fill="none" stroke="#34d399" strokeWidth="1.5" />
+      <path
+        d={`M${((history.length - 1) * step).toFixed(1)},${y(history.at(-1) ?? 0).toFixed(1)} ` +
+          path(projection, history.length).slice(1)}
+        fill="none"
+        stroke="#818cf8"
+        strokeWidth="1.5"
+        strokeDasharray="4 3"
+      />
+    </svg>
   );
 }
 
