@@ -1,0 +1,166 @@
+@startuml class-diagram
+' Backend domain class diagram — Laravel models + service layer
+title Intelligent ERP — Class Diagram (backend domain)
+
+skinparam classAttributeIconSize 0
+
+package "Models" {
+  class User {
+    +id : int
+    +email : string
+    +first_name : string
+    +last_name : string
+    +role : Role
+    +is_active : bool
+    +isAdmin() : bool
+    +isManagerial() : bool
+    +toApi() : array
+  }
+
+  enum Role {
+    ADMIN
+    MANAGER
+    EMPLOYEE
+  }
+
+  class Category {
+    +id : int
+    +name : string
+    +description : string
+  }
+
+  class Product {
+    +id : int
+    +sku : string
+    +name : string
+    +cost_price : decimal
+    +sale_price : decimal
+    +unit : string
+    +quantity_in_stock : decimal <<cache>>
+    +min_stock_level : decimal
+    +is_active : bool
+    +isLowStock() : bool
+  }
+
+  class StockMovement <<append-only>> {
+    +id : int
+    +movement_type : in|out|adjustment
+    +quantity : decimal
+    +reason : string
+    +reference_type : sale|purchase|manual
+    +reference_id : int
+    +created_at : datetime
+  }
+
+  class Customer {
+    +id : int
+    +name : string
+    +email / phone / address : string
+    +is_active : bool
+  }
+
+  class Supplier {
+    +id : int
+    +name : string
+    +email / phone / address : string
+    +is_active : bool
+  }
+
+  class PurchaseOrder {
+    +id : int
+    +number : string
+    +status : draft|confirmed|received|cancelled
+    +order_date : date
+    +received_date : date
+    +total_amount : decimal
+    +recomputeTotal()
+  }
+
+  class PurchaseOrderLine {
+    +quantity : decimal
+    +unit_price : decimal
+    +subtotal() : decimal
+  }
+
+  class Sale {
+    +id : int
+    +number : string
+    +status : draft|confirmed|cancelled
+    +sale_date : date
+    +total_amount : decimal
+    +recomputeTotal()
+  }
+
+  class SaleLine {
+    +quantity : decimal
+    +unit_price : decimal
+    +subtotal() : decimal
+  }
+
+  class Invoice {
+    +number : string
+    +issued_at : datetime
+  }
+
+  class Conversation {
+    +title : string
+  }
+
+  class Message {
+    +role : user|assistant
+    +content : text
+    +tool_calls : json
+    +pending_action : json
+  }
+
+  class AuditLog {
+    +actor : user|agent
+    +action : string
+    +payload : json
+  }
+}
+
+package "Services (business rules)" {
+  class StockService <<service>> {
+    {static} +recordMovement(productId, type, qty, user, reason, refType, refId) : StockMovement
+    ' row lock + ledger row + cached qty in ONE transaction
+  }
+
+  class DocumentService <<service>> {
+    {static} +nextNumber(prefix, model) : string
+    {static} +confirmPurchase(po)
+    {static} +receivePurchase(po, user)
+    {static} +cancelPurchase(po)
+    {static} +confirmSale(sale, user)
+    {static} +cancelSale(sale, user)
+    {static} +generateInvoice(sale) : Invoice
+  }
+
+  class InsufficientStock <<exception>>
+  class InvalidTransition <<exception>>
+}
+
+User "1" -- "0..*" StockMovement : created_by
+User "1" -- "0..*" Conversation
+Conversation "1" -- "0..*" Message
+User "1" -- "0..*" AuditLog
+Category "1" -- "0..*" Product
+Product "1" -- "0..*" StockMovement
+Supplier "1" -- "0..*" PurchaseOrder
+PurchaseOrder "1" *-- "1..*" PurchaseOrderLine
+PurchaseOrderLine "0..*" -- "1" Product
+Customer "1" -- "0..*" Sale
+Sale "1" *-- "1..*" SaleLine
+SaleLine "0..*" -- "1" Product
+Sale "1" -- "0..1" Invoice
+
+DocumentService ..> StockService : stock moves only\nthrough the service
+DocumentService ..> PurchaseOrder
+DocumentService ..> Sale
+DocumentService ..> Invoice
+StockService ..> StockMovement : creates
+StockService ..> Product : locks + updates cache
+StockService ..> InsufficientStock : throws
+DocumentService ..> InvalidTransition : throws
+
+@enduml

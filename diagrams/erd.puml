@@ -1,0 +1,164 @@
+@startuml erd
+' Entity–Association diagram (database schema) — Intelligent ERP
+title Intelligent ERP — Entity–Association Diagram
+
+hide circle
+skinparam linetype ortho
+
+entity users {
+  * id : bigint <<PK>>
+  --
+  * email : varchar <<unique>>
+  * password : varchar
+  first_name : varchar
+  last_name : varchar
+  * role : varchar (admin|manager|employee)
+  * is_active : boolean
+  created_at / updated_at
+}
+
+entity categories {
+  * id : bigint <<PK>>
+  --
+  * name : varchar <<unique>>
+  description : text
+}
+
+entity products {
+  * id : bigint <<PK>>
+  --
+  * sku : varchar <<unique>>
+  * name : varchar
+  category_id : bigint <<FK>>
+  cost_price : decimal(12,2)
+  sale_price : decimal(12,2)
+  unit : varchar
+  quantity_in_stock : decimal(12,3) <<cache>>
+  min_stock_level : decimal(12,3)
+  * is_active : boolean
+}
+
+entity stock_movements {
+  * id : bigint <<PK>>
+  --
+  * product_id : bigint <<FK>>
+  * movement_type : varchar (in|out|adjustment)
+  * quantity : decimal(12,3)
+  reason : varchar
+  reference_type : varchar (sale|purchase|manual)
+  reference_id : bigint
+  * created_by : bigint <<FK users>>
+  * created_at : timestamp
+  ' append-only ledger: source of truth for stock
+}
+
+entity customers {
+  * id : bigint <<PK>>
+  --
+  * name : varchar
+  email / phone / address / notes
+  * is_active : boolean
+}
+
+entity suppliers {
+  * id : bigint <<PK>>
+  --
+  * name : varchar
+  email / phone / address / notes
+  * is_active : boolean
+}
+
+entity purchase_orders {
+  * id : bigint <<PK>>
+  --
+  * number : varchar <<unique>> (PO-YYYY-NNNN)
+  * supplier_id : bigint <<FK>>
+  * status : varchar (draft|confirmed|received|cancelled)
+  * order_date : date
+  received_date : date
+  * total_amount : decimal(14,2)
+  * created_by : bigint <<FK users>>
+}
+
+entity purchase_order_lines {
+  * id : bigint <<PK>>
+  --
+  * purchase_order_id : bigint <<FK>>
+  * product_id : bigint <<FK>>
+  * quantity : decimal(12,3)
+  * unit_price : decimal(12,2)
+}
+
+entity sales {
+  * id : bigint <<PK>>
+  --
+  * number : varchar <<unique>> (SO-YYYY-NNNN)
+  * customer_id : bigint <<FK>>
+  * status : varchar (draft|confirmed|cancelled)
+  * sale_date : date
+  * total_amount : decimal(14,2)
+  * created_by : bigint <<FK users>>
+}
+
+entity sale_lines {
+  * id : bigint <<PK>>
+  --
+  * sale_id : bigint <<FK>>
+  * product_id : bigint <<FK>>
+  * quantity : decimal(12,3)
+  * unit_price : decimal(12,2)
+}
+
+entity invoices {
+  * id : bigint <<PK>>
+  --
+  * number : varchar <<unique>> (INV-YYYY-NNNN)
+  * sale_id : bigint <<FK, unique>> (1–1)
+  * issued_at : timestamp
+}
+
+entity conversations {
+  * id : bigint <<PK>>
+  --
+  * user_id : bigint <<FK>>
+  title : varchar
+  * created_at : timestamp
+}
+
+entity messages {
+  * id : bigint <<PK>>
+  --
+  * conversation_id : bigint <<FK>>
+  * role : varchar (user|assistant)
+  content : text
+  tool_calls : jsonb
+  pending_action : jsonb
+}
+
+entity audit_logs {
+  * id : bigint <<PK>>
+  --
+  * user_id : bigint <<FK>>
+  * actor : varchar (user|agent)
+  * action : varchar
+  payload : jsonb
+  * created_at : timestamp
+}
+
+categories ||--o{ products
+products ||--o{ stock_movements
+products ||--o{ purchase_order_lines
+products ||--o{ sale_lines
+suppliers ||--o{ purchase_orders
+purchase_orders ||--o{ purchase_order_lines
+customers ||--o{ sales
+sales ||--o{ sale_lines
+sales ||--o| invoices
+users ||--o{ stock_movements : created_by
+users ||--o{ purchase_orders : created_by
+users ||--o{ sales : created_by
+users ||--o{ conversations
+conversations ||--o{ messages
+users ||--o{ audit_logs
+
+@enduml

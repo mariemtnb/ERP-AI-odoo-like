@@ -43,7 +43,7 @@ chat, and every executed tool call is recorded in the audit log.
 ## Repository layout
 
 ```
-backend/     Django project (config/) + business apps (apps/)
+backend/     Laravel API (app/Http/Controllers, app/Services, app/Models)
 ai-service/  FastAPI + LangGraph agent
 frontend/    React SPA
 docs/        Architecture document and diagrams
