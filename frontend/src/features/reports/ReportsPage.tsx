@@ -36,21 +36,21 @@ export default function ReportsPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-2xl font-bold">Reports</h1>
+        <div />
         <Button onClick={() => downloadReportPdf(kind, params)}>
           <Download className="h-4 w-4" /> Export PDF
         </Button>
       </div>
 
       <div className="flex flex-wrap items-end gap-3">
-        <div className="flex rounded-md border border-slate-800 p-1">
+        <div className="flex rounded-md border border-stroke-soft p-1">
           {kinds.map((k) => (
             <button
               key={k.key}
               onClick={() => setKind(k.key)}
               className={cn(
                 "rounded px-4 py-1.5 text-sm",
-                kind === k.key ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-slate-200"
+                kind === k.key ? "bg-accent text-bg" : "text-text-2 hover:text-text"
               )}
             >
               {k.label}
@@ -72,7 +72,7 @@ export default function ReportsPage() {
       </div>
 
       {isLoading || !data ? (
-        <p className="text-slate-400">Loading…</p>
+        <p className="text-text-2">Loading…</p>
       ) : kind === "stock" ? (
         <>
           <Table>
@@ -88,16 +88,16 @@ export default function ReportsPage() {
               {data.rows.map((r: any) => (
                 <tr key={r.sku}>
                   <Td className="font-mono text-xs">{r.sku}</Td>
-                  <Td className={r.low ? "text-red-400" : undefined}>{r.name}</Td>
-                  <Td className="text-slate-400">{r.category}</Td>
-                  <Td className={cn("text-right", r.low && "text-red-400")}>{Number(r.quantity)}</Td>
-                  <Td className="text-right text-slate-400">{Number(r.min_level)}</Td>
+                  <Td className={r.low ? "text-danger" : undefined}>{r.name}</Td>
+                  <Td className="text-text-2">{r.category}</Td>
+                  <Td className={cn("text-right", r.low && "text-danger")}>{Number(r.quantity)}</Td>
+                  <Td className="text-right text-text-2">{Number(r.min_level)}</Td>
                   <Td className="text-right">{Number(r.value).toFixed(2)}</Td>
                 </tr>
               ))}
             </TBody>
           </Table>
-          <p className="text-right text-sm text-slate-300">
+          <p className="text-right text-sm text-text-2">
             {data.count} products · Total stock value:{" "}
             <span className="font-semibold">{Number(data.total).toFixed(2)}</span>
           </p>
@@ -115,15 +115,15 @@ export default function ReportsPage() {
               {data.rows.map((r: any) => (
                 <tr key={r.number} className={r.status === "cancelled" ? "opacity-50" : undefined}>
                   <Td className="font-mono text-xs">{r.number}</Td>
-                  <Td className="text-slate-400">{r.date}</Td>
+                  <Td className="text-text-2">{r.date}</Td>
                   <Td>{r.customer}</Td>
-                  <Td className="text-slate-400">{r.status}</Td>
+                  <Td className="text-text-2">{r.status}</Td>
                   <Td className="text-right">{Number(r.total).toFixed(2)}</Td>
                 </tr>
               ))}
             </TBody>
           </Table>
-          <p className="text-right text-sm text-slate-300">
+          <p className="text-right text-sm text-text-2">
             {data.count} documents · Total:{" "}
             <span className="font-semibold">{Number(data.total).toFixed(2)}</span>
           </p>

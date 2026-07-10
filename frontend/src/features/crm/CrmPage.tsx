@@ -78,9 +78,9 @@ export default function CrmPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">CRM</h1>
-          <p className="text-sm text-slate-400">
-            Prospect pipeline — {leads.length} leads
+          <p className="text-sm text-text-3">
+            Prospect pipeline · {leads.length} lead{leads.length === 1 ? "" : "s"} — advance
+            deals, convert winners.
           </p>
         </div>
         <Button onClick={() => { setError(""); setCreateOpen(true); }}>
@@ -89,7 +89,7 @@ export default function CrmPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-slate-400">Loading…</p>
+        <p className="text-text-2">Loading…</p>
       ) : (
         <div className="grid gap-4 lg:grid-cols-5">
           {COLUMNS.map((col) => {
@@ -98,20 +98,20 @@ export default function CrmPage() {
               <div key={col.status} className="space-y-3">
                 <div className="flex items-center justify-between px-1">
                   <Badge tone={col.tone}>{col.label}</Badge>
-                  <span className="text-xs text-slate-500">{items.length}</span>
+                  <span className="text-xs text-text-3">{items.length}</span>
                 </div>
                 {items.map((lead) => (
                   <Card
                     key={lead.id}
-                    className="cursor-pointer p-3 hover:border-slate-600"
+                    className="cursor-pointer p-3 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-3"
                     onClick={() => setDetailId(lead.id)}
                   >
                     <p className="text-sm font-medium">{lead.name}</p>
                     {lead.company && (
-                      <p className="text-xs text-slate-400">{lead.company}</p>
+                      <p className="text-xs text-text-2">{lead.company}</p>
                     )}
                     {lead.phone && (
-                      <p className="mt-1 flex items-center gap-1 text-xs text-slate-500">
+                      <p className="mt-1 flex items-center gap-1 text-xs text-text-3">
                         <Phone className="h-3 w-3" /> {lead.phone}
                       </p>
                     )}
@@ -165,7 +165,7 @@ export default function CrmPage() {
             <Label htmlFor="l-notes">Notes</Label>
             <Input id="l-notes" value={form.notes} onChange={set("notes")} />
           </div>
-          {error && <p className="break-all text-sm text-red-400">{error}</p>}
+          {error && <p className="break-all text-sm text-danger">{error}</p>}
           <Button type="submit" className="w-full" disabled={createMutation.isPending}>
             {createMutation.isPending ? "Saving…" : "Create lead"}
           </Button>
@@ -224,7 +224,7 @@ function LeadDetail({
     >
       {lead && (
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-2 text-sm text-slate-300">
+          <div className="grid grid-cols-2 gap-2 text-sm text-text-2">
             <p>Company: {lead.company || "—"}</p>
             <p>Source: {lead.source || "—"}</p>
             <p>Email: {lead.email || "—"}</p>
@@ -234,7 +234,7 @@ function LeadDetail({
               Status: <Badge tone={lead.status === "won" ? "green" : lead.status === "lost" ? "red" : "manager"}>{lead.status}</Badge>
             </p>
           </div>
-          {lead.notes && <p className="text-sm text-slate-400">{lead.notes}</p>}
+          {lead.notes && <p className="text-sm text-text-2">{lead.notes}</p>}
 
           {lead.status !== "won" && lead.status !== "lost" && (
             <div className="flex gap-2">
@@ -247,11 +247,11 @@ function LeadDetail({
             </div>
           )}
           {lead.customer_id && (
-            <p className="text-sm text-emerald-400">
+            <p className="text-sm text-positive">
               Converted → customer #{lead.customer_id}
             </p>
           )}
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
 
           <div className="space-y-2">
             <Label>Activity log</Label>
@@ -283,10 +283,10 @@ function LeadDetail({
             </form>
             <ul className="max-h-48 space-y-2 overflow-y-auto text-sm">
               {(lead.activities ?? []).map((a) => (
-                <li key={a.id} className="rounded-md bg-slate-950 p-2">
-                  <span className="text-xs uppercase text-indigo-400">{a.type}</span>{" "}
+                <li key={a.id} className="rounded-md bg-surface-2 p-2">
+                  <span className="text-xs uppercase text-accent-strong">{a.type}</span>{" "}
                   {a.summary}
-                  <span className="ml-2 text-xs text-slate-500">
+                  <span className="ml-2 text-xs text-text-3">
                     {new Date(a.created_at).toLocaleString()} · {a.created_by_email}
                   </span>
                 </li>

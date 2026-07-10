@@ -87,7 +87,7 @@ export default function PartnersPage({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{title}</h1>
+        <div />
         {canCreate && (
           <Button onClick={() => openDialog("create")}>
             <Plus className="h-4 w-4" /> New {title.slice(0, -1).toLowerCase()}
@@ -103,7 +103,7 @@ export default function PartnersPage({
       />
 
       {isLoading ? (
-        <p className="text-slate-400">Loading…</p>
+        <p className="text-text-2">Loading…</p>
       ) : (
         <Table>
           <THead>
@@ -119,8 +119,8 @@ export default function PartnersPage({
             {data!.results.map((p) => (
               <tr key={p.id} className={!p.is_active ? "opacity-50" : undefined}>
                 <Td>{p.name}</Td>
-                <Td className="text-slate-400">{p.email || "—"}</Td>
-                <Td className="text-slate-400">{p.phone || "—"}</Td>
+                <Td className="text-text-2">{p.email || "—"}</Td>
+                <Td className="text-text-2">{p.phone || "—"}</Td>
                 <Td>
                   <Badge tone={p.is_active ? "green" : "red"}>
                     {p.is_active ? "active" : "inactive"}
@@ -137,7 +137,7 @@ export default function PartnersPage({
                         size="icon"
                         onClick={() => deactivateMutation.mutate(p.id)}
                       >
-                        <Trash2 className="h-4 w-4 text-red-400" />
+                        <Trash2 className="h-4 w-4 text-danger" />
                       </Button>
                     )}
                   </Td>
@@ -176,7 +176,7 @@ export default function PartnersPage({
             <Label htmlFor="p-notes">Notes</Label>
             <Input id="p-notes" value={form.notes} onChange={set("notes")} />
           </div>
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
           <Button type="submit" className="w-full" disabled={saveMutation.isPending}>
             {saveMutation.isPending ? "Saving…" : "Save"}
           </Button>

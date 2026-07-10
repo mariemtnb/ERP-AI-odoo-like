@@ -89,7 +89,7 @@ function TransferCard({
             required
             aria-label="transfer-quantity"
           />
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
           <Button type="submit" className="w-full" disabled={mutation.isPending}>
             {mutation.isPending ? "Transferring…" : "Transfer"}
           </Button>
@@ -154,7 +154,7 @@ export default function InventoryPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Inventory</h1>
+      <p className="text-sm text-text-3">Append-only movement ledger — every change is traceable.</p>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {canWrite && (
@@ -230,7 +230,7 @@ export default function InventoryPage() {
                     placeholder="e.g. initial stock, damage, recount…"
                   />
                 </div>
-                {error && <p className="text-sm text-red-400">{error}</p>}
+                {error && <p className="text-sm text-danger">{error}</p>}
                 <Button type="submit" className="w-full" disabled={mutation.isPending}>
                   {mutation.isPending ? "Saving…" : "Record"}
                 </Button>
@@ -254,16 +254,16 @@ export default function InventoryPage() {
           </CardHeader>
           <CardContent>
             {!lowStock || lowStock.count === 0 ? (
-              <p className="text-sm text-slate-400">No products below their minimum level.</p>
+              <p className="text-sm text-text-2">No products below their minimum level.</p>
             ) : (
-              <ul className="divide-y divide-slate-800 text-sm">
+              <ul className="divide-y divide-stroke-soft text-sm">
                 {lowStock.results.map((p) => (
                   <li key={p.id} className="flex justify-between py-2">
                     <span>
-                      <span className="font-mono text-xs text-slate-400">{p.sku}</span>{" "}
+                      <span className="font-mono text-xs text-text-2">{p.sku}</span>{" "}
                       {p.name}
                     </span>
-                    <span className="text-red-400">
+                    <span className="text-danger">
                       {Number(p.quantity_in_stock)} / min {Number(p.min_stock_level)}
                     </span>
                   </li>
@@ -277,7 +277,7 @@ export default function InventoryPage() {
       <div>
         <h2 className="mb-3 text-lg font-semibold">Movement history</h2>
         {isLoading ? (
-          <p className="text-slate-400">Loading…</p>
+          <p className="text-text-2">Loading…</p>
         ) : (
           <Table>
             <THead>
@@ -295,21 +295,21 @@ export default function InventoryPage() {
             <TBody>
               {movements!.results.map((m) => (
                 <tr key={m.id}>
-                  <Td className="whitespace-nowrap text-xs text-slate-400">
+                  <Td className="whitespace-nowrap text-xs text-text-2">
                     {new Date(m.created_at).toLocaleString()}
                   </Td>
                   <Td>
-                    <span className="font-mono text-xs text-slate-400">{m.product_sku}</span>{" "}
+                    <span className="font-mono text-xs text-text-2">{m.product_sku}</span>{" "}
                     {m.product_name}
                   </Td>
                   <Td>
                     <Badge tone={typeTone[m.movement_type]}>{m.movement_type}</Badge>
                   </Td>
                   <Td className="text-right">{Number(m.quantity)}</Td>
-                  <Td className="text-slate-400">{m.warehouse_name ?? "—"}</Td>
-                  <Td className="text-slate-400">{m.reason || "—"}</Td>
-                  <Td className="text-slate-400">{m.reference_type}</Td>
-                  <Td className="text-xs text-slate-400">{m.created_by_email}</Td>
+                  <Td className="text-text-2">{m.warehouse_name ?? "—"}</Td>
+                  <Td className="text-text-2">{m.reason || "—"}</Td>
+                  <Td className="text-text-2">{m.reference_type}</Td>
+                  <Td className="text-xs text-text-2">{m.created_by_email}</Td>
                 </tr>
               ))}
             </TBody>
