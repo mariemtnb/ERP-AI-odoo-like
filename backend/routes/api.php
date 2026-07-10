@@ -93,10 +93,24 @@ Route::prefix('v1')->group(function () {
 
         // --- dashboard & reports ---
         Route::get('dashboard/stats', [ReportingController::class, 'dashboard']);
+        Route::get('dashboard/forecast', [ReportingController::class, 'forecast']);
         Route::middleware('role:admin,manager')->group(function () {
             Route::get('reports/sales', [ReportingController::class, 'salesReport']);
             Route::get('reports/purchases', [ReportingController::class, 'purchasesReport']);
             Route::get('reports/stock', [ReportingController::class, 'stockReport']);
+        });
+
+        // --- OCR: invoice image → structured data (managers/admins) ---
+        Route::middleware('role:admin,manager')->group(function () {
+            Route::post('ocr/invoice', [\App\Http\Controllers\OcrController::class, 'invoice']);
+        });
+
+        // --- documents (RAG): all read/search; managers/admins manage ---
+        Route::get('documents', [\App\Http\Controllers\DocumentController::class, 'index']);
+        Route::get('documents/search', [\App\Http\Controllers\DocumentController::class, 'search']);
+        Route::middleware('role:admin,manager')->group(function () {
+            Route::post('documents', [\App\Http\Controllers\DocumentController::class, 'store']);
+            Route::delete('documents/{title}', [\App\Http\Controllers\DocumentController::class, 'destroy']);
         });
 
         // --- AI assistant ---

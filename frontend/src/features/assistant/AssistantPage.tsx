@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Bot, Check, Send, Wrench, X } from "lucide-react";
+import { Bot, Check, Mic, MicOff, Send, Wrench, X } from "lucide-react";
 import {
   sendApproval,
   sendMessage,
@@ -12,6 +12,36 @@ import { cn } from "@/lib/utils";
 
 let nextLocalId = -1;
 
+/** Voice input via the browser's Web Speech API (Chrome/Edge). */
+function useSpeech(onResult: (text: string) => void) {
+  const [listening, setListening] = useState(false);
+  const recRef = useRef<any>(null);
+  const supported =
+    typeof window !== "undefined" &&
+    ("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
+
+  function toggle() {
+    if (!supported) return;
+    if (listening) {
+      recRef.current?.stop();
+      return;
+    }
+    const SR = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
+    const rec = new SR();
+    rec.lang = navigator.language.startsWith("fr") ? "fr-FR" : "en-US";
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+    rec.onresult = (e: any) => onResult(e.results[0][0].transcript);
+    rec.onend = () => setListening(false);
+    rec.onerror = () => setListening(false);
+    recRef.current = rec;
+    setListening(true);
+    rec.start();
+  }
+
+  return { supported, listening, toggle };
+}
+
 export default function AssistantPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [conversationId, setConversationId] = useState<number | undefined>();
@@ -19,6 +49,7 @@ export default function AssistantPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
+  const speech = useSpeech((text) => setInput((v) => (v ? v + " " : "") + text));
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -130,6 +161,16 @@ export default function AssistantPage() {
           placeholder="Ask the assistant…"
           disabled={busy}
         />
+        {speech.supported && (
+          <Button
+            type="button"
+            variant={speech.listening ? "destructive" : "secondary"}
+            onClick={speech.toggle}
+            title={speech.listening ? "Stop listening" : "Speak your request"}
+          >
+            {speech.listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+          </Button>
+        )}
         <Button type="submit" disabled={busy || !input.trim()}>
           <Send className="h-4 w-4" />
         </Button>

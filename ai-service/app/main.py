@@ -4,7 +4,7 @@ import os
 import re
 
 import httpx
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, File, Header, HTTPException, UploadFile
 from langgraph.types import Command
 from pydantic import BaseModel
 
@@ -80,6 +80,41 @@ def resume(body: ResumeRequest, authorization: str | None = Header(default=None)
     token = _token_from(authorization)
     agent = get_agent(token)
     return _run(agent, Command(resume={"approved": body.approved}), body.thread_id)
+
+
+class EmbedRequest(BaseModel):
+    texts: list[str]
+
+
+@app.post("/embed")
+def embed(body: EmbedRequest, authorization: str | None = Header(default=None)):
+    """Embeddings for RAG (nomic-embed-text, 768 dims), local via Ollama."""
+    _token_from(authorization)
+    if not body.texts or len(body.texts) > 64:
+        raise HTTPException(status_code=422, detail="1–64 texts per request.")
+    r = httpx.post(
+        f"{OLLAMA_BASE_URL}/api/embed",
+        json={"model": os.environ.get("OLLAMA_EMBED_MODEL", "nomic-embed-text"), "input": body.texts},
+        timeout=120,
+    )
+    r.raise_for_status()
+    return {"embeddings": r.json()["embeddings"]}
+
+
+@app.post("/extract-invoice")
+async def extract_invoice_endpoint(
+    file: UploadFile = File(...),
+    authorization: str | None = Header(default=None),
+):
+    _token_from(authorization)  # only authenticated ERP users may use OCR
+    from app.ocr import extract_invoice
+
+    if file.content_type not in ("image/png", "image/jpeg", "image/webp"):
+        raise HTTPException(status_code=422, detail="Send a PNG/JPEG/WebP image of the invoice.")
+    data = await file.read()
+    if len(data) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Image too large (max 10 MB).")
+    return extract_invoice(data)
 
 
 @app.get("/health")

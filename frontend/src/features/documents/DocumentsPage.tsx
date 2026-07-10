@@ -1,7 +1,7 @@
-import { useMemo, useState, type FormEvent } from "react";
+import { useMemo, useRef, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FileText, Plus, Trash2 } from "lucide-react";
-import { documentsApi } from "@/api/documents";
+import { FileText, Plus, ScanLine, Trash2 } from "lucide-react";
+import { documentsApi, extractInvoice } from "@/api/documents";
 import { downloadInvoice, generateInvoice } from "@/api/reports";
 import { listProducts } from "@/api/catalog";
 import { partnersApi } from "@/api/partners";
@@ -69,6 +69,43 @@ export default function DocumentsPage({
   ]);
   const [error, setError] = useState("");
   const [actionError, setActionError] = useState("");
+  const [scanning, setScanning] = useState(false);
+  const [scanNote, setScanNote] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  async function onInvoiceFile(file: File) {
+    setScanning(true);
+    setScanNote("");
+    setError("");
+    try {
+      const data = await extractInvoice(file);
+      if (data.error) throw new Error(data.error);
+      setPartner(data.matched_supplier_id ? String(data.matched_supplier_id) : "");
+      setLines(
+        (data.lines?.length ? data.lines : []).map((l) => ({
+          product: "",
+          quantity: String(l.quantity || 1),
+          unit_price: String(l.unit_price ?? ""),
+        }))
+      );
+      const hints = (data.lines ?? []).map((l) => l.description).join(" · ");
+      setScanNote(
+        `Extracted from ${data.supplier_name ?? "unknown supplier"}` +
+          (data.invoice_number ? ` (${data.invoice_number})` : "") +
+          (hints ? ` — lines: ${hints}` : "") +
+          ". Match each line to a product below."
+      );
+      setCreateOpen(true);
+    } catch (e: any) {
+      setScanNote("");
+      setError(
+        e?.response?.data?.detail ?? e?.message ?? "Invoice extraction failed."
+      );
+      setCreateOpen(true);
+    } finally {
+      setScanning(false);
+    }
+  }
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: [kind] });
@@ -139,9 +176,34 @@ export default function DocumentsPage({
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{title}</h1>
         {canWrite && (
-          <Button onClick={() => { setError(""); setCreateOpen(true); }}>
-            <Plus className="h-4 w-4" /> New {isPurchase ? "purchase order" : "sale"}
-          </Button>
+          <div className="flex gap-2">
+            {isPurchase && (
+              <>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) void onInvoiceFile(f);
+                    e.target.value = "";
+                  }}
+                />
+                <Button
+                  variant="outline"
+                  disabled={scanning}
+                  onClick={() => fileRef.current?.click()}
+                >
+                  <ScanLine className="h-4 w-4" />
+                  {scanning ? "Reading invoice…" : "Import from invoice"}
+                </Button>
+              </>
+            )}
+            <Button onClick={() => { setError(""); setScanNote(""); setCreateOpen(true); }}>
+              <Plus className="h-4 w-4" /> New {isPurchase ? "purchase order" : "sale"}
+            </Button>
+          </div>
         )}
       </div>
 
@@ -190,6 +252,11 @@ export default function DocumentsPage({
         className="max-w-2xl"
       >
         <form onSubmit={submit} className="space-y-4">
+          {scanNote && (
+            <p className="rounded-md border border-indigo-500/40 bg-indigo-500/10 p-2 text-xs text-indigo-300">
+              {scanNote}
+            </p>
+          )}
           <div className="space-y-1.5">
             <Label htmlFor="doc-partner">{isPurchase ? "Supplier" : "Customer"}</Label>
             <Select

@@ -55,6 +55,13 @@ the dev Ollama volume so the model is not downloaded twice.
 
 Seed demo data: `docker compose -f docker-compose.prod.yml -p erp-prod exec backend php artisan db:seed --class=DemoSeeder --force`
 
+## Troubleshooting
+
+- **Text lookups fail after changing the Postgres image** (e.g. login says
+  "no active account" although the user exists): alpine (musl) and debian
+  (glibc) images collate text differently, corrupting btree indexes on text
+  columns. Fix: `docker compose exec db psql -U erp -d erp -c "REINDEX DATABASE erp;"`
+
 ## Repository layout
 
 ```

@@ -2,7 +2,8 @@ name: erp-ai
 
 services:
   db:
-    image: postgres:16-alpine
+    # postgres 16 + pgvector extension (RAG embeddings); drop-in replacement.
+    image: pgvector/pgvector:pg16
     env_file: .env
     volumes:
       - pgdata:/var/lib/postgresql/data

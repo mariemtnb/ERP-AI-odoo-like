@@ -104,6 +104,19 @@ def build_tools(token: str) -> list:
         return _fmt(http.get("/reports/sales/", params=params))
 
     @tool
+    def get_sales_forecast() -> dict:
+        """Predictive analytics: 14-day revenue projection (trend over the
+        last 30 days) and per-product estimated days until stockout."""
+        return _fmt(http.get("/dashboard/forecast/"))
+
+    @tool
+    def search_documents(query: str) -> dict:
+        """Semantic search in the company's document base (contracts, notes,
+        policies…). Returns the most relevant passages with similarity scores.
+        Use this when the user asks about company documents or policies."""
+        return _fmt(http.get("/documents/search", params={"q": query}))
+
+    @tool
     def get_stock_report() -> dict:
         """Full stock report: every active product with quantity and stock
         value. Requires manager or admin role."""
@@ -231,7 +244,7 @@ def build_tools(token: str) -> list:
     return [
         search_product, get_low_stock_products, search_customer, search_supplier,
         get_customer_history, get_dashboard_statistics, get_sales_report,
-        get_stock_report, list_recent_sales,
+        get_sales_forecast, get_stock_report, list_recent_sales, search_documents,
         create_customer, update_customer, create_supplier, create_product,
         update_stock, create_purchase_order, create_sale, confirm_sale,
         generate_invoice,
