@@ -40,6 +40,21 @@ user's JWT, so RBAC applies to the agent exactly as to the UI. Write actions
 (create customer/sale, update stock…) pause for explicit user approval in the
 chat, and every executed tool call is recorded in the audit log.
 
+## Production
+
+```bash
+docker compose -f docker-compose.prod.yml -p erp-prod up -d --build
+```
+
+Single exposed port: **http://localhost:8080** (nginx serves the built React
+app and proxies `/api` to the backend — same origin, no CORS). The backend
+runs on FrankenPHP with cached config/routes and `APP_DEBUG=false`; db,
+ollama and the AI service are internal-only. Secrets (`APP_KEY`, `JWT_SECRET`,
+DB password) come from `.env`, never baked into images. The prod stack reuses
+the dev Ollama volume so the model is not downloaded twice.
+
+Seed demo data: `docker compose -f docker-compose.prod.yml -p erp-prod exec backend php artisan db:seed --class=DemoSeeder --force`
+
 ## Repository layout
 
 ```

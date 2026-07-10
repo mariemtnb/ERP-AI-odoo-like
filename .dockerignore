@@ -1,0 +1,17 @@
+.git
+docs
+diagrams
+ollama_data
+
+# Laravel: never bake secrets or host vendor into images
+backend/.env
+backend/vendor
+backend/storage/logs/*
+backend/node_modules
+
+# Frontend
+frontend/node_modules
+frontend/dist
+
+# AI service
+ai-service/__pycache__
