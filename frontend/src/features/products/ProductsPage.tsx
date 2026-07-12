@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Package, Pencil, Plus, Trash2 } from "lucide-react";
 import {
   createCategory,
   createProduct,
@@ -13,7 +13,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import { TableSkeleton } from "@/components/ui/skeleton";
 import { Table, TBody, Td, Th, THead } from "@/components/ui/table";
 import { useAuth } from "@/features/auth/AuthContext";
 import type { Product } from "@/types";
@@ -86,7 +88,24 @@ export default function ProductsPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-text-2">Loading products…</p>
+        <TableSkeleton rows={5} />
+      ) : data!.results.length === 0 ? (
+        <EmptyState
+          icon={Package}
+          title={search ? "No products match your search" : "No products yet"}
+          hint={
+            search
+              ? "Try a different SKU or name."
+              : "Create your first product to start tracking stock and sales."
+          }
+          action={
+            canWrite && !search ? (
+              <Button onClick={() => { setError(""); setDialog("create"); }}>
+                <Plus className="h-4 w-4" /> New product
+              </Button>
+            ) : undefined
+          }
+        />
       ) : (
         <Table>
           <THead>

@@ -1,11 +1,14 @@
 import { useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { History } from "lucide-react";
 import { createMovement, listMovements } from "@/api/inventory";
 import { listProducts } from "@/api/catalog";
 import { listWarehouses, transferStock } from "@/api/crm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { TableSkeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -277,7 +280,13 @@ export default function InventoryPage() {
       <div>
         <h2 className="mb-3 text-lg font-semibold">Movement history</h2>
         {isLoading ? (
-          <p className="text-text-2">Loading…</p>
+          <TableSkeleton rows={6} />
+        ) : movements!.results.length === 0 ? (
+          <EmptyState
+            icon={History}
+            title="No movements yet"
+            hint="Record a stock-in, receive a purchase order, or confirm a sale — every change lands here, permanently."
+          />
         ) : (
           <Table>
             <THead>

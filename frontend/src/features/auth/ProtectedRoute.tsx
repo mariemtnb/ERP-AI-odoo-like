@@ -7,8 +7,8 @@ export function ProtectedRoute({ roles }: { roles?: Role[] }) {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-surface-2 text-text-2">
-        Loading…
+      <div className="flex min-h-dvh items-center justify-center bg-bg">
+        <span className="h-6 w-6 animate-spin rounded-full border-2 border-stroke border-t-accent" />
       </div>
     );
   }

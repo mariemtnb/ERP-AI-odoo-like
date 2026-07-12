@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Download } from "lucide-react";
+import { Download, FileSearch } from "lucide-react";
 import { downloadReportPdf, getReport } from "@/api/reports";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Segmented } from "@/components/ui/segmented";
+import { TableSkeleton } from "@/components/ui/skeleton";
 import { Table, TBody, Td, Th, THead } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
@@ -36,43 +39,39 @@ export default function ReportsPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <div />
+        <div className="flex flex-wrap items-end gap-4">
+          <Segmented
+            id="report-kind"
+            options={kinds.map((k) => ({ value: k.key, label: k.label }))}
+            value={kind}
+            onChange={setKind}
+          />
+          {dated && (
+            <>
+              <div className="space-y-1.5">
+                <Label htmlFor="r-from">From</Label>
+                <Input id="r-from" type="date" className="w-40" value={from} onChange={(e) => setFrom(e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="r-to">To</Label>
+                <Input id="r-to" type="date" className="w-40" value={to} onChange={(e) => setTo(e.target.value)} />
+              </div>
+            </>
+          )}
+        </div>
         <Button onClick={() => downloadReportPdf(kind, params)}>
           <Download className="h-4 w-4" /> Export PDF
         </Button>
       </div>
 
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="flex rounded-md border border-stroke-soft p-1">
-          {kinds.map((k) => (
-            <button
-              key={k.key}
-              onClick={() => setKind(k.key)}
-              className={cn(
-                "rounded px-4 py-1.5 text-sm",
-                kind === k.key ? "bg-accent text-bg" : "text-text-2 hover:text-text"
-              )}
-            >
-              {k.label}
-            </button>
-          ))}
-        </div>
-        {dated && (
-          <>
-            <div className="space-y-1">
-              <Label htmlFor="r-from">From</Label>
-              <Input id="r-from" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="r-to">To</Label>
-              <Input id="r-to" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
-            </div>
-          </>
-        )}
-      </div>
-
       {isLoading || !data ? (
-        <p className="text-text-2">Loading…</p>
+        <TableSkeleton rows={6} />
+      ) : data.rows.length === 0 ? (
+        <EmptyState
+          icon={FileSearch}
+          title="Nothing in this period"
+          hint="Widen the date range, or come back once documents exist for this report."
+        />
       ) : kind === "stock" ? (
         <>
           <Table>

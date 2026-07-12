@@ -8,6 +8,8 @@ import { partnersApi } from "@/api/partners";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
+import { EmptyState } from "@/components/ui/empty-state";
+import { TableSkeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -213,7 +215,24 @@ export default function DocumentsPage({
       </div>
 
       {isLoading ? (
-        <p className="text-text-2">Loading…</p>
+        <TableSkeleton rows={5} />
+      ) : data!.results.length === 0 ? (
+        <EmptyState
+          icon={isPurchase ? ScanLine : FileText}
+          title={`No ${title.toLowerCase()} yet`}
+          hint={
+            isPurchase
+              ? "Create a purchase order — or import one straight from an invoice photo."
+              : "Record your first sale; confirming it moves stock automatically."
+          }
+          action={
+            canWrite ? (
+              <Button onClick={() => { setError(""); setScanNote(""); setCreateOpen(true); }}>
+                <Plus className="h-4 w-4" /> New {isPurchase ? "purchase order" : "sale"}
+              </Button>
+            ) : undefined
+          }
+        />
       ) : (
         <Table>
           <THead>
