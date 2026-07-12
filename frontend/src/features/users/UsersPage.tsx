@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/api/client";
 import { Badge } from "@/components/ui/badge";
+import { TableSkeleton } from "@/components/ui/skeleton";
 import { Table, TBody, Td, Th, THead } from "@/components/ui/table";
 import type { Paginated, User } from "@/types";
 
@@ -11,7 +12,7 @@ export default function UsersPage() {
       (await api.get<Paginated<User>>("/users/")).data,
   });
 
-  if (isLoading) return <p className="text-text-2">Loading users…</p>;
+  if (isLoading) return <TableSkeleton rows={4} />;
   if (error) return <p className="text-danger">Failed to load users.</p>;
 
   return (

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, Phone, Plus, UserCheck } from "lucide-react";
+import { ArrowRight, Contact, Phone, Plus, UserCheck } from "lucide-react";
 import {
   addLeadActivity,
   convertLead,
@@ -13,6 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -89,7 +91,25 @@ export default function CrmPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-text-2">Loading…</p>
+        <div className="grid gap-4 lg:grid-cols-5">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="space-y-3">
+              <Skeleton className="h-6 w-20 rounded-full" />
+              <Skeleton className="h-24" />
+            </div>
+          ))}
+        </div>
+      ) : leads.length === 0 ? (
+        <EmptyState
+          icon={Contact}
+          title="Your pipeline is empty"
+          hint="Add your first lead — track calls and meetings, then convert winners into customers."
+          action={
+            <Button onClick={() => { setError(""); setCreateOpen(true); }}>
+              <Plus className="h-4 w-4" /> New lead
+            </Button>
+          }
+        />
       ) : (
         <div className="grid gap-4 lg:grid-cols-5">
           {COLUMNS.map((col) => {

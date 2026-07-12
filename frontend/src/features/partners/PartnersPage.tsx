@@ -1,12 +1,14 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2, Truck, UserSquare2 } from "lucide-react";
 import { partnersApi } from "@/api/partners";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TableSkeleton } from "@/components/ui/skeleton";
 import { Table, TBody, Td, Th, THead } from "@/components/ui/table";
 import { useAuth } from "@/features/auth/AuthContext";
 import type { Partner } from "@/types";
@@ -103,7 +105,24 @@ export default function PartnersPage({
       />
 
       {isLoading ? (
-        <p className="text-text-2">Loading…</p>
+        <TableSkeleton rows={5} />
+      ) : data!.results.length === 0 ? (
+        <EmptyState
+          icon={kind === "customers" ? UserSquare2 : Truck}
+          title={search ? "No matches" : `No ${title.toLowerCase()} yet`}
+          hint={
+            search
+              ? "Try a different name, email or phone."
+              : `Add your first ${title.slice(0, -1).toLowerCase()} to start building history.`
+          }
+          action={
+            canCreate && !search ? (
+              <Button onClick={() => openDialog("create")}>
+                <Plus className="h-4 w-4" /> New {title.slice(0, -1).toLowerCase()}
+              </Button>
+            ) : undefined
+          }
+        />
       ) : (
         <Table>
           <THead>
