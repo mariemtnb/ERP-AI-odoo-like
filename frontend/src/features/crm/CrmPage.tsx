@@ -12,6 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Tooltip } from "@/components/ui/tooltip";
 import { Dialog } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -136,6 +137,7 @@ export default function CrmPage() {
                       </p>
                     )}
                     {NEXT[lead.status] && (
+                      <Tooltip label="Move this person one step closer to becoming a customer" className="w-full">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -147,6 +149,7 @@ export default function CrmPage() {
                       >
                         <ArrowRight className="h-3 w-3" /> {NEXT[lead.status]}
                       </Button>
+                      </Tooltip>
                     )}
                   </Card>
                 ))}

@@ -7,6 +7,7 @@ import {
   type ChatMessage,
 } from "@/api/assistant";
 import { Button } from "@/components/ui/button";
+import { Tooltip } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -221,19 +222,23 @@ export default function AssistantPage() {
           className="border-0 bg-transparent shadow-none hover:shadow-none focus:shadow-none"
         />
         {speech.supported && (
-          <Button
-            type="button"
-            size="icon"
-            variant={speech.listening ? "destructive" : "ghost"}
-            onClick={speech.toggle}
-            title={speech.listening ? "Stop listening" : "Speak your request"}
-          >
-            {speech.listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-          </Button>
+          <Tooltip label={speech.listening ? "Stop listening" : "Talk instead of typing — click, then speak"}>
+            <Button
+              type="button"
+              size="icon"
+              variant={speech.listening ? "destructive" : "ghost"}
+              onClick={speech.toggle}
+              aria-label={speech.listening ? "Stop listening" : "Speak your request"}
+            >
+              {speech.listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            </Button>
+          </Tooltip>
         )}
-        <Button type="submit" size="icon" disabled={busy || !input.trim()} aria-label="Send">
-          <Send className="h-4 w-4" />
-        </Button>
+        <Tooltip label="Send your question">
+          <Button type="submit" size="icon" disabled={busy || !input.trim()} aria-label="Send">
+            <Send className="h-4 w-4" />
+          </Button>
+        </Tooltip>
       </form>
     </div>
   );

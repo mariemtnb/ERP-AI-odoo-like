@@ -7,6 +7,7 @@ import {
   Truck, Users, UserSquare2,
 } from "lucide-react";
 import { CommandPalette } from "@/components/CommandPalette";
+import { Tooltip } from "@/components/ui/tooltip";
 import { useAuth } from "@/features/auth/AuthContext";
 import { cn } from "@/lib/utils";
 import type { Role } from "@/types";
@@ -15,41 +16,46 @@ type NavItem = {
   to: string;
   label: string;
   icon: typeof Users;
+  desc: string; // plain-language hover help
   roles?: Role[];
 };
 
 const SECTIONS: { title: string; items: NavItem[] }[] = [
   {
     title: "Overview",
-    items: [{ to: "/", label: "Dashboard", icon: LayoutDashboard }],
+    items: [
+      { to: "/", label: "Dashboard", icon: LayoutDashboard, desc: "See how the business is doing: money earned, sales and stock alerts" },
+    ],
   },
   {
     title: "Operations",
     items: [
-      { to: "/products", label: "Products", icon: Package },
-      { to: "/inventory", label: "Inventory", icon: Boxes },
-      { to: "/purchases", label: "Purchases", icon: ShoppingBag },
-      { to: "/suppliers", label: "Suppliers", icon: Truck },
+      { to: "/products", label: "Products", icon: Package, desc: "The list of things you sell — names, prices and stock" },
+      { to: "/inventory", label: "Inventory", icon: Boxes, desc: "Add or remove stock, and see the history of every change" },
+      { to: "/purchases", label: "Purchases", icon: ShoppingBag, desc: "Order goods from your suppliers and receive them into stock" },
+      { to: "/suppliers", label: "Suppliers", icon: Truck, desc: "The companies you buy from — names and contact details" },
     ],
   },
   {
     title: "Revenue",
     items: [
-      { to: "/sales", label: "Sales", icon: ShoppingCart },
-      { to: "/customers", label: "Customers", icon: UserSquare2 },
-      { to: "/crm", label: "CRM", icon: Contact },
+      { to: "/sales", label: "Sales", icon: ShoppingCart, desc: "Record what you sell and print invoices" },
+      { to: "/customers", label: "Customers", icon: UserSquare2, desc: "The people and companies who buy from you" },
+      { to: "/crm", label: "CRM", icon: Contact, desc: "Keep track of possible future customers and follow up with them" },
     ],
   },
   {
     title: "Intelligence",
     items: [
-      { to: "/assistant", label: "AI Assistant", icon: MessageSquare },
-      { to: "/reports", label: "Reports", icon: FileText, roles: ["admin", "manager"] },
+      { to: "/assistant", label: "AI Assistant", icon: MessageSquare, desc: "Ask questions in your own words — it answers and can do tasks for you" },
+      { to: "/reports", label: "Reports", icon: FileText, desc: "Printable summaries of sales, purchases and stock", roles: ["admin", "manager"] },
     ],
   },
   {
     title: "Administration",
-    items: [{ to: "/users", label: "Users", icon: Users, roles: ["admin"] }],
+    items: [
+      { to: "/users", label: "Users", icon: Users, desc: "Who can log in, and what each person is allowed to do", roles: ["admin"] },
+    ],
   },
 ];
 
@@ -128,9 +134,10 @@ export default function Layout() {
                   </p>
                 )}
                 <ul className="space-y-0.5">
-                  {items.map(({ to, label, icon: Icon }) => (
+                  {items.map(({ to, label, icon: Icon, desc }) => (
                     <li key={to}>
-                      <NavLink to={to} end={to === "/"} title={collapsed ? label : undefined}>
+                      <Tooltip label={collapsed ? `${label} — ${desc}` : desc} side="right" className="w-full">
+                      <NavLink to={to} end={to === "/"} className="w-full">
                         {({ isActive }) => (
                           <span
                             className={cn(
@@ -159,6 +166,7 @@ export default function Layout() {
                           </span>
                         )}
                       </NavLink>
+                      </Tooltip>
                     </li>
                   ))}
                 </ul>
@@ -168,10 +176,15 @@ export default function Layout() {
         </nav>
 
         {/* collapse toggle */}
+        <Tooltip
+          label={collapsed ? "Show the full menu again" : "Shrink the menu to make more room"}
+          side="right"
+          className="mx-3 mb-3"
+        >
         <button
           onClick={() => setCollapsed((v) => !v)}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="mx-3 mb-3 flex items-center justify-center gap-2 rounded-lg py-2 text-text-3
+          className="flex w-full items-center justify-center gap-2 rounded-lg py-2 text-text-3
                      transition-colors duration-150 hover:bg-white/[0.035] hover:text-text"
         >
           <motion.span animate={{ rotate: collapsed ? 180 : 0 }} transition={{ duration: 0.25 }}>
@@ -179,6 +192,7 @@ export default function Layout() {
           </motion.span>
           {!collapsed && <span className="text-xs font-medium">Collapse</span>}
         </button>
+        </Tooltip>
       </motion.aside>
 
       {/* ───────────── main column ───────────── */}
@@ -190,6 +204,7 @@ export default function Layout() {
           </h1>
 
           {/* global search */}
+          <Tooltip label="Jump to any page — just start typing what you need" side="bottom">
           <button
             onClick={() => setPaletteOpen(true)}
             className="group hidden h-9 items-center gap-2.5 rounded-md bg-surface-2 pl-3 pr-2 text-sm text-text-3
@@ -202,8 +217,10 @@ export default function Layout() {
               ⌘K
             </kbd>
           </button>
+          </Tooltip>
 
           {/* ask AI */}
+          <Tooltip label="Your helper: ask anything in plain words, like “what sold best this month?”" side="bottom">
           <button
             onClick={() => navigate("/assistant")}
             className="flex h-9 items-center gap-2 rounded-md bg-accent/[0.12] px-3.5 text-sm font-medium text-accent-strong
@@ -213,24 +230,27 @@ export default function Layout() {
             <Sparkles className="h-3.5 w-3.5" />
             <span className="hidden md:inline">Ask AI</span>
           </button>
+          </Tooltip>
 
           {/* user */}
           <div className="flex items-center gap-2.5 pl-1.5">
-            <div
-              title={`${user?.email} · ${user?.role}`}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-3 text-xs font-semibold text-text
-                         shadow-[inset_0_0_0_1px_hsl(var(--stroke))]"
-            >
-              {initials}
-            </div>
-            <button
-              onClick={logout}
-              aria-label="Sign out"
-              title="Sign out"
-              className="rounded-md p-2 text-text-3 transition-colors duration-150 hover:bg-surface-3 hover:text-text"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
+            <Tooltip label={`You are signed in as ${user?.email} (${user?.role})`} side="bottom">
+              <div
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-3 text-xs font-semibold text-text
+                           shadow-[inset_0_0_0_1px_hsl(var(--stroke))]"
+              >
+                {initials}
+              </div>
+            </Tooltip>
+            <Tooltip label="Sign out of the app" side="bottom">
+              <button
+                onClick={logout}
+                aria-label="Sign out"
+                className="rounded-md p-2 text-text-3 transition-colors duration-150 hover:bg-surface-3 hover:text-text"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            </Tooltip>
           </div>
         </header>
 
