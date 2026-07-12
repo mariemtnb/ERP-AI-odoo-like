@@ -157,7 +157,10 @@ export default function InventoryPage() {
 
   return (
     <div className="space-y-6">
-      <p className="text-sm text-text-3">Append-only movement ledger — every change is traceable.</p>
+      <p className="text-sm text-text-3">
+        Every time stock goes up or down it is written here — nothing is ever erased,
+        so you can always see who changed what, and why.
+      </p>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {canWrite && (
@@ -193,9 +196,9 @@ export default function InventoryPage() {
                         setForm((f) => ({ ...f, movement_type: e.target.value }))
                       }
                     >
-                      <option value="in">Stock in</option>
-                      <option value="out">Stock out</option>
-                      <option value="adjustment">Adjustment (±)</option>
+                      <option value="in">Add stock (goods arrived)</option>
+                      <option value="out">Remove stock (goods left)</option>
+                      <option value="adjustment">Fix a counting mistake (±)</option>
                     </Select>
                   </div>
                   <div className="space-y-1.5">
@@ -230,7 +233,7 @@ export default function InventoryPage() {
                     id="reason"
                     value={form.reason}
                     onChange={(e) => setForm((f) => ({ ...f, reason: e.target.value }))}
-                    placeholder="e.g. initial stock, damage, recount…"
+                    placeholder="Why? e.g. delivery arrived, item damaged…"
                   />
                 </div>
                 {error && <p className="text-sm text-danger">{error}</p>}

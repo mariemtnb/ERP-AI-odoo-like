@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus, Trash2, Truck, UserSquare2 } from "lucide-react";
 import { partnersApi } from "@/api/partners";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -147,17 +148,22 @@ export default function PartnersPage({
                 </Td>
                 {canModify && (
                   <Td className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => openDialog(p)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    {p.is_active && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => deactivateMutation.mutate(p.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-danger" />
+                    <Tooltip label="Change the contact details">
+                      <Button variant="ghost" size="icon" aria-label="Edit" onClick={() => openDialog(p)}>
+                        <Pencil className="h-4 w-4" />
                       </Button>
+                    </Tooltip>
+                    {p.is_active && (
+                      <Tooltip label="Hide this contact (their history is kept)">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label="Deactivate"
+                          onClick={() => deactivateMutation.mutate(p.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-danger" />
+                        </Button>
+                      </Tooltip>
                     )}
                   </Td>
                 )}

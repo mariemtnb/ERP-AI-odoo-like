@@ -111,7 +111,7 @@ export function ProductForm({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="min_stock_level">Min stock level</Label>
+          <Label htmlFor="min_stock_level">Alert me when stock falls below</Label>
           <Input
             id="min_stock_level"
             type="number"

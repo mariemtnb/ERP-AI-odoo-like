@@ -11,6 +11,7 @@ import {
   updateProduct,
 } from "@/api/catalog";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -139,21 +140,27 @@ export default function ProductsPage() {
                 </Td>
                 {canWrite && (
                   <Td className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => { setError(""); setDialog(p); }}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    {p.is_active && (
+                    <Tooltip label="Change this product's name, price or details">
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => deactivateMutation.mutate(p.id)}
+                        aria-label="Edit product"
+                        onClick={() => { setError(""); setDialog(p); }}
                       >
-                        <Trash2 className="h-4 w-4 text-danger" />
+                        <Pencil className="h-4 w-4" />
                       </Button>
+                    </Tooltip>
+                    {p.is_active && (
+                      <Tooltip label="Hide this product from the catalog (its history is kept)">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label="Deactivate product"
+                          onClick={() => deactivateMutation.mutate(p.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-danger" />
+                        </Button>
+                      </Tooltip>
                     )}
                   </Td>
                 )}
