@@ -1,0 +1,76 @@
+/* ============================================================
+   COLORS — Intelligent ERP
+   Dark-mode first. Warm charcoal surfaces, emerald accent.
+   No pure black, no pure white, no oversaturated hues.
+   ============================================================ */
+:root {
+  /* --- Neutral ramp (warm charcoal, slight green undertone) --- */
+  --charcoal-950: #0b0d0c; /* app background */
+  --charcoal-925: #0f1211; /* deep panel */
+  --charcoal-900: #131615; /* base surface */
+  --charcoal-850: #191d1b; /* raised surface / card */
+  --charcoal-800: #1f2422; /* hover surface */
+  --charcoal-750: #272d2a; /* border strong */
+  --charcoal-700: #313835; /* border / divider */
+  --charcoal-600: #495049; /* disabled / faint */
+  --charcoal-500: #6b736f; /* muted text */
+  --charcoal-400: #8b938e; /* secondary text */
+  --charcoal-300: #aab2ad; /* tertiary/body-dim */
+  --charcoal-200: #ccd2ce; /* body */
+  --charcoal-100: #e6eae7; /* strong text */
+  --charcoal-50:  #f4f6f4; /* near-white text */
+
+  /* --- Emerald accent ramp --- */
+  --emerald-700: #047857;
+  --emerald-600: #059669;
+  --emerald-500: #10b981; /* primary */
+  --emerald-400: #34d399; /* accent / focus glow */
+  --emerald-300: #6ee7b7;
+  --emerald-glow: rgba(16, 185, 129, 0.16);
+
+  /* --- Semantic status --- */
+  --amber-400: #fbbf24;
+  --amber-glow: rgba(251, 191, 36, 0.14);
+  --rose-400: #fb7185;
+  --rose-glow: rgba(251, 113, 133, 0.14);
+  --sky-400: #38bdf8;
+  --sky-glow: rgba(56, 189, 248, 0.14);
+  --violet-400: #a78bfa;
+  --violet-glow: rgba(167, 139, 250, 0.14);
+
+  /* ============ SEMANTIC ALIASES ============ */
+  --bg-app: var(--charcoal-950);
+  --bg-panel: var(--charcoal-925);
+  --surface: var(--charcoal-900);
+  --surface-card: var(--charcoal-850);
+  --surface-hover: var(--charcoal-800);
+  --surface-inset: var(--charcoal-925);
+
+  --border: var(--charcoal-700);
+  --border-subtle: color-mix(in oklab, var(--charcoal-700) 55%, transparent);
+  --border-strong: var(--charcoal-750);
+  --border-focus: var(--emerald-400);
+
+  --text-strong: var(--charcoal-50);
+  --text-body: var(--charcoal-200);
+  --text-muted: var(--charcoal-400);
+  --text-faint: var(--charcoal-500);
+  --text-on-accent: #04140d;
+
+  --accent: var(--emerald-500);
+  --accent-hover: var(--emerald-400);
+  --accent-quiet: var(--emerald-glow);
+  --accent-text: var(--emerald-400);
+
+  --success: var(--emerald-400);
+  --success-quiet: var(--emerald-glow);
+  --warning: var(--amber-400);
+  --warning-quiet: var(--amber-glow);
+  --danger: var(--rose-400);
+  --danger-quiet: var(--rose-glow);
+  --info: var(--sky-400);
+  --info-quiet: var(--sky-glow);
+
+  /* Ambient accent wash for hero surfaces */
+  --wash-emerald: radial-gradient(120% 120% at 0% 0%, rgba(16,185,129,0.10), transparent 55%); /* @kind other */
+}

@@ -1,0 +1,13 @@
+<!-- @dsCard group="Spacing" viewport="700x150" name="Motion" subtitle="Easing curves & durations" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css">
+<style>body{margin:0;background:var(--bg-app);font-family:var(--font-sans);padding:24px;color:var(--text-body)}
+.track{position:relative;height:26px;margin:6px 0;border-radius:99px;background:var(--surface-hover)}
+.ball{position:absolute;top:5px;left:4px;width:16px;height:16px;border-radius:99px;background:var(--emerald-400)}
+.l{font:500 11px/1 var(--font-mono);color:var(--text-faint);display:inline-block;width:150px}
+@keyframes slide{0%,15%{left:4px}55%,70%{left:calc(100% - 20px)}}
+.a1{animation:slide 2.4s var(--ease-out) infinite}
+.a2{animation:slide 2.4s var(--ease-spring) infinite}</style></head>
+<body>
+<div><span class="l">ease-out · 120–320ms</span></div><div class="track"><div class="ball a1"></div></div>
+<div><span class="l">ease-spring · overshoot</span></div><div class="track"><div class="ball a2"></div></div>
+</body></html>

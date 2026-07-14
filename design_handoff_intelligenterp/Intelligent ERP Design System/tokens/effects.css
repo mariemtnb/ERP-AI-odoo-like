@@ -1,0 +1,35 @@
+/* ============================================================
+   RADIUS, ELEVATION, MOTION
+   ============================================================ */
+:root {
+  /* Corner radii */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;   /* inputs, buttons */
+  --radius-lg: 16px;   /* cards */
+  --radius-xl: 22px;   /* panels, modals */
+  --radius-2xl: 28px;
+  --radius-full: 999px;
+
+  /* Elevation — soft, low-contrast shadows layered with a hairline.
+     Dark UI: shadows read as depth + a faint top highlight. */
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.30);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.30), 0 2px 6px rgba(0,0,0,0.22);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.34), 0 1px 3px rgba(0,0,0,0.30);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.42), 0 2px 8px rgba(0,0,0,0.30);
+  --shadow-xl: 0 24px 60px rgba(0,0,0,0.52), 0 6px 18px rgba(0,0,0,0.34);
+  /* accent glow for focus / primary hover */
+  --shadow-accent: 0 6px 24px rgba(16,185,129,0.28);
+  --ring-focus: 0 0 0 3px var(--emerald-glow), 0 0 0 1px var(--emerald-400);
+  /* inner top highlight — the “premium” hairline on raised surfaces */
+  --hairline: inset 0 1px 0 rgba(255,255,255,0.04); /* @kind shadow */
+
+  /* Motion — easings + durations */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* @kind other */
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1); /* @kind other */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* @kind other */
+  --dur-1: 120ms;  /* @kind other */
+  --dur-2: 200ms;  /* @kind other */
+  --dur-3: 320ms;  /* @kind other */
+  --dur-4: 480ms;  /* @kind other */
+}

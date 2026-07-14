@@ -1,0 +1,42 @@
+<!-- @dsCard group="ERP App" viewport="1440x900" name="Intelligent ERP — full app" subtitle="Login, dashboard, products, CRM, AI assistant, command palette" -->
+<!-- @startingPoint section="Screens" subtitle="Full Intelligent ERP app shell — sidebar, topbar, dashboard" viewport="1440x900" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Intelligent ERP</title>
+<link rel="stylesheet" href="../../styles.css" />
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg-app); color: var(--text-body); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+  ::selection { background: var(--emerald-glow); }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: var(--charcoal-750); border-radius: 999px; border: 3px solid var(--bg-app); }
+  a { color: var(--emerald-400); text-decoration: none; }
+  a:hover { color: var(--emerald-300); }
+  @keyframes erp-page-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .erp-page-enter { animation: erp-page-enter var(--dur-3) var(--ease-out); }
+  /* floating assistant */
+  @keyframes fab-in { from { opacity: 0; transform: scale(0.6) translateY(20px); } }
+  @keyframes dock-in { from { opacity: 0; transform: translateY(24px) scale(0.98); } }
+  @keyframes full-in { from { opacity: 0; transform: scale(1.02); } }
+  .erp-fab { animation: fab-in var(--dur-3) var(--ease-spring); }
+  .erp-fab::after { content: ""; position: absolute; inset: -4px; border-radius: 999px; border: 2px solid var(--emerald-400); opacity: 0; animation: fab-ping 3s var(--ease-out) infinite; }
+  @keyframes fab-ping { 0% { opacity: .5; transform: scale(1); } 70%, 100% { opacity: 0; transform: scale(1.5); } }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="data.js"></script>
+<script type="text/babel" src="ui.jsx"></script>
+<script type="text/babel" src="pages.jsx"></script>
+<script type="text/babel" src="modules.jsx"></script>
+<script type="text/babel" src="app.jsx"></script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>IntelligentERP — The operating system for modern business</title>
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="landing.css" />
+</head>
+<body>
+<div class="progress"></div>
+<div class="cursor-ring"></div>
+<div class="cursor-dot"></div>
+<canvas id="core-canvas"></canvas>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="brand" href="#top">
+    <span class="brand-mark">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#04140d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 7v10l9 5 9-5V7z"/><path d="m3 7 9 5 9-5M12 22V12"/></svg>
+    </span>
+    <span class="brand-name">Intelligent<b>ERP</b></span>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link" href="#ecosystem">Platform</a>
+    <a class="nav-link" href="#modules">Modules</a>
+    <a class="nav-link" href="#analytics">Intelligence</a>
+    <a class="nav-link" href="#future">Vision</a>
+  </div>
+  <a class="btn btn-ghost" href="../ui_kits/erp-app/index.html" data-magnetic><span class="sheen"></span>Enter workspace
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+  </a>
+</nav>
+
+<!-- SCENE 1 — HERO -->
+<header class="hero scene" id="top">
+  <span class="eyebrow"><span class="pulse"></span> AI-native ERP · runs on your servers</span>
+  <h1>
+    <span class="reveal-line"><span class="reveal-word">The</span> <span class="reveal-word">operating</span> <span class="reveal-word">system</span></span><br/>
+    <span class="reveal-line"><span class="reveal-word">for</span> <span class="reveal-word grad">intelligent</span> <span class="reveal-word grad">business.</span></span>
+  </h1>
+  <p class="lede">Inventory, sales, purchasing and CRM — unified under one conscious assistant that reads your data, drafts the work, and acts only with your approval.</p>
+  <div class="cta-row">
+    <a class="btn btn-primary" href="../ui_kits/erp-app/index.html" data-magnetic><span class="sheen"></span>Launch the demo
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </a>
+    <a class="btn btn-ghost" href="#ecosystem" data-magnetic><span class="sheen"></span>See how it thinks</a>
+  </div>
+  <div class="scroll-hint"><span>Scroll</span><span class="track"></span></div>
+</header>
+
+<!-- SCENE 2 — THE AI AWAKENS -->
+<section class="awaken scene">
+  <div class="awaken-inner">
+    <h2>
+      <span class="fade-word">It</span> <span class="fade-word">watches</span> <span class="fade-word">every</span>
+      <span class="fade-word">movement</span> <span class="fade-word">of</span> <span class="fade-word">stock,</span>
+      <span class="fade-word">cash</span> <span class="fade-word">and</span> <span class="fade-word">demand</span> —
+      <span class="fade-word">and</span> <span class="fade-word accent">wakes</span> <span class="fade-word accent">the</span>
+      <span class="fade-word accent">moment</span> <span class="fade-word accent">something</span> <span class="fade-word accent">matters.</span>
+    </h2>
+  </div>
+</section>
+
+<!-- SCENE 3 — ECOSYSTEM -->
+<section class="section scene" id="ecosystem">
+  <div class="section-tag r" data-once>The platform</div>
+  <h2 class="r d1" data-once>One system. Every corner of the business, in sync.</h2>
+  <p class="sub r d2" data-once>No integrations to babysit, no data silos. Products, warehouses, partners, documents and analytics share a single source of truth — so the assistant can reason across all of it at once.</p>
+  <div class="grid-cards">
+    <div class="tilt-card r" data-once>
+      <div class="card-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8V7l-9-4-9 4v10l9 4 9-4v-1"/><path d="m3 7 9 4 9-4M12 21V11"/></svg></div>
+      <h3>Unified data core</h3>
+      <p>Inventory, orders and partners modelled once and shared everywhere — no duplication, no drift.</p>
+    </div>
+    <div class="tilt-card r d1" data-once>
+      <div class="card-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8l7-5 7 5M5 8v8l7 5 7-5V8"/></svg></div>
+      <h3>Approval-first agent</h3>
+      <p>The AI proposes purchase orders, transfers and records — you confirm before anything is written.</p>
+    </div>
+    <div class="tilt-card r d2" data-once>
+      <div class="card-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M4 10h16M10 4v16"/></svg></div>
+      <h3>On your infrastructure</h3>
+      <p>Local model, your database. Sensitive business data never leaves the servers you control.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SCENE 4 — MODULES ORBITING AI -->
+<section class="section scene" id="orbit-section">
+  <div class="section-tag r" data-once>The ecosystem</div>
+  <h2 class="r d1" data-once>Nine modules, orbiting one intelligence.</h2>
+  <div class="orbit-stage">
+    <div class="orbit-ring" style="width:44%;height:28%"></div>
+    <div class="orbit-ring" style="width:70%;height:46%"></div>
+    <div class="orbit-ring" style="width:96%;height:64%"></div>
+    <div class="orbit-core">
+      <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M6 6l1.5 1.5M16.5 16.5 18 18M18 6l-1.5 1.5M7.5 16.5 6 18"/><circle cx="12" cy="12" r="4"/></svg>
+    </div>
+    <div class="orbit-node" data-r="0.30" data-speed="1.4"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.3 9 5.2v9.5l-9-5.2z"/><path d="m7.5 4.3 4.5 2.6 4.5-2.6M12 6.9V12"/></svg></span>Products</div>
+    <div class="orbit-node" data-r="0.30" data-speed="1.4"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16v10H4zM4 11h16"/></svg></span>Inventory</div>
+    <div class="orbit-node" data-r="0.30" data-speed="1.4"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20a6 6 0 0 1 12 0M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8"/></svg></span>Customers</div>
+    <div class="orbit-node" data-r="0.48" data-speed="-1"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h13v9H2zM15 11h4l3 3v3h-7"/><circle cx="6" cy="18" r="1.6"/><circle cx="18" cy="18" r="1.6"/></svg></span>Suppliers</div>
+    <div class="orbit-node" data-r="0.48" data-speed="-1"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2 12h11l2-8H6M9 20a1 1 0 1 0 0-.01M18 20a1 1 0 1 0 0-.01"/></svg></span>Purchases</div>
+    <div class="orbit-node" data-r="0.48" data-speed="-1"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-1 2zM9 8h6M9 12h6"/></svg></span>Sales</div>
+    <div class="orbit-node" data-r="0.66" data-speed="0.7"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v4H4zM4 14h16v4H4z"/></svg></span>CRM pipeline</div>
+    <div class="orbit-node" data-r="0.66" data-speed="0.7"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l5 5v13H6zM15 3v5h5M9 13h6M9 17h6"/></svg></span>Reports</div>
+    <div class="orbit-node" data-r="0.66" data-speed="0.7"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v2M12 19v2M5 12H3M21 12h-2"/><circle cx="12" cy="12" r="3.4"/></svg></span>AI Assistant</div>
+  </div>
+</section>
+
+<!-- SCENE 5 — WORKFLOW -->
+<section class="section scene" id="workflow">
+  <div class="section-tag r" data-once>Live workflow</div>
+  <h2 class="r d1" data-once>Watch a stockout defuse itself.</h2>
+  <p class="sub r d2" data-once>A real chain of events across the platform — the assistant detects, reasons, and prepares. You stay in command at the only step that matters.</p>
+  <div class="flow">
+    <div class="flow-step r" data-once><div class="step-n">01 · DETECT</div><h4>Demand spikes</h4><p>Copper coil sales jump 34% this week; coverage drops below nine days.</p><span class="beam"></span></div>
+    <div class="flow-step r d1" data-once><div class="step-n">02 · REASON</div><h4>Assistant flags risk</h4><p>It cross-checks stock, lead time and the default supplier — surfacing an insight on the dashboard.</p><span class="beam"></span></div>
+    <div class="flow-step r d2" data-once><div class="step-n">03 · DRAFT</div><h4>PO prepared</h4><p>A purchase order for 200 units is drafted, priced and validated — waiting, never sent.</p><span class="beam"></span></div>
+    <div class="flow-step r d3" data-once><div class="step-n">04 · APPROVE</div><h4>You confirm</h4><p>One tap approves. Stock, movements and the ledger update in the same breath.</p><span class="beam"></span></div>
+  </div>
+</section>
+
+<!-- SCENE 6 — LIVE ANALYTICS -->
+<section class="section scene" id="analytics">
+  <div class="section-tag r" data-once>Intelligence</div>
+  <h2 class="r d1" data-once>Every number, alive and explained.</h2>
+  <div class="analytics">
+    <div class="panel r" data-once>
+      <div class="glow-wash"></div>
+      <span class="section-tag" style="margin:0 0 18px">Revenue · this month</span>
+      <div class="metric-row">
+        <span class="metric-val" data-count="48250" data-suf="" >0</span>
+        <span class="metric-unit">TND</span>
+        <span class="metric-delta">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 9 11l4 4 8-8M15 4h6v6"/></svg>
+          <span data-count="12.4" data-dec="1" data-suf="%">0</span>
+        </span>
+      </div>
+      <div class="spark-wrap">
+        <div class="bars">
+          <div class="bar" style="height:42%"></div><div class="bar" style="height:56%"></div><div class="bar" style="height:48%"></div>
+          <div class="bar" style="height:64%"></div><div class="bar" style="height:58%"></div><div class="bar" style="height:74%"></div>
+          <div class="bar" style="height:66%"></div><div class="bar" style="height:82%"></div><div class="bar" style="height:78%"></div>
+          <div class="bar" style="height:92%"></div><div class="bar" style="height:88%"></div><div class="bar" style="height:100%"></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel r d1" data-once>
+      <div class="glow-wash"></div>
+      <span class="section-tag" style="margin:0 0 18px">Assistant · reasoning</span>
+      <div class="ai-console">
+        <div class="ai-msg" style="justify-content:flex-end"><div class="ai-bubble" style="background:var(--emerald-500);color:var(--text-on-accent);border:none;border-top-left-radius:14px;border-top-right-radius:4px">Which products are low on stock right now?</div></div>
+        <div class="ai-msg">
+          <span class="ai-av"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v2M12 19v2M5 12H3M21 12h-2"/><circle cx="12" cy="12" r="3.4"/></svg></span>
+          <div class="ai-bubble"><span class="ai-typed" data-text="Three items are below minimum — Brass fitting (3/30), Steel hinge (8/25), PVC elbow (14/40). The brass fitting is critical. Draft a purchase order?"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCENE 7 — FUTURE -->
+<section class="future scene" id="future">
+  <h2 class="r" data-once>Enterprise software wasn't supposed to feel like <span class="grad">this good.</span></h2>
+</section>
+
+<!-- SCENE 8 — CTA -->
+<section class="cta scene">
+  <div class="cta-card r" data-once>
+    <h2>Meet the ERP that thinks alongside you.</h2>
+    <p>Step into the live workspace — full dashboard, modules and the conversational assistant, no signup required.</p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="../ui_kits/erp-app/index.html" data-magnetic><span class="sheen"></span>Enter the workspace
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <a class="btn btn-ghost" href="#top" data-magnetic><span class="sheen"></span>Back to top</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <a class="brand" href="#top">
+    <span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#04140d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 7v10l9 5 9-5V7z"/><path d="m3 7 9 5 9-5M12 22V12"/></svg></span>
+    <span class="brand-name">Intelligent<b>ERP</b></span>
+  </a>
+  <div class="foot-links">
+    <a href="#ecosystem">Platform</a><a href="#modules">Modules</a><a href="#analytics">Intelligence</a><a href="../ui_kits/erp-app/index.html">Demo</a>
+  </div>
+  <small>© 2026 IntelligentERP · Built on your infrastructure</small>
+</footer>
+
+<script src="core.js"></script>
+<script src="interactions.js"></script>
+</body>
+</html>

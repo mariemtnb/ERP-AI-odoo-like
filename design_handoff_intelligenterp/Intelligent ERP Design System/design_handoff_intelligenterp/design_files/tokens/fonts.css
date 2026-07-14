@@ -1,0 +1,9 @@
+/* ============================================================
+   FONTS — loaded from Google Fonts.
+   Schibsted Grotesk: premium geometric grotesque (UI + display).
+   JetBrains Mono: numerals, SKUs, code, tabular data.
+   NOTE: the source app shipped no brand font (Tailwind default
+   system stack). These are a deliberate design choice — swap if
+   a licensed brand face is provided.
+   ============================================================ */
+@import url("https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap");
