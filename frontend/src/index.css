@@ -1,89 +1,180 @@
-@import "@fontsource-variable/inter";
+/* Fonts — self-hosted equivalents of tokens/fonts.css (Google Fonts faces) */
+@import "@fontsource/schibsted-grotesk/400.css";
+@import "@fontsource/schibsted-grotesk/500.css";
+@import "@fontsource/schibsted-grotesk/600.css";
+@import "@fontsource/schibsted-grotesk/700.css";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";
+@import "@fontsource/jetbrains-mono/600.css";
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ─────────────────────────────────────────────────────────────
-   Design tokens — the single source of truth for the whole UI.
-   Dark-first. Rich charcoal, soft surfaces, emerald accent.
-   ───────────────────────────────────────────────────────────── */
+/* ============================================================
+   INTELLIGENT ERP DESIGN TOKENS
+   Ported verbatim from design_files/tokens/*.css (source of truth).
+   ============================================================ */
 :root {
-  color-scheme: dark; /* native controls (date pickers, scrollbars) in dark */
+  color-scheme: dark;
 
-  /* canvas & surfaces (never pure black) */
-  --bg: 216 22% 7%;            /* #0d1117-ish rich charcoal */
-  --surface: 217 19% 10%;      /* cards */
-  --surface-2: 216 16% 13%;    /* nested surfaces, inputs */
-  --surface-3: 215 14% 17%;    /* hover, active surfaces */
-  --overlay: 220 26% 4%;       /* modal scrim base */
+  /* --- colors.css: neutral ramp (warm charcoal) --- */
+  --charcoal-950: #0b0d0c;
+  --charcoal-925: #0f1211;
+  --charcoal-900: #131615;
+  --charcoal-850: #191d1b;
+  --charcoal-800: #1f2422;
+  --charcoal-750: #272d2a;
+  --charcoal-700: #313835;
+  --charcoal-600: #495049;
+  --charcoal-500: #6b736f;
+  --charcoal-400: #8b938e;
+  --charcoal-300: #aab2ad;
+  --charcoal-200: #ccd2ce;
+  --charcoal-100: #e6eae7;
+  --charcoal-50: #f4f6f4;
 
-  /* strokes — hairlines, not walls */
-  --stroke: 215 15% 22%;
-  --stroke-soft: 216 15% 16%;
+  /* --- colors.css: emerald accent ramp --- */
+  --emerald-700: #047857;
+  --emerald-600: #059669;
+  --emerald-500: #10b981;
+  --emerald-400: #34d399;
+  --emerald-300: #6ee7b7;
+  --emerald-glow: rgba(16, 185, 129, 0.16);
 
-  /* text (never pure white) */
-  --text: 214 30% 92%;
-  --text-2: 215 12% 64%;
-  --text-3: 215 10% 45%;
+  /* --- colors.css: semantic status --- */
+  --amber-400: #fbbf24;
+  --amber-glow: rgba(251, 191, 36, 0.14);
+  --rose-400: #fb7185;
+  --rose-glow: rgba(251, 113, 133, 0.14);
+  --sky-400: #38bdf8;
+  --sky-glow: rgba(56, 189, 248, 0.14);
+  --violet-400: #a78bfa;
+  --violet-glow: rgba(167, 139, 250, 0.14);
 
-  /* brand — premium emerald */
-  --accent: 160 84% 39%;       /* emerald-500 */
-  --accent-soft: 160 60% 45%;
-  --accent-strong: 158 90% 55%;
+  /* --- colors.css: semantic aliases --- */
+  --bg-app: var(--charcoal-950);
+  --bg-panel: var(--charcoal-925);
+  --surface-base: var(--charcoal-900);
+  --surface-card: var(--charcoal-850);
+  --surface-hover: var(--charcoal-800);
+  --surface-inset: var(--charcoal-925);
+  --border: var(--charcoal-700);
+  --border-subtle: color-mix(in oklab, var(--charcoal-700) 55%, transparent);
+  --border-strong: var(--charcoal-750);
+  --border-focus: var(--emerald-400);
+  --text-strong: var(--charcoal-50);
+  --text-body: var(--charcoal-200);
+  --text-muted: var(--charcoal-400);
+  --text-faint: var(--charcoal-500);
+  --text-on-accent: #04140d;
+  --accent-hover: var(--emerald-400);
+  --accent-quiet: var(--emerald-glow);
+  --accent-text: var(--emerald-400);
+  --wash-emerald: radial-gradient(120% 120% at 0% 0%, rgba(16, 185, 129, 0.1), transparent 55%);
 
-  /* semantic */
+  /* --- typography.css --- */
+  --font-sans: "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --tracking-display: -0.03em;
+  --tracking-tight: -0.015em;
+  --tracking-caps: 0.14em;
+
+  /* --- spacing.css: layout --- */
+  --sidebar-w: 264px;
+  --sidebar-w-collapsed: 72px;
+  --topbar-h: 64px;
+  --content-max: 1240px;
+  --page-pad: 40px;
+
+  /* --- effects.css: radius --- */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --radius-2xl: 28px;
+  --radius-full: 999px;
+
+  /* --- effects.css: elevation --- */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.22);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.34), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.42), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 24px 60px rgba(0, 0, 0, 0.52), 0 6px 18px rgba(0, 0, 0, 0.34);
+  --shadow-accent: 0 6px 24px rgba(16, 185, 129, 0.28);
+  --ring-focus: 0 0 0 3px var(--emerald-glow), 0 0 0 1px var(--emerald-400);
+  --hairline: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+  /* --- effects.css: motion --- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-1: 120ms;
+  --dur-2: 200ms;
+  --dur-3: 320ms;
+  --dur-4: 480ms;
+
+  /* ============================================================
+     COMPATIBILITY LAYER — the app's pre-existing HSL channel vars,
+     re-pointed at the design-system palette so all current screens
+     and hsl(var(--x)/a) arbitrary values adopt the new look.
+     (Migrated screens will move to the tokens above over time.)
+     ============================================================ */
+  --bg: 150 8% 5%;            /* charcoal-950 */
+  --surface: 150 7% 11%;      /* charcoal-850 surface-card */
+  --surface-2: 160 9% 6.5%;   /* charcoal-925 inset */
+  --surface-3: 156 7% 13%;    /* charcoal-800 hover */
+  --overlay: 150 8% 5%;
+  --stroke: 154 7% 21%;       /* charcoal-700 */
+  --stroke-soft: 152 7% 14%;  /* ≈ border-subtle over surface */
+  --text: 120 9% 96%;         /* charcoal-50 strong */
+  --text-2: 142 4% 56%;       /* charcoal-400 muted */
+  --text-3: 150 4% 44%;       /* charcoal-500 faint */
+  --accent: 160 84% 39%;      /* emerald-500 */
+  --accent-soft: 156 72% 67%; /* emerald-300 */
+  --accent-strong: 158 64% 52%; /* emerald-400 */
   --positive: 158 64% 52%;
-  --warning: 38 92% 58%;
-  --danger: 0 72% 62%;
-  --info: 217 91% 68%;
-
-  /* motion */
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --dur-fast: 150ms;
-  --dur: 220ms;
-  --dur-slow: 340ms;
+  --warning: 43 96% 56%;      /* amber-400 */
+  --danger: 351 95% 71%;      /* rose-400 */
+  --info: 199 89% 60%;        /* sky-400 */
+  --violet: 255 92% 76%;      /* violet-400 */
 }
 
 @layer base {
   html {
-    font-family: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
-    font-feature-settings: "cv11", "ss01";
+    font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
 
   body {
-    background: hsl(var(--bg));
-    color: hsl(var(--text));
+    background: var(--bg-app);
+    color: var(--text-body);
+    font-size: 14px;
+    line-height: 1.5;
   }
 
-  /* comfortable, consistent focus everywhere */
+  h1, h2, h3, h4 {
+    color: var(--text-strong);
+  }
+
   *:focus-visible {
-    outline: 2px solid hsl(var(--accent) / 0.7);
-    outline-offset: 2px;
-    border-radius: 4px;
+    outline: none;
+    box-shadow: var(--ring-focus);
+    border-radius: var(--radius-xs);
   }
 
   ::selection {
-    background: hsl(var(--accent) / 0.3);
+    background: var(--emerald-glow);
   }
 
-  /* discreet scrollbars that match the canvas */
   * {
     scrollbar-width: thin;
-    scrollbar-color: hsl(var(--stroke)) transparent;
+    scrollbar-color: var(--charcoal-700) transparent;
   }
-  *::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-  *::-webkit-scrollbar-thumb {
-    background: hsl(var(--stroke));
-    border-radius: 8px;
-  }
-  *::-webkit-scrollbar-track {
-    background: transparent;
-  }
+  *::-webkit-scrollbar { width: 8px; height: 8px; }
+  *::-webkit-scrollbar-thumb { background: var(--charcoal-700); border-radius: 8px; }
+  *::-webkit-scrollbar-track { background: transparent; }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -94,28 +185,38 @@
 }
 
 @layer utilities {
-  /* soft radial glow used behind hero numbers / the AI orb */
+  /* all-caps micro label (typography.css .ds-eyebrow) */
+  .eyebrow {
+    font-size: 11px;
+    line-height: 1;
+    font-weight: 600;
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  /* ambient emerald wash for hero/KPI/login panels */
+  .wash-emerald {
+    background-image: var(--wash-emerald);
+  }
+
   .glow-accent {
-    background: radial-gradient(
-      ellipse at center,
-      hsl(var(--accent) / 0.16) 0%,
-      transparent 70%
-    );
+    background: radial-gradient(ellipse at center, var(--emerald-glow) 0%, transparent 70%);
   }
 
   .text-gradient {
-    background: linear-gradient(
-      120deg,
-      hsl(var(--text)) 30%,
-      hsl(var(--accent-strong)) 100%
-    );
+    background: linear-gradient(120deg, var(--text-strong) 30%, var(--emerald-400) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
 
-  /* tabular numerals for data */
   .tnum {
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
+  }
+
+  .hairline {
+    box-shadow: var(--hairline);
   }
 }

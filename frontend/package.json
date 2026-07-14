@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/schibsted-grotesk": "^5.2.8",
     "@tanstack/react-query": "^5.66.0",
     "axios": "^1.7.9",
     "class-variance-authority": "^0.7.1",
