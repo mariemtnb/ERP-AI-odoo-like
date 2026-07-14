@@ -1,0 +1,132 @@
+/* ============================================================
+   COMPONENT STYLES — interactive states for DS primitives.
+   Visual values here mirror the tokens; kept in CSS so hover/
+   focus/press live declaratively (no CSS-in-JS).
+   ============================================================ */
+
+/* ---------- Button ---------- */
+.erp-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: var(--space-2);
+  font: var(--weight-semibold) var(--text-sm)/1 var(--font-sans);
+  letter-spacing: var(--tracking-tight);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer; white-space: nowrap; user-select: none;
+  transition: background var(--dur-1) var(--ease-out),
+              border-color var(--dur-1) var(--ease-out),
+              color var(--dur-1) var(--ease-out),
+              box-shadow var(--dur-2) var(--ease-out),
+              transform var(--dur-1) var(--ease-out);
+}
+.erp-btn:active { transform: translateY(0.5px) scale(0.985); }
+.erp-btn:focus-visible { outline: none; box-shadow: var(--ring-focus); }
+.erp-btn:disabled { opacity: 0.45; pointer-events: none; }
+
+.erp-btn--sm { height: 32px; padding: 0 var(--space-3); font-size: var(--text-xs); }
+.erp-btn--md { height: 38px; padding: 0 var(--space-4); }
+.erp-btn--lg { height: 46px; padding: 0 var(--space-6); font-size: var(--text-base); border-radius: var(--radius-lg); }
+
+.erp-btn--primary {
+  background: var(--accent); color: var(--text-on-accent);
+  box-shadow: var(--shadow-sm), var(--hairline);
+}
+.erp-btn--primary:hover { background: var(--accent-hover); box-shadow: var(--shadow-accent); }
+
+.erp-btn--secondary {
+  background: var(--surface-hover); color: var(--text-strong);
+  border-color: var(--border); box-shadow: var(--hairline);
+}
+.erp-btn--secondary:hover { background: var(--charcoal-750); border-color: var(--border-strong); }
+
+.erp-btn--ghost { background: transparent; color: var(--text-body); }
+.erp-btn--ghost:hover { background: var(--surface-hover); color: var(--text-strong); }
+
+.erp-btn--outline { background: transparent; color: var(--text-body); border-color: var(--border); }
+.erp-btn--outline:hover { border-color: var(--accent); color: var(--text-strong); }
+
+.erp-btn--danger { background: color-mix(in oklab, var(--rose-400) 18%, transparent); color: var(--rose-400); }
+.erp-btn--danger:hover { background: color-mix(in oklab, var(--rose-400) 26%, transparent); }
+
+/* ---------- Icon button ---------- */
+.erp-iconbtn {
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-md); border: 1px solid transparent;
+  background: transparent; color: var(--text-muted); cursor: pointer;
+  transition: background var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out), transform var(--dur-1) var(--ease-out);
+}
+.erp-iconbtn:hover { background: var(--surface-hover); color: var(--text-strong); }
+.erp-iconbtn:active { transform: scale(0.92); }
+.erp-iconbtn:focus-visible { outline: none; box-shadow: var(--ring-focus); }
+.erp-iconbtn--sm { width: 32px; height: 32px; }
+.erp-iconbtn--md { width: 38px; height: 38px; }
+
+/* ---------- Input / Select ---------- */
+.erp-field {
+  width: 100%; height: 40px;
+  background: var(--surface-inset);
+  color: var(--text-strong);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-3);
+  font: var(--weight-regular) var(--text-base)/1 var(--font-sans);
+  transition: border-color var(--dur-2) var(--ease-out), box-shadow var(--dur-2) var(--ease-out), background var(--dur-2) var(--ease-out);
+}
+.erp-field::placeholder { color: var(--text-faint); }
+.erp-field:hover { border-color: var(--border-strong); }
+.erp-field:focus { outline: none; border-color: var(--emerald-400); box-shadow: var(--ring-focus); background: var(--surface); }
+.erp-field:disabled { opacity: 0.5; }
+select.erp-field { appearance: none; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b938e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right var(--space-3) center; padding-right: var(--space-8);
+}
+
+/* ---------- Card ---------- */
+.erp-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm), var(--hairline);
+  transition: border-color var(--dur-2) var(--ease-out), box-shadow var(--dur-2) var(--ease-out), transform var(--dur-2) var(--ease-out);
+}
+.erp-card--hover:hover { border-color: var(--border-strong); box-shadow: var(--shadow-lg), var(--hairline); transform: translateY(-2px); }
+
+/* ---------- Table ---------- */
+.erp-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--text-base); }
+.erp-table thead th {
+  position: sticky; top: 0; z-index: 1;
+  background: var(--surface); color: var(--text-muted);
+  font: var(--weight-semibold) var(--text-2xs)/1 var(--font-sans);
+  letter-spacing: var(--tracking-caps); text-transform: uppercase;
+  text-align: left; padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+.erp-table tbody td { padding: var(--space-4); color: var(--text-body); border-bottom: 1px solid var(--border-subtle); }
+.erp-table tbody tr { transition: background var(--dur-1) var(--ease-out); }
+.erp-table tbody tr:hover td { background: var(--surface-hover); }
+.erp-table tbody tr:last-child td { border-bottom: none; }
+
+/* ---------- Skeleton ---------- */
+.erp-skel { position: relative; overflow: hidden; background: var(--surface-hover); border-radius: var(--radius-sm); }
+.erp-skel::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+  transform: translateX(-100%); animation: erp-shimmer 1.4s var(--ease-in-out) infinite;
+}
+@keyframes erp-shimmer { 100% { transform: translateX(100%); } }
+
+/* ---------- Dialog ---------- */
+.erp-dialog-backdrop {
+  position: fixed; inset: 0; z-index: 50;
+  background: rgba(6, 8, 7, 0.6); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center; padding: var(--space-6);
+  animation: erp-fade var(--dur-2) var(--ease-out);
+}
+.erp-dialog {
+  width: 100%; background: var(--surface-card);
+  border: 1px solid var(--border); border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl), var(--hairline);
+  animation: erp-pop var(--dur-3) var(--ease-out);
+}
+@keyframes erp-fade { from { opacity: 0; } }
+@keyframes erp-pop { from { opacity: 0; transform: translateY(12px) scale(0.98); } }

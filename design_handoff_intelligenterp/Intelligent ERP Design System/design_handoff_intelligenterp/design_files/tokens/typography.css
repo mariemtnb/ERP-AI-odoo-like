@@ -1,0 +1,54 @@
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+:root {
+  --font-sans: "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Type scale — 1.25 major-third-ish, tuned for dense app + hero */
+  --text-2xs: 11px;
+  --text-xs:  12px;
+  --text-sm:  13px;
+  --text-base:14px;   /* app body default */
+  --text-md:  15px;
+  --text-lg:  18px;
+  --text-xl:  22px;
+  --text-2xl: 28px;
+  --text-3xl: 36px;
+  --text-4xl: 48px;
+  --text-5xl: 64px;
+  --text-6xl: 84px;   /* hero display */
+
+  --leading-tight: 1.1;
+  --leading-snug: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.65;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-black: 800;
+
+  /* Tracking — tighten large display, open up all-caps labels */
+  --tracking-display: -0.03em;
+  --tracking-tight: -0.015em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.02em;
+  --tracking-caps: 0.14em;
+
+  /* Semantic roles */
+  --font-display: var(--weight-semibold) var(--text-5xl)/var(--leading-tight) var(--font-sans);
+  --font-h1: var(--weight-semibold) var(--text-2xl)/var(--leading-snug) var(--font-sans);
+  --font-h2: var(--weight-semibold) var(--text-xl)/var(--leading-snug) var(--font-sans);
+  --font-body: var(--weight-regular) var(--text-base)/var(--leading-normal) var(--font-sans);
+  --font-label: var(--weight-medium) var(--text-sm)/var(--leading-normal) var(--font-sans);
+}
+
+/* Eyebrow / all-caps micro label utility */
+.ds-eyebrow {
+  font: var(--weight-semibold) var(--text-2xs)/1 var(--font-sans);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
