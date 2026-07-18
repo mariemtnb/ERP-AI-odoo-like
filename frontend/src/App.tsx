@@ -8,6 +8,7 @@ import InventoryPage from "@/features/inventory/InventoryPage";
 import AssistantPage from "@/features/assistant/AssistantPage";
 import CrmPage from "@/features/crm/CrmPage";
 import DashboardPage from "@/features/dashboard/DashboardPage";
+import LandingPage from "@/features/landing/LandingPage";
 import DocumentsPage from "@/features/documents/DocumentsPage";
 import ReportsPage from "@/features/reports/ReportsPage";
 import PartnersPage from "@/features/partners/PartnersPage";
@@ -22,6 +23,7 @@ export default function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
+            <Route path="/welcome" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route element={<ProtectedRoute />}>
               <Route element={<Layout />}>
