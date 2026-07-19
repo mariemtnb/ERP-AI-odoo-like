@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Bell, Boxes, Contact, FileText, LayoutDashboard, LogOut, Moon,
+  Bell, BookOpen, Boxes, Contact, FileText, LayoutDashboard, LogOut, Moon,
   PanelLeftClose, PanelLeftOpen, Package, Search, ShoppingBag,
   ShoppingCart, Sparkles, Sun, Truck, Users, UserSquare2,
 } from "lucide-react";
@@ -26,6 +26,7 @@ const NAV: NavItem[] = [
   { to: "/purchases", label: "Purchases", icon: ShoppingBag },
   { to: "/sales", label: "Sales", icon: ShoppingCart },
   { to: "/crm", label: "CRM", icon: Contact },
+  { to: "/accounting", label: "Accounting", icon: BookOpen, roles: ["admin", "manager"] },
   { to: "/reports", label: "Reports", icon: FileText, roles: ["admin", "manager"] },
   { to: "/assistant", label: "AI Assistant", icon: Sparkles, live: true },
   { to: "/users", label: "Users", icon: Users, roles: ["admin"] },
@@ -267,7 +268,10 @@ export default function Layout() {
           className="w-full flex-1"
           style={{ padding: "36px 40px", maxWidth: "var(--content-max)", margin: "0 auto" }}
         >
-          <AnimatePresence mode="popLayout" initial={false}>
+          {/* "wait" (not popLayout): the outgoing page must finish exiting
+              before the next mounts, otherwise a stale invisible copy is
+              left behind in the DOM. */}
+          <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={location.pathname}
               initial={{ opacity: 0, y: 8 }}

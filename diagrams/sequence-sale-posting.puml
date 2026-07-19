@@ -1,0 +1,53 @@
+@startuml sequence-sale-posting
+title Confirming a sale — stock and books updated in one transaction
+
+actor User
+participant "SaleController" as C
+participant "DocumentService" as DS
+participant "StockService" as SS
+participant "AccountingService" as AS
+database PostgreSQL as DB
+
+User -> C : POST /sales/{id}/confirm
+C -> DS : confirmSale(sale, user)
+
+group Single DB transaction
+  DS -> DS : guard: status = draft, has lines
+
+  loop for each sale line
+    DS -> SS : recordMovement(product, OUT, qty, ref=sale)
+    SS -> DB : SELECT … FOR UPDATE (product, warehouse_stock)
+    alt insufficient stock
+      SS --> DS : throw InsufficientStock
+      DS --> C : rollback everything
+      C --> User : 409 — nothing was written
+    else stock available
+      SS -> DB : INSERT stock_movement (append-only)
+      SS -> DB : UPDATE warehouse_stock + product cache
+    end
+  end
+
+  DS -> DB : UPDATE sale.status = confirmed
+
+  DS -> AS : postSaleConfirmed(sale, user)
+  AS -> AS : build lines\nDr Receivable / Cr Revenue (selling price)\nDr COGS / Cr Inventory (cost price)
+  AS -> AS : assert SUM(debit) = SUM(credit)
+  alt unbalanced
+    AS --> DS : throw UnbalancedEntry
+    DS --> C : rollback everything
+  else balanced
+    AS -> DB : INSERT journal_entry + lines (append-only)
+  end
+end
+
+C --> User : 200 — sale confirmed
+
+note over SS, AS
+  Stock and the ledger commit together, so the
+  books can never disagree with the warehouse.
+  Both are append-only: a cancellation posts a
+  reversing movement and a reversing entry
+  rather than deleting history.
+end note
+
+@enduml

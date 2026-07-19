@@ -123,6 +123,68 @@ export interface Lead {
   activities?: LeadActivity[];
 }
 
+export type AccountType = "asset" | "liability" | "equity" | "income" | "expense";
+
+export interface Account {
+  id: number;
+  code: string;
+  name: string;
+  type: AccountType;
+  is_active: boolean;
+}
+
+export interface JournalEntryLine {
+  id: number;
+  account_id: number;
+  account_code: string;
+  account_name: string;
+  label: string;
+  debit: string;
+  credit: string;
+}
+
+export interface JournalEntry {
+  id: number;
+  number: string;
+  entry_date: string;
+  memo: string;
+  reference_type: string;
+  reference_id: number | null;
+  created_by_email: string | null;
+  total: string;
+  lines: JournalEntryLine[];
+  created_at: string;
+}
+
+export interface TrialBalanceRow {
+  code: string;
+  name: string;
+  type: AccountType;
+  debit: number;
+  credit: number;
+  balance: number;
+}
+
+export interface TrialBalance {
+  title: string;
+  date_from: string | null;
+  date_to: string | null;
+  rows: TrialBalanceRow[];
+  total_debit: number;
+  total_credit: number;
+}
+
+export interface IncomeStatement {
+  title: string;
+  date_from: string | null;
+  date_to: string | null;
+  income: TrialBalanceRow[];
+  expenses: TrialBalanceRow[];
+  total_income: number;
+  total_expenses: number;
+  net_profit: number;
+}
+
 export interface Paginated<T> {
   count: number;
   next: string | null;
