@@ -170,10 +170,10 @@
 
   * {
     scrollbar-width: thin;
-    scrollbar-color: var(--charcoal-700) transparent;
+    scrollbar-color: var(--border-strong) transparent;
   }
   *::-webkit-scrollbar { width: 8px; height: 8px; }
-  *::-webkit-scrollbar-thumb { background: var(--charcoal-700); border-radius: 8px; }
+  *::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 8px; }
   *::-webkit-scrollbar-track { background: transparent; }
 
   @media (prefers-reduced-motion: reduce) {
@@ -182,6 +182,81 @@
       transition-duration: 0.01ms !important;
     }
   }
+}
+
+/* ============================================================
+   LIGHT THEME — same design language, inverted surfaces.
+   Overrides the semantic aliases + the HSL channel layer, so every
+   component adapts without touching a single component file.
+   Warm off-white canvas (never pure white); status hues darkened
+   for contrast on light surfaces.
+   ============================================================ */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  /* status hues: the -400 tokens are used as foregrounds, so on light
+     surfaces they step down to their 600/700 equivalents */
+  --emerald-400: #059669;
+  --emerald-glow: rgba(16, 185, 129, 0.14);
+  --amber-400: #b45309;
+  --amber-glow: rgba(180, 83, 9, 0.12);
+  --rose-400: #e11d48;
+  --rose-glow: rgba(225, 29, 72, 0.1);
+  --sky-400: #0284c7;
+  --sky-glow: rgba(2, 132, 199, 0.1);
+  --violet-400: #7c3aed;
+  --violet-glow: rgba(124, 58, 237, 0.1);
+
+  /* surfaces */
+  --bg-app: #f6f8f7;
+  --bg-panel: #ffffff;
+  --surface-base: #ffffff;
+  --surface-card: #ffffff;
+  --surface-hover: #eef1ef;
+  --surface-inset: #f1f4f2;
+
+  /* strokes */
+  --border: #dde3e0;
+  --border-subtle: color-mix(in oklab, #dde3e0 70%, transparent);
+  --border-strong: #c6cfcb;
+
+  /* text */
+  --text-strong: #0f1211;
+  --text-body: #39423e;
+  --text-muted: #5b645f;
+  /* faint is used for 11px eyebrows/captions — kept at AA (4.5:1) on light */
+  --text-faint: #626b66;
+
+  /* elevation — softer, warmer shadows on light */
+  --shadow-xs: 0 1px 2px rgba(16, 24, 20, 0.06);
+  --shadow-sm: 0 1px 2px rgba(16, 24, 20, 0.06), 0 2px 6px rgba(16, 24, 20, 0.05);
+  --shadow-md: 0 4px 12px rgba(16, 24, 20, 0.08), 0 1px 3px rgba(16, 24, 20, 0.06);
+  --shadow-lg: 0 12px 32px rgba(16, 24, 20, 0.1), 0 2px 8px rgba(16, 24, 20, 0.06);
+  --shadow-xl: 0 24px 60px rgba(16, 24, 20, 0.14), 0 6px 18px rgba(16, 24, 20, 0.08);
+  --shadow-accent: 0 6px 24px rgba(16, 185, 129, 0.32);
+  --hairline: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+  --wash-emerald: radial-gradient(120% 120% at 0% 0%, rgba(16, 185, 129, 0.09), transparent 55%);
+
+  /* HSL channel layer (Tailwind utilities) */
+  --bg: 150 14% 97%;
+  --surface: 0 0% 100%;
+  --surface-2: 140 10% 95%;
+  --surface-3: 140 8% 94%;
+  --overlay: 160 9% 20%;
+  --stroke: 150 12% 88%;
+  --stroke-soft: 150 10% 92%;
+  --text: 160 9% 6%;
+  --text-2: 150 5% 37%;
+  --text-3: 150 5% 40%;
+  --accent: 160 84% 39%;
+  --accent-soft: 162 94% 30%;
+  --accent-strong: 162 94% 30%;
+  --positive: 162 94% 30%;
+  --warning: 32 95% 37%;
+  --danger: 347 77% 50%;
+  --info: 201 96% 39%;
+  --violet: 263 83% 58%;
 }
 
 @layer components {

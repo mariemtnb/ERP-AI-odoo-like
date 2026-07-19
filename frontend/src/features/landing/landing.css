@@ -3,7 +3,38 @@
    Consumes the design-system tokens from src/index.css.
    Scoped under .landing; reveals driven by GSAP ScrollTrigger (adds .in).
    ============================================================ */
+/* The landing is a fixed dark cinematic experience (emerald core on
+   charcoal), so it re-declares the dark palette locally and ignores the
+   app's light/dark preference. */
 .landing {
+  color-scheme: dark;
+  --emerald-400: #34d399;
+  --emerald-glow: rgba(16, 185, 129, 0.16);
+  --amber-400: #fbbf24;
+  --rose-400: #fb7185;
+  --sky-400: #38bdf8;
+  --violet-400: #a78bfa;
+  --bg-app: #0b0d0c;
+  --bg-panel: #0f1211;
+  --surface-base: #131615;
+  --surface-card: #191d1b;
+  --surface-hover: #1f2422;
+  --surface-inset: #0f1211;
+  --border: #313835;
+  --border-subtle: color-mix(in oklab, #313835 55%, transparent);
+  --border-strong: #272d2a;
+  --text-strong: #f4f6f4;
+  --text-body: #ccd2ce;
+  --text-muted: #8b938e;
+  --text-faint: #6b736f;
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.22);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.34), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.42), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 24px 60px rgba(0, 0, 0, 0.52), 0 6px 18px rgba(0, 0, 0, 0.34);
+  --hairline: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --wash-emerald: radial-gradient(120% 120% at 0% 0%, rgba(16, 185, 129, 0.1), transparent 55%);
+
   background: var(--bg-app);
   color: var(--text-body);
   font-family: var(--font-sans);

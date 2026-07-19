@@ -4,8 +4,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   Bell, Boxes, Contact, FileText, LayoutDashboard, LogOut, Moon,
   PanelLeftClose, PanelLeftOpen, Package, Search, ShoppingBag,
-  ShoppingCart, Sparkles, Truck, Users, UserSquare2,
+  ShoppingCart, Sparkles, Sun, Truck, Users, UserSquare2,
 } from "lucide-react";
+import { useTheme } from "@/lib/theme";
 import { CommandPalette } from "@/components/CommandPalette";
 import { BrandMark } from "@/components/BrandMark";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ const NAV: NavItem[] = [
 
 export default function Layout() {
   const { user, logout } = useAuth();
+  const { theme, toggle } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
@@ -246,8 +248,13 @@ export default function Layout() {
                 }}
               />
             </IconButton>
-            <IconButton size="md" aria-label="Toggle theme">
-              <Moon size={18} />
+            <IconButton
+              size="md"
+              onClick={toggle}
+              aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {theme === "dark" ? <Moon size={18} /> : <Sun size={18} />}
             </IconButton>
             <IconButton size="md" onClick={logout} aria-label="Sign out">
               <LogOut size={18} />
