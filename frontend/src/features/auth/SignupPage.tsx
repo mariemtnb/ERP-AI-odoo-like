@@ -7,9 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export default function LoginPage() {
-  const { login } = useAuth();
+export default function SignupPage() {
+  const { register } = useAuth();
   const navigate = useNavigate();
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -18,17 +20,27 @@ export default function LoginPage() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError("");
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
     setBusy(true);
     try {
-      await login(email, password);
+      await register({
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        password,
+      });
       navigate("/");
     } catch (err: any) {
+      const data = err?.response?.data;
       setError(
-        err?.response?.status === 401
-          ? "Invalid email or password."
-          : err?.response?.status === 429
-            ? "Too many attempts — try again in a minute."
-            : "Unable to sign in. Is the server running?"
+        data?.errors?.email
+          ? "That email is already registered."
+          : data
+            ? Object.values(data.errors ?? { d: [data.detail] }).flat().join(" ")
+            : "Unable to create your account. Is the server running?"
       );
     } finally {
       setBusy(false);
@@ -41,13 +53,36 @@ export default function LoginPage() {
         className="font-semibold"
         style={{ margin: 0, font: "600 26px/1 var(--font-sans)", letterSpacing: "-0.02em", color: "var(--text-strong)" }}
       >
-        Sign in
+        Create your account
       </h2>
       <p style={{ margin: "8px 0 28px", font: "400 14px/1 var(--font-sans)", color: "var(--text-muted)" }}>
-        Welcome back to your workspace.
+        Start with a workspace account in seconds.
       </p>
 
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="first_name">First name</Label>
+            <Input
+              id="first_name"
+              autoComplete="given-name"
+              placeholder="Amine"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="last_name">Last name</Label>
+            <Input
+              id="last_name"
+              autoComplete="family-name"
+              placeholder="Khelifi"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+            />
+          </div>
+        </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="email">Email</Label>
           <Input
@@ -65,8 +100,8 @@ export default function LoginPage() {
           <Input
             id="password"
             type="password"
-            autoComplete="current-password"
-            placeholder="••••••••"
+            autoComplete="new-password"
+            placeholder="At least 8 characters"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -74,19 +109,16 @@ export default function LoginPage() {
         </div>
         {error && <p style={{ font: "500 13px/1.4 var(--font-sans)", color: "var(--rose-400)" }}>{error}</p>}
         <Button type="submit" size="lg" className="mt-1.5 w-full" loading={busy}>
-          {busy ? "Signing in…" : "Sign in"}
+          {busy ? "Creating account…" : "Create account"}
           {!busy && <ArrowRight size={16} />}
         </Button>
       </form>
 
       <p style={{ margin: "22px 0 0", font: "400 14px/1 var(--font-sans)", color: "var(--text-muted)" }}>
-        New here?{" "}
-        <Link to="/signup" style={{ color: "var(--emerald-400)", fontWeight: 600 }}>
-          Create an account
+        Already have an account?{" "}
+        <Link to="/login" style={{ color: "var(--emerald-400)", fontWeight: 600 }}>
+          Sign in
         </Link>
-      </p>
-      <p style={{ margin: "16px 0 0", font: "400 12px/1.5 var(--font-mono)", color: "var(--text-faint)" }}>
-        Demo · admin@erp.local / Admin123!
       </p>
     </AuthShell>
   );

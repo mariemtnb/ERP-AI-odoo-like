@@ -7,6 +7,19 @@ export async function login(email: string, password: string): Promise<User> {
   return getMe();
 }
 
+export interface RegisterInput {
+  first_name: string;
+  last_name?: string;
+  email: string;
+  password: string;
+}
+
+export async function register(input: RegisterInput): Promise<User> {
+  const { data } = await api.post("/auth/register/", input);
+  tokens.set(data.access, data.refresh);
+  return getMe();
+}
+
 export async function getMe(): Promise<User> {
   const { data } = await api.get<User>("/auth/me/");
   return data;

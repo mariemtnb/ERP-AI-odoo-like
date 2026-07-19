@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { AuthProvider } from "@/features/auth/AuthContext";
 import LoginPage from "@/features/auth/LoginPage";
+import SignupPage from "@/features/auth/SignupPage";
 import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
 import InventoryPage from "@/features/inventory/InventoryPage";
 import AssistantPage from "@/features/assistant/AssistantPage";
@@ -25,6 +26,7 @@ export default function App() {
           <Routes>
             <Route path="/welcome" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
             <Route element={<ProtectedRoute />}>
               <Route element={<Layout />}>
                 <Route index element={<DashboardPage />} />

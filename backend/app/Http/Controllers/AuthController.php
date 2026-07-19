@@ -26,6 +26,32 @@ class AuthController extends Controller
         return ['access' => $access, 'refresh' => $refresh];
     }
 
+    /**
+     * Public self-service registration. Additive endpoint — creates an
+     * active user with the lowest role (employee) and signs them straight in.
+     * Does not alter any existing route, model or the RBAC contract.
+     */
+    public function register(Request $request)
+    {
+        $data = $request->validate([
+            'first_name' => ['required', 'string', 'max:150'],
+            'last_name' => ['sometimes', 'nullable', 'string', 'max:150'],
+            'email' => ['required', 'email', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8'],
+        ]);
+
+        $user = User::create([
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'] ?? '',
+            'email' => $data['email'],
+            'password' => $data['password'],
+            'role' => User::ROLE_EMPLOYEE,
+            'is_active' => true,
+        ]);
+
+        return response()->json($this->issuePair($user), 201);
+    }
+
     public function login(Request $request)
     {
         $data = $request->validate([
