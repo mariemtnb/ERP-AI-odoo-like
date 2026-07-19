@@ -2,76 +2,33 @@ import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Boxes, ChevronsLeft, Contact, FileText, LayoutDashboard, LogOut,
-  MessageSquare, Package, Search, ShoppingBag, ShoppingCart, Sparkles,
-  Truck, Users, UserSquare2,
+  Bell, Boxes, Contact, FileText, LayoutDashboard, LogOut, Moon,
+  PanelLeftClose, PanelLeftOpen, Package, Search, ShoppingBag,
+  ShoppingCart, Sparkles, Truck, Users, UserSquare2,
 } from "lucide-react";
 import { CommandPalette } from "@/components/CommandPalette";
-import { Tooltip } from "@/components/ui/tooltip";
+import { BrandMark } from "@/components/BrandMark";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
 import { useAuth } from "@/features/auth/AuthContext";
-import { cn } from "@/lib/utils";
 import type { Role } from "@/types";
 
-type NavItem = {
-  to: string;
-  label: string;
-  icon: typeof Users;
-  desc: string; // plain-language hover help
-  roles?: Role[];
-};
+type NavItem = { to: string; label: string; icon: typeof Users; roles?: Role[]; live?: boolean };
 
-const SECTIONS: { title: string; items: NavItem[] }[] = [
-  {
-    title: "Overview",
-    items: [
-      { to: "/", label: "Dashboard", icon: LayoutDashboard, desc: "See how the business is doing: money earned, sales and stock alerts" },
-    ],
-  },
-  {
-    title: "Operations",
-    items: [
-      { to: "/products", label: "Products", icon: Package, desc: "The list of things you sell — names, prices and stock" },
-      { to: "/inventory", label: "Inventory", icon: Boxes, desc: "Add or remove stock, and see the history of every change" },
-      { to: "/purchases", label: "Purchases", icon: ShoppingBag, desc: "Order goods from your suppliers and receive them into stock" },
-      { to: "/suppliers", label: "Suppliers", icon: Truck, desc: "The companies you buy from — names and contact details" },
-    ],
-  },
-  {
-    title: "Revenue",
-    items: [
-      { to: "/sales", label: "Sales", icon: ShoppingCart, desc: "Record what you sell and print invoices" },
-      { to: "/customers", label: "Customers", icon: UserSquare2, desc: "The people and companies who buy from you" },
-      { to: "/crm", label: "CRM", icon: Contact, desc: "Keep track of possible future customers and follow up with them" },
-    ],
-  },
-  {
-    title: "Intelligence",
-    items: [
-      { to: "/assistant", label: "AI Assistant", icon: MessageSquare, desc: "Ask questions in your own words — it answers and can do tasks for you" },
-      { to: "/reports", label: "Reports", icon: FileText, desc: "Printable summaries of sales, purchases and stock", roles: ["admin", "manager"] },
-    ],
-  },
-  {
-    title: "Administration",
-    items: [
-      { to: "/users", label: "Users", icon: Users, desc: "Who can log in, and what each person is allowed to do", roles: ["admin"] },
-    ],
-  },
+/* Flat nav list, order and icons per the prototype sidebar. */
+const NAV: NavItem[] = [
+  { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/products", label: "Products", icon: Package },
+  { to: "/inventory", label: "Inventory", icon: Boxes },
+  { to: "/customers", label: "Customers", icon: UserSquare2 },
+  { to: "/suppliers", label: "Suppliers", icon: Truck },
+  { to: "/purchases", label: "Purchases", icon: ShoppingBag },
+  { to: "/sales", label: "Sales", icon: ShoppingCart },
+  { to: "/crm", label: "CRM", icon: Contact },
+  { to: "/reports", label: "Reports", icon: FileText, roles: ["admin", "manager"] },
+  { to: "/assistant", label: "AI Assistant", icon: Sparkles, live: true },
+  { to: "/users", label: "Users", icon: Users, roles: ["admin"] },
 ];
-
-const PAGE_TITLES: Record<string, string> = {
-  "/": "Dashboard",
-  "/products": "Products",
-  "/inventory": "Inventory",
-  "/customers": "Customers",
-  "/suppliers": "Suppliers",
-  "/purchases": "Purchases",
-  "/sales": "Sales",
-  "/crm": "CRM",
-  "/reports": "Reports",
-  "/assistant": "AI Assistant",
-  "/users": "Users",
-};
 
 export default function Layout() {
   const { user, logout } = useAuth();
@@ -80,7 +37,6 @@ export default function Layout() {
   const [collapsed, setCollapsed] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
 
-  // ⌘K / Ctrl+K opens the command palette from anywhere.
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -92,177 +48,225 @@ export default function Layout() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const initials = (user?.first_name?.[0] ?? user?.email?.[0] ?? "?").toUpperCase();
+  const items = NAV.filter((i) => !i.roles || i.roles.includes(user!.role));
+  const initials =
+    ((user?.first_name?.[0] ?? "") + (user?.last_name?.[0] ?? "")).toUpperCase() ||
+    (user?.email?.[0] ?? "?").toUpperCase();
+  const fullName =
+    [user?.first_name, user?.last_name].filter(Boolean).join(" ") || user?.email;
 
   return (
-    <div className="flex min-h-dvh bg-bg">
+    <div className="flex min-h-dvh" style={{ background: "var(--bg-app)" }}>
       {/* ───────────── sidebar ───────────── */}
       <motion.aside
-        animate={{ width: collapsed ? 68 : 236 }}
-        transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
-        className="sticky top-0 z-30 flex h-dvh shrink-0 flex-col overflow-hidden
-                   border-r border-stroke-soft bg-surface/60 backdrop-blur-xl"
+        animate={{ width: collapsed ? 72 : 264 }}
+        transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+        className="flex shrink-0 flex-col overflow-hidden"
+        style={{ background: "var(--bg-panel)", borderRight: "1px solid var(--border-subtle)" }}
       >
-        {/* brand */}
-        <div className={cn("flex h-16 items-center gap-2.5 px-5", collapsed && "px-0 justify-center")}>
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/15 shadow-[inset_0_0_0_1px_hsl(var(--accent)/0.35)]">
-            <Sparkles className="h-4 w-4 text-accent-strong" />
-          </div>
+        {/* brand + collapse */}
+        <div
+          className="flex items-center"
+          style={{
+            height: "var(--topbar-h)",
+            justifyContent: collapsed ? "center" : "space-between",
+            padding: collapsed ? 0 : "0 18px",
+            borderBottom: "1px solid var(--border-subtle)",
+          }}
+        >
+          {collapsed ? <BrandMark size="sm" tileOnly /> : <BrandMark size="sm" />}
           {!collapsed && (
-            <motion.span
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="whitespace-nowrap text-[15px] font-semibold tracking-tight"
-            >
-              Nova<span className="text-accent-strong">ERP</span>
-            </motion.span>
+            <IconButton size="sm" onClick={() => setCollapsed(true)} aria-label="Collapse sidebar">
+              <PanelLeftClose size={16} />
+            </IconButton>
           )}
         </div>
+        {collapsed && (
+          <IconButton
+            size="md"
+            onClick={() => setCollapsed(false)}
+            aria-label="Expand sidebar"
+            className="mx-auto mt-2.5"
+          >
+            <PanelLeftOpen size={16} />
+          </IconButton>
+        )}
 
-        {/* nav sections */}
-        <nav className="flex-1 space-y-5 overflow-y-auto px-3 pb-4 pt-2">
-          {SECTIONS.map((section) => {
-            const items = section.items.filter(
-              (i) => !i.roles || i.roles.includes(user!.role)
-            );
-            if (items.length === 0) return null;
-            return (
-              <div key={section.title}>
-                {!collapsed && (
-                  <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-text-3">
-                    {section.title}
-                  </p>
-                )}
-                <ul className="space-y-0.5">
-                  {items.map(({ to, label, icon: Icon, desc }) => (
-                    <li key={to}>
-                      <Tooltip label={collapsed ? `${label} — ${desc}` : desc} side="right" className="w-full">
-                      <NavLink to={to} end={to === "/"} className="w-full">
-                        {({ isActive }) => (
-                          <span
-                            className={cn(
-                              "relative flex items-center gap-3 rounded-lg px-3 py-2 text-[13.5px] font-medium",
-                              "transition-colors duration-150",
-                              collapsed && "justify-center px-0",
-                              isActive
-                                ? "text-text"
-                                : "text-text-2 hover:bg-white/[0.035] hover:text-text"
-                            )}
-                          >
-                            {isActive && (
-                              <motion.span
-                                layoutId="nav-pill"
-                                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                                className="absolute inset-0 rounded-lg bg-accent/[0.12] shadow-[inset_2px_0_0_hsl(var(--accent))]"
-                              />
-                            )}
-                            <Icon
-                              className={cn(
-                                "relative h-[17px] w-[17px] shrink-0",
-                                isActive ? "text-accent-strong" : "text-text-3"
-                              )}
-                            />
-                            {!collapsed && <span className="relative whitespace-nowrap">{label}</span>}
-                          </span>
-                        )}
-                      </NavLink>
-                      </Tooltip>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            );
-          })}
+        {/* nav */}
+        <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto" style={{ padding: "12px" }}>
+          {!collapsed && <div className="eyebrow" style={{ padding: "10px 10px 6px" }}>Workspace</div>}
+          {items.map(({ to, label, icon: Icon, live }) => (
+            <NavLink key={to} to={to} end={to === "/"} title={label}>
+              {({ isActive }) => (
+                <span
+                  className="relative flex items-center gap-3 rounded-[10px] transition-colors duration-120"
+                  style={{
+                    justifyContent: collapsed ? "center" : "flex-start",
+                    padding: collapsed ? "10px 0" : "9px 10px",
+                    background: isActive ? "var(--surface-hover)" : "transparent",
+                    color: isActive ? "var(--text-strong)" : "var(--text-muted)",
+                    font: "500 14px/1 var(--font-sans)",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive)
+                      e.currentTarget.style.background =
+                        "color-mix(in oklab, var(--surface-hover) 55%, transparent)";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) e.currentTarget.style.background = "transparent";
+                  }}
+                >
+                  {isActive && !collapsed && (
+                    <span
+                      className="absolute rounded-full"
+                      style={{ left: 0, top: 8, bottom: 8, width: 3, background: "var(--emerald-400)" }}
+                    />
+                  )}
+                  <Icon size={18} color={isActive ? "var(--emerald-400)" : undefined} strokeWidth={1.75} />
+                  {!collapsed && <span>{label}</span>}
+                  {!collapsed && live && (
+                    <span
+                      className="ml-auto rounded-full"
+                      style={{ width: 6, height: 6, background: "var(--emerald-400)" }}
+                    />
+                  )}
+                </span>
+              )}
+            </NavLink>
+          ))}
         </nav>
 
-        {/* collapse toggle */}
-        <Tooltip
-          label={collapsed ? "Show the full menu again" : "Shrink the menu to make more room"}
-          side="right"
-          className="mx-3 mb-3"
-        >
-        <button
-          onClick={() => setCollapsed((v) => !v)}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="flex w-full items-center justify-center gap-2 rounded-lg py-2 text-text-3
-                     transition-colors duration-150 hover:bg-white/[0.035] hover:text-text"
-        >
-          <motion.span animate={{ rotate: collapsed ? 180 : 0 }} transition={{ duration: 0.25 }}>
-            <ChevronsLeft className="h-4 w-4" />
-          </motion.span>
-          {!collapsed && <span className="text-xs font-medium">Collapse</span>}
-        </button>
-        </Tooltip>
+        {/* user chip */}
+        <div style={{ padding: 12, borderTop: "1px solid var(--border-subtle)" }}>
+          <div
+            className="flex items-center gap-2.5"
+            style={{ padding: collapsed ? 0 : "6px 8px", justifyContent: collapsed ? "center" : "flex-start" }}
+          >
+            <div
+              className="grid shrink-0 place-items-center rounded-full font-semibold"
+              style={{
+                width: 34,
+                height: 34,
+                background: "linear-gradient(135deg,var(--emerald-500),var(--emerald-700))",
+                color: "var(--text-on-accent)",
+                font: "600 13px/1 var(--font-sans)",
+              }}
+            >
+              {initials}
+            </div>
+            {!collapsed && (
+              <div style={{ minWidth: 0 }}>
+                <div
+                  className="truncate"
+                  style={{ font: "500 13px/1.2 var(--font-sans)", color: "var(--text-strong)" }}
+                >
+                  {fullName}
+                </div>
+                <div
+                  style={{
+                    font: "400 11px/1 var(--font-sans)",
+                    color: "var(--text-faint)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    marginTop: 3,
+                  }}
+                >
+                  {user?.role}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </motion.aside>
 
       {/* ───────────── main column ───────────── */}
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* topbar */}
-        <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-stroke-soft bg-bg/75 px-6 backdrop-blur-xl">
-          <h1 className="mr-auto text-[17px] font-semibold tracking-tight">
-            {PAGE_TITLES[location.pathname] ?? ""}
-          </h1>
-
-          {/* global search */}
-          <Tooltip label="Jump to any page — just start typing what you need" side="bottom">
+        {/* glass topbar */}
+        <header
+          className="sticky top-0 z-20 flex items-center gap-4"
+          style={{
+            height: "var(--topbar-h)",
+            padding: "0 24px",
+            borderBottom: "1px solid var(--border-subtle)",
+            background: "color-mix(in oklab, var(--bg-app) 82%, transparent)",
+            backdropFilter: "blur(12px)",
+          }}
+        >
           <button
             onClick={() => setPaletteOpen(true)}
-            className="group hidden h-9 items-center gap-2.5 rounded-md bg-surface-2 pl-3 pr-2 text-sm text-text-3
-                       shadow-[inset_0_0_0_1px_hsl(var(--stroke-soft))] transition-all duration-200
-                       hover:text-text-2 hover:shadow-[inset_0_0_0_1px_hsl(var(--stroke))] sm:flex"
+            className="flex items-center gap-2.5"
+            style={{
+              width: 340,
+              maxWidth: "40vw",
+              height: 38,
+              padding: "0 12px",
+              borderRadius: 10,
+              background: "var(--surface-inset)",
+              border: "1px solid var(--border)",
+              color: "var(--text-faint)",
+              font: "400 13px/1 var(--font-sans)",
+              cursor: "pointer",
+            }}
           >
-            <Search className="h-3.5 w-3.5" />
-            <span className="pr-6">Search…</span>
-            <kbd className="rounded bg-surface-3 px-1.5 py-0.5 text-[10px] font-semibold text-text-3 transition-colors group-hover:text-text-2">
+            <Search size={16} /> Search or ask anything…
+            <span
+              style={{
+                marginLeft: "auto",
+                font: "500 11px/1 var(--font-mono)",
+                background: "var(--surface-hover)",
+                padding: "3px 6px",
+                borderRadius: 6,
+              }}
+            >
               ⌘K
-            </kbd>
+            </span>
           </button>
-          </Tooltip>
 
-          {/* ask AI */}
-          <Tooltip label="Your helper: ask anything in plain words, like “what sold best this month?”" side="bottom">
-          <button
-            onClick={() => navigate("/assistant")}
-            className="flex h-9 items-center gap-2 rounded-md bg-accent/[0.12] px-3.5 text-sm font-medium text-accent-strong
-                       shadow-[inset_0_0_0_1px_hsl(var(--accent)/0.3)] transition-all duration-200
-                       hover:bg-accent/[0.18] hover:shadow-accent-glow active:scale-[0.98]"
-          >
-            <Sparkles className="h-3.5 w-3.5" />
-            <span className="hidden md:inline">Ask AI</span>
-          </button>
-          </Tooltip>
-
-          {/* user */}
-          <div className="flex items-center gap-2.5 pl-1.5">
-            <Tooltip label={`You are signed in as ${user?.email} (${user?.role})`} side="bottom">
-              <div
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-3 text-xs font-semibold text-text
-                           shadow-[inset_0_0_0_1px_hsl(var(--stroke))]"
-              >
-                {initials}
-              </div>
-            </Tooltip>
-            <Tooltip label="Sign out of the app" side="bottom">
-              <button
-                onClick={logout}
-                aria-label="Sign out"
-                className="rounded-md p-2 text-text-3 transition-colors duration-150 hover:bg-surface-3 hover:text-text"
-              >
-                <LogOut className="h-4 w-4" />
-              </button>
-            </Tooltip>
+          <div className="ml-auto flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate("/assistant")}
+              icon={<Sparkles size={15} color="var(--emerald-400)" />}
+            >
+              Ask AI
+            </Button>
+            <IconButton size="md" aria-label="Notifications" style={{ position: "relative" }}>
+              <Bell size={18} />
+              <span
+                style={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  width: 7,
+                  height: 7,
+                  borderRadius: 999,
+                  background: "var(--rose-400)",
+                  border: "2px solid var(--bg-app)",
+                }}
+              />
+            </IconButton>
+            <IconButton size="md" aria-label="Toggle theme">
+              <Moon size={18} />
+            </IconButton>
+            <IconButton size="md" onClick={logout} aria-label="Sign out">
+              <LogOut size={18} />
+            </IconButton>
           </div>
         </header>
 
-        {/* page content with route transition */}
-        <main className="mx-auto w-full max-w-[1440px] flex-1 px-6 py-8 lg:px-10">
+        {/* content */}
+        <main
+          className="w-full flex-1"
+          style={{ padding: "36px 40px", maxWidth: "var(--content-max)", margin: "0 auto" }}
+        >
           <AnimatePresence mode="popLayout" initial={false}>
             <motion.div
               key={location.pathname}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
             >
               <Outlet />
             </motion.div>

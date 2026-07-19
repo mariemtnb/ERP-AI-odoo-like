@@ -1,366 +1,253 @@
-import { useState } from "react";
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
-import {
-  AlertTriangle, ArrowDownRight, ArrowUpRight, Banknote,
-  PackageOpen, ShoppingBag, ShoppingCart, TrendingUp,
-} from "lucide-react";
+import { Calendar, Check, Sparkles } from "lucide-react";
 import { getDashboardStats, getForecast } from "@/api/reports";
+import { useAuth } from "@/features/auth/AuthContext";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { KpiCard } from "@/components/ui/kpi-card";
+import { PageHead } from "@/components/ui/page-head";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
+import { Sparkline } from "@/components/ui/sparkline";
+import { useNavigate } from "react-router-dom";
 
-function firstOfMonth() {
+function monthRange() {
   const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10);
+  const from = new Date(d.getFullYear(), d.getMonth(), 1);
+  return { from: from.toISOString().slice(0, 10), to: d.toISOString().slice(0, 10) };
 }
-const today = () => new Date().toISOString().slice(0, 10);
+/** Previous window of equal length, immediately before `from`. */
+function previousRange(from: string, to: string) {
+  const a = new Date(from);
+  const b = new Date(to);
+  const days = Math.max(1, Math.round((b.getTime() - a.getTime()) / 86400000) + 1);
+  const prevTo = new Date(a.getTime() - 86400000);
+  const prevFrom = new Date(prevTo.getTime() - (days - 1) * 86400000);
+  return { from: prevFrom.toISOString().slice(0, 10), to: prevTo.toISOString().slice(0, 10) };
+}
+function pctDelta(current: number, previous: number): number {
+  if (!previous) return current > 0 ? 100 : 0;
+  return Math.round(((current - previous) / previous) * 1000) / 10;
+}
+/** Gentle 8-point micro-series ending near `value` — decorative KPI sparkline. */
+function microSeries(value: number, up: boolean): number[] {
+  const base = value || 1;
+  return Array.from({ length: 8 }, (_, i) => {
+    const t = i / 7;
+    const drift = up ? t : 1 - t;
+    const wobble = Math.sin(i * 1.7) * 0.05;
+    return base * (0.72 + drift * 0.28 + wobble);
+  });
+}
 
-const EASE = [0.22, 1, 0.36, 1] as const;
-const stagger = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.06 } },
-};
-const rise = {
-  hidden: { opacity: 0, y: 14 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: EASE } },
-};
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
+}
 
 export default function DashboardPage() {
-  const [from, setFrom] = useState(firstOfMonth());
-  const [to, setTo] = useState(today());
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const range = useMemo(monthRange, []);
+  const prev = useMemo(() => previousRange(range.from, range.to), [range]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["dashboard", from, to],
-    queryFn: () => getDashboardStats({ from, to }),
+    queryKey: ["dashboard", range.from, range.to],
+    queryFn: () => getDashboardStats(range),
+  });
+  const { data: prevData } = useQuery({
+    queryKey: ["dashboard", prev.from, prev.to],
+    queryFn: () => getDashboardStats(prev),
   });
   const { data: forecast } = useQuery({ queryKey: ["forecast"], queryFn: getForecast });
 
+  const revenueSeries = forecast?.daily_revenue.map((d) => d.revenue) ?? [];
+  const firstName = user?.first_name || (user?.email?.split("@")[0] ?? "there");
+
+  // headline insight, derived from the most urgent real signal
+  const risk = forecast?.stockout_risk?.[0];
+  const low = data?.low_stock?.[0];
+  const insight = risk
+    ? `${risk.name} is selling ~${risk.daily_consumption}/day and will run out in about ${risk.days_until_stockout} days. Consider a purchase order to avoid a stockout.`
+    : low
+      ? `${low.name} is low on stock (${Number(low.quantity_in_stock)}/${Number(low.min_stock_level)}). Consider a purchase order to restock before it runs out.`
+      : "Everything looks healthy right now — no stockouts on the horizon and stock is above minimums.";
+
   return (
-    <div className="space-y-8">
-      {/* period picker — quiet, right-aligned; the topbar owns the title */}
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <p className="text-sm text-text-3">
-          Your business at a glance for the selected period.
-        </p>
-        <div className="flex items-end gap-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="from">From</Label>
-            <Input id="from" type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="w-40" />
+    <div>
+      <PageHead title={`${greeting()}, ${firstName}`} sub="Here's what's moving across your business today.">
+        <Button variant="outline" size="md" icon={<Calendar size={16} />}>This month</Button>
+        <Button variant="primary" size="md" icon={<Sparkles size={16} />} onClick={() => navigate("/assistant")}>
+          Ask AI
+        </Button>
+      </PageHead>
+
+      {/* KPI row */}
+      <div className="mb-5 grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))" }}>
+        {isLoading || !data ? (
+          Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[128px] rounded-lg" />)
+        ) : (
+          <>
+            {(() => {
+              const d = pctDelta(data.revenue, prevData?.revenue ?? 0);
+              return (
+                <KpiCard
+                  label="Revenue"
+                  value={Math.round(data.revenue).toLocaleString("en-US")}
+                  unit="TND"
+                  delta={d}
+                  spark={revenueSeries.length >= 2 ? revenueSeries : microSeries(data.revenue, d >= 0)}
+                />
+              );
+            })()}
+            {(() => {
+              const d = pctDelta(data.sales_count, prevData?.sales_count ?? 0);
+              return (
+                <KpiCard label="Sales orders" value={data.sales_count.toLocaleString("en-US")} delta={d} spark={microSeries(data.sales_count, d >= 0)} />
+              );
+            })()}
+            {(() => {
+              const d = pctDelta(data.purchases_count, prevData?.purchases_count ?? 0);
+              return (
+                <KpiCard label="Purchase orders" value={data.purchases_count.toLocaleString("en-US")} delta={d} spark={microSeries(data.purchases_count, d >= 0)} />
+              );
+            })()}
+            {(() => {
+              const d = pctDelta(data.purchases_amount, prevData?.purchases_amount ?? 0);
+              return (
+                <KpiCard label="Purchases" value={Math.round(data.purchases_amount).toLocaleString("en-US")} unit="TND" delta={d} spark={microSeries(data.purchases_amount, d >= 0)} />
+              );
+            })()}
+          </>
+        )}
+      </div>
+
+      {/* Revenue trend + AI insight */}
+      <div className="mb-5 grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))" }}>
+        <div className="erp-card" style={{ padding: 22 }}>
+          <div className="mb-4 flex items-start justify-between">
+            <div>
+              <span className="eyebrow">Revenue trend</span>
+              <div className="tnum" style={{ font: "600 26px/1 var(--font-sans)", letterSpacing: "-0.03em", color: "var(--text-strong)", marginTop: 8 }}>
+                {Math.round(data?.revenue ?? 0).toLocaleString("en-US")}{" "}
+                <span style={{ font: "500 14px/1 var(--font-sans)", color: "var(--text-muted)" }}>TND</span>
+              </div>
+            </div>
+            {forecast && (
+              <Badge tone="emerald" dot>
+                {forecast.trend_per_day >= 0 ? "+" : ""}
+                {forecast.trend_per_day.toFixed(1)}/day
+              </Badge>
+            )}
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="to">To</Label>
-            <Input id="to" type="date" value={to} onChange={(e) => setTo(e.target.value)} className="w-40" />
+          {revenueSeries.length >= 2 ? (
+            <Sparkline data={revenueSeries} up fill w={640} h={150} className="w-full" />
+          ) : (
+            <div style={{ height: 150 }} className="grid place-items-center text-sm" >
+              <span style={{ color: "var(--text-faint)" }}>Not enough sales yet to chart a trend.</span>
+            </div>
+          )}
+        </div>
+
+        <div
+          className="erp-card relative overflow-hidden"
+          style={{ padding: 0, background: "linear-gradient(160deg, color-mix(in oklab, var(--emerald-500) 12%, var(--surface-card)), var(--surface-card))" }}
+        >
+          <div className="flex h-full flex-col gap-3.5" style={{ padding: 22 }}>
+            <div className="flex items-center gap-2.5">
+              <div className="grid place-items-center rounded-[10px]" style={{ width: 34, height: 34, background: "var(--emerald-glow)", color: "var(--emerald-400)" }}>
+                <Sparkles size={18} />
+              </div>
+              <span style={{ font: "600 15px/1 var(--font-sans)", color: "var(--text-strong)" }}>AI insight</span>
+            </div>
+            <p style={{ margin: 0, font: "400 14px/1.55 var(--font-sans)", color: "var(--text-body)" }}>{insight}</p>
+            <div className="mt-auto flex gap-2">
+              <Button variant="primary" size="sm" icon={<Check size={14} />} onClick={() => navigate("/purchases")}>
+                Draft PO
+              </Button>
+              <Button variant="ghost" size="sm">Dismiss</Button>
+            </div>
           </div>
         </div>
       </div>
 
-      {isLoading || !data ? (
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-32" />
-          ))}
-        </div>
-      ) : (
-        <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-8">
-          {/* KPI row */}
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-            <Kpi
-              icon={Banknote}
-              label="Revenue"
-              value={data.revenue.toFixed(2)}
-              accent
-              trend={forecast?.trend_per_day}
-            />
-            <Kpi icon={ShoppingCart} label="Sales" value={String(data.sales_count)} />
-            <Kpi icon={ShoppingBag} label="Purchase orders" value={String(data.purchases_count)} />
-            <Kpi icon={PackageOpen} label="Purchases amount" value={data.purchases_amount.toFixed(2)} />
-          </div>
-
-          {/* forecast chart — the hero */}
-          {forecast && (
-            <motion.div variants={rise}>
-              <Card className="overflow-hidden">
-                <CardHeader className="flex flex-row items-start justify-between">
-                  <div>
-                    <CardTitle>Revenue trajectory</CardTitle>
-                    <p className="mt-1 text-[13px] text-text-3">
-                      Last {forecast.window_days} days · projection {forecast.horizon_days} days ahead
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="tnum text-2xl font-semibold tracking-tight text-accent-strong">
-                      {forecast.projected_total.toFixed(2)}
-                    </p>
-                    <p className="flex items-center justify-end gap-1 text-xs text-text-3">
-                      {forecast.trend_per_day >= 0 ? (
-                        <ArrowUpRight className="h-3.5 w-3.5 text-positive" />
-                      ) : (
-                        <ArrowDownRight className="h-3.5 w-3.5 text-danger" />
-                      )}
-                      {forecast.trend_per_day >= 0 ? "+" : ""}
-                      {forecast.trend_per_day.toFixed(2)}/day
-                    </p>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <AreaChart
-                    history={forecast.daily_revenue.map((d) => d.revenue)}
-                    projection={forecast.projection.map((d) => d.revenue)}
-                    days={forecast.window_days}
-                  />
-                </CardContent>
-              </Card>
-            </motion.div>
+      {/* Top products + Low stock */}
+      <div className="grid gap-4" style={{ gridTemplateColumns: "1fr 1fr" }}>
+        <SectionCard
+          title="Top products"
+          action={
+            <Button variant="ghost" size="sm" iconRight={<span aria-hidden>→</span>} onClick={() => navigate("/products")}>
+              View all
+            </Button>
+          }
+        >
+          {(data?.top_products ?? []).length === 0 ? (
+            <EmptyRow text="No confirmed sales in this period." />
+          ) : (
+            data!.top_products.map((p) => (
+              <div key={p.product__id} className="flex items-center justify-between" style={{ padding: "12px 0", borderBottom: "1px solid var(--border-subtle)" }}>
+                <div className="flex flex-col gap-1">
+                  <span style={{ font: "500 14px/1 var(--font-sans)", color: "var(--text-strong)" }}>{p.product__name}</span>
+                  <span style={{ font: "400 12px/1 var(--font-mono)", color: "var(--text-faint)" }}>
+                    {p.product__sku} · {Number(p.quantity_sold)} sold
+                  </span>
+                </div>
+                <span style={{ font: "500 14px/1 var(--font-mono)", color: "var(--emerald-400)" }}>
+                  {Number(p.revenue).toLocaleString("en-US")}
+                </span>
+              </div>
+            ))
           )}
+        </SectionCard>
 
-          {/* insight cards */}
-          <div className="grid gap-5 lg:grid-cols-3">
-            <motion.div variants={rise}>
-              <Card className="h-full">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-accent-strong" /> Top products
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {data.top_products.length === 0 ? (
-                    <p className="py-6 text-center text-sm text-text-3">
-                      No confirmed sales in this period.
-                    </p>
-                  ) : (
-                    <ul className="space-y-1">
-                      {data.top_products.map((p, i) => (
-                        <li
-                          key={p.product__id}
-                          className="flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors duration-150 hover:bg-white/[0.03]"
-                        >
-                          <span className="tnum w-5 text-center text-xs font-semibold text-text-3">
-                            {i + 1}
-                          </span>
-                          <div className="min-w-0">
-                            <p className="truncate text-sm text-text">{p.product__name}</p>
-                            <p className="font-mono text-[11px] text-text-3">{p.product__sku}</p>
-                          </div>
-                          <div className="ml-auto text-right">
-                            <p className="tnum text-sm text-text">{Number(p.quantity_sold)} sold</p>
-                            <p className="tnum text-xs text-positive">{Number(p.revenue).toFixed(2)}</p>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            <motion.div variants={rise}>
-              <Card className="h-full">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4 text-warning" /> Low stock
-                    {data.low_stock.length > 0 && <Badge tone="red">{data.low_stock.length}</Badge>}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {data.low_stock.length === 0 ? (
-                    <p className="py-6 text-center text-sm text-text-3">
-                      All products above their minimum level.
-                    </p>
-                  ) : (
-                    <ul className="space-y-1">
-                      {data.low_stock.map((p) => (
-                        <li
-                          key={p.id}
-                          className="flex items-center justify-between rounded-lg px-2 py-2.5 transition-colors duration-150 hover:bg-white/[0.03]"
-                        >
-                          <div className="min-w-0">
-                            <p className="truncate text-sm text-text">{p.name}</p>
-                            <p className="font-mono text-[11px] text-text-3">{p.sku}</p>
-                          </div>
-                          <p className="tnum text-sm text-danger">
-                            {Number(p.quantity_in_stock)}{" "}
-                            <span className="text-text-3">/ min {Number(p.min_stock_level)}</span>
-                          </p>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            <motion.div variants={rise}>
-              <Card className="h-full">
-                <CardHeader>
-                  <CardTitle>Stockout risk</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {!forecast || forecast.stockout_risk.length === 0 ? (
-                    <p className="py-6 text-center text-sm text-text-3">
-                      No consumption recorded recently.
-                    </p>
-                  ) : (
-                    <ul className="space-y-1">
-                      {forecast.stockout_risk.map((r) => (
-                        <li
-                          key={r.id}
-                          className="flex items-center justify-between rounded-lg px-2 py-2.5 transition-colors duration-150 hover:bg-white/[0.03]"
-                        >
-                          <div className="min-w-0">
-                            <p className="truncate text-sm text-text">{r.name}</p>
-                            <p className="font-mono text-[11px] text-text-3">{r.sku}</p>
-                          </div>
-                          <p
-                            className={cn(
-                              "tnum text-sm",
-                              r.days_until_stockout <= 14 ? "text-danger" : "text-text-2"
-                            )}
-                          >
-                            ~{r.days_until_stockout}d
-                            <span className="ml-1.5 text-xs text-text-3">
-                              ({r.daily_consumption}/day)
-                            </span>
-                          </p>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-          </div>
-        </motion.div>
-      )}
+        <SectionCard
+          title="Low stock"
+          action={<Badge tone="rose">{data?.low_stock.length ?? 0} items</Badge>}
+        >
+          {(data?.low_stock ?? []).length === 0 ? (
+            <EmptyRow text="All products above their minimum level." />
+          ) : (
+            data!.low_stock.map((p) => {
+              const qty = Number(p.quantity_in_stock);
+              const min = Number(p.min_stock_level) || 1;
+              const pct = Math.min(100, (qty / min) * 100);
+              return (
+                <div key={p.id} style={{ padding: "12px 0", borderBottom: "1px solid var(--border-subtle)" }}>
+                  <div className="mb-2 flex justify-between">
+                    <span style={{ font: "500 14px/1 var(--font-sans)", color: "var(--text-strong)" }}>{p.name}</span>
+                    <span style={{ font: "500 13px/1 var(--font-mono)", color: "var(--rose-400)" }}>{qty} / {Number(p.min_stock_level)}</span>
+                  </div>
+                  <div style={{ height: 5, borderRadius: 999, background: "var(--surface-hover)", overflow: "hidden" }}>
+                    <div style={{ width: `${pct}%`, height: "100%", borderRadius: 999, background: "var(--rose-400)" }} />
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </SectionCard>
+      </div>
     </div>
   );
 }
 
-function Kpi({
-  icon: Icon,
-  label,
-  value,
-  accent = false,
-  trend,
-}: {
-  icon: typeof Banknote;
-  label: string;
-  value: string;
-  accent?: boolean;
-  trend?: number;
-}) {
+function SectionCard({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <motion.div variants={rise}>
-      <Card
-        className={cn(
-          "group relative overflow-hidden p-6 hover:-translate-y-0.5 hover:shadow-3",
-          accent && "shadow-[inset_0_0_0_1px_hsl(var(--accent)/0.25)]"
-        )}
-      >
-        {accent && <div className="glow-accent pointer-events-none absolute -right-10 -top-14 h-40 w-40" />}
-        <div className="flex items-center justify-between">
-          <p className="text-[13px] font-medium text-text-3">{label}</p>
-          <Icon
-            className={cn(
-              "h-4 w-4 transition-transform duration-300 group-hover:scale-110",
-              accent ? "text-accent-strong" : "text-text-3"
-            )}
-          />
-        </div>
-        <p
-          className={cn(
-            "tnum mt-3 text-[34px] font-semibold leading-none tracking-tight",
-            accent ? "text-gradient" : "text-text"
-          )}
-        >
-          {value}
-        </p>
-        {trend !== undefined && (
-          <p className="mt-2.5 flex items-center gap-1 text-xs text-text-3">
-            {trend >= 0 ? (
-              <ArrowUpRight className="h-3.5 w-3.5 text-positive" />
-            ) : (
-              <ArrowDownRight className="h-3.5 w-3.5 text-danger" />
-            )}
-            {trend >= 0 ? "+" : ""}
-            {trend.toFixed(2)}/day trend
-          </p>
-        )}
-      </Card>
-    </motion.div>
+    <div className="erp-card flex flex-col">
+      <div className="flex items-center justify-between" style={{ padding: "18px 22px", borderBottom: "1px solid var(--border-subtle)" }}>
+        <h3 style={{ margin: 0, font: "600 16px/1 var(--font-sans)", letterSpacing: "-0.01em", color: "var(--text-strong)" }}>{title}</h3>
+        {action}
+      </div>
+      <div style={{ padding: "8px 22px 14px" }}>{children}</div>
+    </div>
   );
 }
 
-/** Gradient area chart: solid history, dashed emerald projection. Pure SVG. */
-function AreaChart({
-  history,
-  projection,
-  days,
-}: {
-  history: number[];
-  projection: number[];
-  days: number;
-}) {
-  // Build a continuous series over the window, indexed by day offset.
-  const all = [...Array(days).fill(0).map((_, i) => history[i] ?? 0), ...projection];
-  const max = Math.max(...all, 1) * 1.15;
-  const w = 900;
-  const h = 180;
-  const step = w / Math.max(all.length - 1, 1);
-  const x = (i: number) => i * step;
-  const y = (v: number) => h - (v / max) * (h - 16) - 6;
-
-  const histPts = Array(days).fill(0).map((_, i) => [x(i), y(history[i] ?? 0)] as const);
-  const projPts = projection.map((v, i) => [x(days - 1 + i + 1), y(v)] as const);
-  const line = (pts: readonly (readonly [number, number])[]) =>
-    pts.map(([px, py], i) => `${i === 0 ? "M" : "L"}${px.toFixed(1)},${py.toFixed(1)}`).join(" ");
-
-  const histArea = `${line(histPts)} L${histPts.at(-1)![0]},${h} L0,${h} Z`;
-  const bridge = [[histPts.at(-1)![0], histPts.at(-1)![1]] as const, ...projPts];
-
+function EmptyRow({ text }: { text: string }) {
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="h-44 w-full" preserveAspectRatio="none" role="img" aria-label="Revenue history and 14-day projection">
-      <defs>
-        <linearGradient id="hist-fill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity="0.28" />
-          <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      {/* soft horizontal guides */}
-      {[0.25, 0.5, 0.75].map((f) => (
-        <line key={f} x1="0" x2={w} y1={h * f} y2={h * f} stroke="hsl(var(--stroke-soft))" strokeWidth="1" strokeDasharray="2 6" />
-      ))}
-      <motion.path
-        d={histArea}
-        fill="url(#hist-fill)"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
-      />
-      <motion.path
-        d={line(histPts)}
-        fill="none"
-        stroke="hsl(var(--accent-strong))"
-        strokeWidth="2"
-        strokeLinecap="round"
-        initial={{ pathLength: 0 }}
-        animate={{ pathLength: 1 }}
-        transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-      />
-      <motion.path
-        d={line(bridge)}
-        fill="none"
-        stroke="hsl(var(--accent-soft))"
-        strokeWidth="2"
-        strokeDasharray="5 5"
-        strokeLinecap="round"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.8 }}
-        transition={{ duration: 0.6, delay: 0.9 }}
-      />
-    </svg>
+    <p style={{ padding: "22px 0", textAlign: "center", font: "400 13px/1.4 var(--font-sans)", color: "var(--text-faint)" }}>
+      {text}
+    </p>
   );
 }
