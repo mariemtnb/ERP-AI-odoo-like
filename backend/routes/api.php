@@ -116,6 +116,17 @@ Route::prefix('v1')->group(function () {
         Route::post('sales/{sale}/cancel', [SaleController::class, 'cancel']);
         Route::match(['get', 'post'], 'sales/{sale}/invoice', [SaleController::class, 'invoice']);
 
+        // --- accounting: everyone reads; managers/admins write ---
+        Route::get('accounting/accounts', [\App\Http\Controllers\AccountingController::class, 'accounts']);
+        Route::get('accounting/entries', [\App\Http\Controllers\AccountingController::class, 'entries']);
+        Route::get('accounting/entries/{entry}', [\App\Http\Controllers\AccountingController::class, 'showEntry']);
+        Route::middleware('role:admin,manager')->group(function () {
+            Route::post('accounting/accounts', [\App\Http\Controllers\AccountingController::class, 'storeAccount']);
+            Route::post('accounting/entries', [\App\Http\Controllers\AccountingController::class, 'storeEntry']);
+            Route::get('accounting/trial-balance', [\App\Http\Controllers\AccountingController::class, 'trialBalance']);
+            Route::get('accounting/income-statement', [\App\Http\Controllers\AccountingController::class, 'incomeStatement']);
+        });
+
         // --- dashboard & reports ---
         Route::get('dashboard/stats', [ReportingController::class, 'dashboard']);
         Route::get('dashboard/forecast', [ReportingController::class, 'forecast']);

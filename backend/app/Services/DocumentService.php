@@ -103,6 +103,10 @@ class DocumentService
                 'received_date' => now()->toDateString(),
             ]);
 
+            // Dr Inventory / Cr Accounts payable — same transaction as the
+            // stock movement, so books and stock can never diverge.
+            AccountingService::postPurchaseReceived($po->refresh(), $user);
+
             return $po;
         });
     }
@@ -147,6 +151,9 @@ class DocumentService
             }
             $sale->update(['status' => Sale::STATUS_CONFIRMED]);
 
+            // Dr Receivable / Cr Revenue, plus Dr COGS / Cr Inventory.
+            AccountingService::postSaleConfirmed($sale->load('lines.product'), $user);
+
             return $sale;
         });
     }
@@ -170,6 +177,11 @@ class DocumentService
                         referenceId: $sale->id,
                     );
                 }
+            }
+            // A cancelled sale posts a mirror-image entry; the ledger is
+            // append-only, exactly like the stock ledger.
+            if ($sale->status === Sale::STATUS_CONFIRMED) {
+                AccountingService::reverseSale($sale, $user);
             }
             $sale->update(['status' => Sale::STATUS_CANCELLED]);
 

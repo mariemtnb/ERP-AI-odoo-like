@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Boxes, Contact, FileText, LayoutDashboard, MessageSquare, Package,
+  BookOpen, Boxes, Contact, FileText, LayoutDashboard, MessageSquare, Package,
   Search, ShoppingBag, ShoppingCart, Truck, Users, UserSquare2,
 } from "lucide-react";
 import { useAuth } from "@/features/auth/AuthContext";
@@ -17,6 +17,7 @@ const DESTINATIONS = [
   { to: "/purchases", label: "Purchases", icon: ShoppingBag, hint: "Orders, receiving, approvals" },
   { to: "/sales", label: "Sales", icon: ShoppingCart, hint: "Sales & invoices" },
   { to: "/crm", label: "CRM", icon: Contact, hint: "Lead pipeline" },
+  { to: "/accounting", label: "Accounting", icon: BookOpen, hint: "Journal, trial balance, P&L", roles: ["admin", "manager"] },
   { to: "/reports", label: "Reports", icon: FileText, hint: "Analytics & PDF export", roles: ["admin", "manager"] },
   { to: "/assistant", label: "AI Assistant", icon: MessageSquare, hint: "Ask anything, act on data" },
   { to: "/users", label: "Users", icon: Users, hint: "Accounts & roles", roles: ["admin"] },

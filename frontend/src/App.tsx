@@ -6,6 +6,7 @@ import { AuthProvider } from "@/features/auth/AuthContext";
 import LoginPage from "@/features/auth/LoginPage";
 import SignupPage from "@/features/auth/SignupPage";
 import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
+import AccountingPage from "@/features/accounting/AccountingPage";
 import InventoryPage from "@/features/inventory/InventoryPage";
 import AssistantPage from "@/features/assistant/AssistantPage";
 import CrmPage from "@/features/crm/CrmPage";
@@ -34,6 +35,7 @@ export default function App() {
                 <Route index element={<DashboardPage />} />
                 <Route element={<ProtectedRoute roles={["admin", "manager"]} />}>
                   <Route path="reports" element={<ReportsPage />} />
+                  <Route path="accounting" element={<AccountingPage />} />
                 </Route>
                 <Route path="products" element={<ProductsPage />} />
                 <Route path="inventory" element={<InventoryPage />} />

@@ -127,6 +127,36 @@ def build_tools(token: str) -> list:
         return _fmt(http.get("/leads", params=params))
 
     @tool
+    def get_trial_balance(date_from: str = "", date_to: str = "") -> dict:
+        """Accounting trial balance for a period (dates YYYY-MM-DD): every
+        account with its total debit, credit and balance. Requires manager or
+        admin role."""
+        params = {}
+        if date_from:
+            params["from"] = date_from
+        if date_to:
+            params["to"] = date_to
+        return _fmt(http.get("/accounting/trial-balance", params=params))
+
+    @tool
+    def get_income_statement(date_from: str = "", date_to: str = "") -> dict:
+        """Profit and loss for a period (dates YYYY-MM-DD): income accounts,
+        expense accounts and the net profit. Requires manager or admin role."""
+        params = {}
+        if date_from:
+            params["from"] = date_from
+        if date_to:
+            params["to"] = date_to
+        return _fmt(http.get("/accounting/income-statement", params=params))
+
+    @tool
+    def list_journal_entries(reference_type: str = "") -> dict:
+        """Recent double-entry journal entries with their lines. Optionally
+        filter by reference_type (sale, purchase, manual)."""
+        params = {"reference_type": reference_type} if reference_type else {}
+        return _fmt(http.get("/accounting/entries", params=params))
+
+    @tool
     def search_documents(query: str) -> dict:
         """Semantic search in the company's document base (contracts, notes,
         policies…). Returns the most relevant passages with similarity scores.
@@ -291,6 +321,7 @@ def build_tools(token: str) -> list:
         get_customer_history, get_dashboard_statistics, get_sales_report,
         get_sales_forecast, get_stock_report, list_recent_sales, search_documents,
         get_warehouse_stock, search_leads,
+        get_trial_balance, get_income_statement, list_journal_entries,
         create_customer, update_customer, create_supplier, create_product,
         update_stock, create_purchase_order, create_sale, confirm_sale,
         generate_invoice, transfer_stock, create_lead,
