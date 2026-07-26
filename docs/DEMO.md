@@ -55,6 +55,32 @@ Key sentences for the jury:
    product?"* → `search_documents` finds the answer in the ingested policy
    (pgvector semantic search, local embeddings).
 
+## 5ter. Tunisia localization (3 min)
+
+The part that makes this an ERP for a *Tunisian* SME, not a generic one.
+
+1. **Settings → Localization**: matricule fiscal and its parts, régime réel,
+   TVA 19%, timbre fiscal, TND with 3 decimals. Then the **Account mapping**
+   tab — point out that every posting resolves through it, and hit
+   *Apply Tunisian chart* to switch the whole ledger to 411/401/5112…
+   *"Nothing legal is hardcoded — a change in practice is a settings change."*
+2. **Cheques & Kembyelet**: open the cleared cheque, show its history — each
+   step names the journal entry it produced. Then open the **bounced** one:
+   *"Receiving a cheque doesn't settle a debt, it changes its form — which is
+   exactly why the bounce can put it back."* Show the reversal and the
+   *clients douteux* reclassification.
+3. **Installments**: the plan with a 400 DT down payment and 6 mensualités —
+   one paid in cash, one by transfer, one overdue. Point at the schedule.
+4. **Reconciliation**: pick the "REMISE CHEQUE" line → the deposited cheque is
+   ranked first → **Match**. It clears the cheque in one gesture.
+   *"That bank line is the moment it cleared."*
+5. **Dashboard**: the treasury row — cheques to collect, bounced instruments,
+   overdue instalments, lines to reconcile, cash vs bank collections.
+
+Ask the assistant, in French: *"Quels chèques sont impayés ?"* then
+*"Pourquoi cette écriture a-t-elle été comptabilisée ?"* — it calls
+`explain_journal_entry` and answers from the recorded facts.
+
 ## 6. Architecture slide (1 min)
 Show diagrams/: ERD, use-case, agent sequence. Stack: React+TS, Laravel 12,
 PostgreSQL, FastAPI+LangGraph, Ollama (qwen3:32b), Docker.

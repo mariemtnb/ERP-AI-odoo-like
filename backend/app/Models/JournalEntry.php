@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class JournalEntry extends Model
 {
     protected $fillable = [
-        'number', 'entry_date', 'memo', 'reference_type', 'reference_id', 'created_by',
+        'number', 'entry_date', 'journal_id', 'memo', 'reference_type', 'reference_id', 'created_by',
     ];
 
     protected $attributes = ['memo' => '', 'reference_type' => 'manual'];
@@ -30,6 +30,12 @@ class JournalEntry extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /** Accounting journal (ventes, achats, banque, chèques, effets…). */
+    public function journal(): BelongsTo
+    {
+        return $this->belongsTo(Journal::class);
+    }
+
     public function totalDebit(): float
     {
         return (float) $this->lines->sum('debit');
@@ -41,6 +47,9 @@ class JournalEntry extends Model
             'id' => $this->id,
             'number' => $this->number,
             'entry_date' => $this->entry_date?->format('Y-m-d'),
+            'journal_id' => $this->journal_id,
+            'journal_code' => $this->journal?->code,
+            'journal_name' => $this->journal?->name,
             'memo' => $this->memo,
             'reference_type' => $this->reference_type,
             'reference_id' => $this->reference_id,
