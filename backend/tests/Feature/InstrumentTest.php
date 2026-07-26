@@ -223,14 +223,34 @@ class InstrumentTest extends TestCase
         InstrumentService::deposit($cheque->refresh(), $this->manager, $this->bankAccount->id);
     }
 
-    public function test_a_cleared_cheque_is_final(): void
+    public function test_a_cleared_cheque_can_still_be_returned_and_takes_the_money_back(): void
     {
-        $cheque = $this->incomingCheque();
+        // Banks credit "sauf bonne fin" and can debit the money back days
+        // later, so clearing is not the end of the story.
+        $cheque = $this->incomingCheque(1000);
         InstrumentService::deposit($cheque, $this->manager, $this->bankAccount->id);
         InstrumentService::clear($cheque->refresh(), $this->manager);
+        $this->assertEqualsWithDelta(1000, $this->balanceOf('bank'), 0.001);
+
+        InstrumentService::bounce($cheque->refresh(), $this->manager, reason: 'Retour tardif');
+
+        $this->assertSame(PaymentInstrument::STATUS_BOUNCED, $cheque->refresh()->status);
+        // The money comes out of the BANK — not the collection account, which
+        // was already emptied when it cleared.
+        $this->assertEqualsWithDelta(0, $this->balanceOf('bank'), 0.001);
+        $this->assertEqualsWithDelta(0, $this->balanceOf('cheques_in_collection'), 0.001);
+        // And the customer owes us again.
+        $this->assertEqualsWithDelta(0, $this->balanceOf('receivable'), 0.001);
+    }
+
+    public function test_settled_and_cancelled_are_terminal(): void
+    {
+        $cheque = $this->incomingCheque();
+        InstrumentService::cancel($cheque, $this->manager, 'Data entry error');
+        $this->assertSame(PaymentInstrument::STATUS_CANCELLED, $cheque->refresh()->status);
 
         $this->expectException(InvalidTransition::class);
-        InstrumentService::bounce($cheque->refresh(), $this->manager);
+        InstrumentService::deposit($cheque->refresh(), $this->manager, $this->bankAccount->id);
     }
 
     public function test_a_bounced_cheque_can_be_redeposited_or_settled(): void

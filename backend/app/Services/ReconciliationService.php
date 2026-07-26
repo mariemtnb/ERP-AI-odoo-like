@@ -129,7 +129,14 @@ class ReconciliationService
         return $rows;
     }
 
-    /** Tunisian statements commonly use d/m/Y; ISO is accepted too. */
+    /**
+     * Tunisian statements commonly use d/m/Y; ISO is accepted too.
+     *
+     * Carbon runs in strict mode here, so createFromFormat *throws* on a
+     * mismatch rather than returning false — each candidate format has to be
+     * attempted defensively. Anything unparseable yields null, which the
+     * caller treats as "not a data row" (totals and footer lines).
+     */
     private static function parseDate(string $value): ?string
     {
         $value = trim($value);
@@ -138,7 +145,13 @@ class ReconciliationService
         }
 
         foreach (['d/m/Y', 'd-m-Y', 'd.m.Y', 'Y-m-d', 'Y/m/d', 'd/m/y'] as $format) {
-            $date = Carbon::createFromFormat($format, $value);
+            try {
+                $date = Carbon::createFromFormat($format, $value);
+            } catch (\Throwable) {
+                continue;
+            }
+            // Round-trip guard: rejects "31/02/2026" style values that PHP
+            // would otherwise silently roll over into March.
             if ($date && $date->format($format) === $value) {
                 return $date->toDateString();
             }
