@@ -265,6 +265,30 @@ class PermissionEngineTest extends TestCase
         );
     }
 
+    public function test_restrictions_do_not_travel_up_the_role_hierarchy(): void
+    {
+        // Inheritance propagates capability upward — an admin has everything an
+        // employee has. Propagating a RESTRICTION the same way would invert the
+        // hierarchy, hiding a column from employees and from their bosses too.
+        $employeeRole = Role::where('key', 'employee')->firstOrFail();
+        FieldPermission::create([
+            'role_id' => $employeeRole->id, 'subject_type' => 'products',
+            'field' => 'cost_price', 'access' => FieldPermission::HIDDEN,
+        ]);
+
+        $this->assertContains(
+            'cost_price',
+            PermissionService::fieldAccess($this->employee, \App\Models\Product::class)['hidden']
+        );
+        foreach ([$this->manager, $this->admin] as $senior) {
+            $this->assertNotContains(
+                'cost_price',
+                PermissionService::fieldAccess($senior, \App\Models\Product::class)['hidden'],
+                'A junior role\'s restriction must not apply to a senior one.'
+            );
+        }
+    }
+
     public function test_an_explicit_visible_rule_re_grants_a_hidden_field(): void
     {
         $employeeRole = Role::where('key', 'employee')->firstOrFail();

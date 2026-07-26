@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -9,7 +10,10 @@ use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject
 {
-    use HasFactory, Notifiable;
+    // Account changes — who created, re-roled or deactivated whom — are
+    // exactly what an auditor asks about first. The password is redacted by
+    // AuditService before anything is written.
+    use Auditable, HasFactory, Notifiable;
 
     public const ROLE_ADMIN = 'admin';
     public const ROLE_MANAGER = 'manager';
