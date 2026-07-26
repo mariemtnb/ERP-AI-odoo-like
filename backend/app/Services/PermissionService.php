@@ -153,6 +153,32 @@ class PermissionService
         return array_values(array_unique($ids));
     }
 
+    /**
+     * Roles the user holds *directly* — no lineage walk.
+     *
+     * Restrictions (object and field rules) resolve against these, never
+     * against the inherited chain. Inheritance propagates capability upward:
+     * an admin has everything an employee has. Propagating a *restriction* the
+     * same way would invert the hierarchy — hiding a column from employees
+     * would hide it from their managers too.
+     */
+    public static function directRoleIdsFor(User $user): array
+    {
+        $ids = [];
+
+        if ($base = Role::where('key', $user->role)->first()) {
+            $ids[] = $base->id;
+        }
+
+        $extra = DB::table('user_roles')
+            ->where('user_id', $user->id)
+            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->pluck('role_id')
+            ->all();
+
+        return array_values(array_unique(array_merge($ids, $extra)));
+    }
+
     /** Flat list of permission keys, for the frontend to drive its UI. */
     public static function keysFor(User $user): array
     {
@@ -208,10 +234,11 @@ class PermissionService
             return false;
         }
 
+        // Direct roles only — a restriction must not travel up the hierarchy.
         $rules = ObjectPermission::where('subject_type', $type)
             ->where(fn ($q) => $q
                 ->where('user_id', $user->id)
-                ->orWhereIn('role_id', self::roleIdsFor($user)))
+                ->orWhereIn('role_id', self::directRoleIdsFor($user)))
             ->where('ability', $ability)
             ->where(fn ($q) => $q
                 ->whereNull('subject_id')
@@ -266,10 +293,12 @@ class PermissionService
     {
         $type = self::subjectType($subject);
 
+        // Direct roles only, for the same reason as object rules: hiding a
+        // column from employees must not hide it from their manager.
         $rules = FieldPermission::where('subject_type', $type)
             ->where(fn ($q) => $q
                 ->where('user_id', $user->id)
-                ->orWhereIn('role_id', self::roleIdsFor($user)))
+                ->orWhereIn('role_id', self::directRoleIdsFor($user)))
             ->get();
 
         $hidden = [];
