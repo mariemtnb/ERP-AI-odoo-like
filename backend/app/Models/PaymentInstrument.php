@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,6 +17,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class PaymentInstrument extends Model
 {
+    use Auditable;
+
     public const KIND_CHEQUE = 'cheque';
     public const KIND_TRAITE = 'traite';
     public const KINDS = [self::KIND_CHEQUE, self::KIND_TRAITE];

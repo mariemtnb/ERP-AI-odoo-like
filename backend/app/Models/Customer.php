@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Customer extends Model
 {
+    use Auditable;
+
     protected $fillable = ['name', 'email', 'phone', 'address', 'notes', 'is_active'];
 
     protected $attributes = ['email' => '', 'phone' => '', 'address' => '', 'notes' => ''];

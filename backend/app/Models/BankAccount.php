@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,6 +13,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class BankAccount extends Model
 {
+    use Auditable;
+
     protected $fillable = [
         'bank_id', 'label', 'branch', 'rib', 'iban', 'account_number', 'currency',
         'gl_account_id', 'opening_balance', 'opening_date', 'current_balance',
