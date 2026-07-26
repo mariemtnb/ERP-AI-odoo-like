@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /** Double-entry journal entry header. Always balanced (see AccountingService). */
 class JournalEntry extends Model
 {
+    use Auditable;
+
     protected $fillable = [
         'number', 'entry_date', 'journal_id', 'memo', 'reference_type', 'reference_id', 'created_by',
     ];

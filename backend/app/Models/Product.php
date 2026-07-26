@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
+    use Auditable;
+
     protected $fillable = [
         'sku', 'name', 'category_id', 'description', 'cost_price',
         'sale_price', 'unit', 'min_stock_level', 'is_active',

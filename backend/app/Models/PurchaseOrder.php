@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PurchaseOrder extends Model
 {
+    use Auditable;
+
     public const STATUS_DRAFT = 'draft';
     public const STATUS_PENDING_APPROVAL = 'pending_approval';
     public const STATUS_CONFIRMED = 'confirmed';
