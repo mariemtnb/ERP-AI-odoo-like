@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Bell, BookOpen, Boxes, Contact, FileText, LayoutDashboard, LogOut, Moon,
-  PanelLeftClose, PanelLeftOpen, Package, Search, ShoppingBag,
+  Bell, BookOpen, Boxes, CalendarClock, Contact, FileText, Landmark,
+  LayoutDashboard, LogOut, Moon, PanelLeftClose, PanelLeftOpen, Package,
+  ReceiptText, Scale, Search, Settings, ShoppingBag,
   ShoppingCart, Sparkles, Sun, Truck, Users, UserSquare2,
 } from "lucide-react";
 import { useTheme } from "@/lib/theme";
@@ -27,9 +28,15 @@ const NAV: NavItem[] = [
   { to: "/sales", label: "Sales", icon: ShoppingCart },
   { to: "/crm", label: "CRM", icon: Contact },
   { to: "/accounting", label: "Accounting", icon: BookOpen, roles: ["admin", "manager"] },
+  // Treasury — cheques, effets, instalments and the bank.
+  { to: "/instruments", label: "Cheques & Kembyelet", icon: ReceiptText, roles: ["admin", "manager"] },
+  { to: "/installments", label: "Installments", icon: CalendarClock, roles: ["admin", "manager"] },
+  { to: "/banking", label: "Banking", icon: Landmark, roles: ["admin", "manager"] },
+  { to: "/reconciliation", label: "Reconciliation", icon: Scale, roles: ["admin", "manager"] },
   { to: "/reports", label: "Reports", icon: FileText, roles: ["admin", "manager"] },
   { to: "/assistant", label: "AI Assistant", icon: Sparkles, live: true },
   { to: "/users", label: "Users", icon: Users, roles: ["admin"] },
+  { to: "/settings/localization", label: "Localization", icon: Settings, roles: ["admin"] },
 ];
 
 export default function Layout() {

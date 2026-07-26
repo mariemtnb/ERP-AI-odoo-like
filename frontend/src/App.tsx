@@ -7,6 +7,11 @@ import LoginPage from "@/features/auth/LoginPage";
 import SignupPage from "@/features/auth/SignupPage";
 import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
 import AccountingPage from "@/features/accounting/AccountingPage";
+import BankingPage from "@/features/treasury/BankingPage";
+import InstallmentsPage from "@/features/treasury/InstallmentsPage";
+import InstrumentsPage from "@/features/treasury/InstrumentsPage";
+import LocalizationPage from "@/features/settings/LocalizationPage";
+import ReconciliationPage from "@/features/treasury/ReconciliationPage";
 import InventoryPage from "@/features/inventory/InventoryPage";
 import AssistantPage from "@/features/assistant/AssistantPage";
 import CrmPage from "@/features/crm/CrmPage";
@@ -36,6 +41,10 @@ export default function App() {
                 <Route element={<ProtectedRoute roles={["admin", "manager"]} />}>
                   <Route path="reports" element={<ReportsPage />} />
                   <Route path="accounting" element={<AccountingPage />} />
+                  <Route path="instruments" element={<InstrumentsPage />} />
+                  <Route path="installments" element={<InstallmentsPage />} />
+                  <Route path="banking" element={<BankingPage />} />
+                  <Route path="reconciliation" element={<ReconciliationPage />} />
                 </Route>
                 <Route path="products" element={<ProductsPage />} />
                 <Route path="inventory" element={<InventoryPage />} />
@@ -59,6 +68,7 @@ export default function App() {
                 <Route path="assistant" element={<AssistantPage />} />
                 <Route element={<ProtectedRoute roles={["admin"]} />}>
                   <Route path="users" element={<UsersPage />} />
+                  <Route path="settings/localization" element={<LocalizationPage />} />
                 </Route>
               </Route>
             </Route>

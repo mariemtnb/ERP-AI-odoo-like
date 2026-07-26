@@ -2,9 +2,16 @@
 
 use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BankController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\InstallmentController;
+use App\Http\Controllers\InstrumentController;
+use App\Http\Controllers\LocalizationController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ReconciliationController;
+use App\Http\Controllers\TreasuryController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\ReportingController;
 use App\Http\Controllers\SaleController;
@@ -126,6 +133,100 @@ Route::prefix('v1')->group(function () {
             Route::get('accounting/trial-balance', [\App\Http\Controllers\AccountingController::class, 'trialBalance']);
             Route::get('accounting/income-statement', [\App\Http\Controllers\AccountingController::class, 'incomeStatement']);
         });
+
+        /*
+        |--------------------------------------------------------------------
+        | Tunisia localization layer
+        |--------------------------------------------------------------------
+        | Same RBAC shape as the rest of the API: everyone reads, managers and
+        | admins write. Anything that posts to the ledger (instrument
+        | lifecycle, payments, matching) is manager/admin only — an employee
+        | can look up a cheque but cannot clear or bounce one.
+        */
+
+        // --- localization settings: everyone reads, admins configure ---
+        Route::get('localization/profile', [LocalizationController::class, 'profile']);
+        Route::get('localization/journals', [LocalizationController::class, 'journals']);
+        Route::get('localization/mappings', [LocalizationController::class, 'mappings']);
+        Route::middleware('role:admin')->group(function () {
+            Route::match(['put', 'patch'], 'localization/profile', [LocalizationController::class, 'updateProfile']);
+            Route::post('localization/journals', [LocalizationController::class, 'storeJournal']);
+            Route::match(['put', 'patch'], 'localization/mappings', [LocalizationController::class, 'updateMappings']);
+            Route::post('localization/chart-template', [LocalizationController::class, 'applyChartTemplate']);
+        });
+
+        // --- banks & bank accounts ---
+        Route::get('banks', [BankController::class, 'banks']);
+        Route::get('bank-accounts', [BankController::class, 'accounts']);
+        Route::get('bank-accounts/{bankAccount}', [BankController::class, 'showAccount']);
+        Route::middleware('role:admin,manager')->group(function () {
+            Route::post('banks', [BankController::class, 'storeBank']);
+            Route::match(['put', 'patch'], 'banks/{bank}', [BankController::class, 'updateBank']);
+            Route::post('bank-accounts', [BankController::class, 'storeAccount']);
+            Route::match(['put', 'patch'], 'bank-accounts/{bankAccount}', [BankController::class, 'updateAccount']);
+        });
+
+        // --- bank statement lines ---
+        Route::get('bank-transactions', [BankController::class, 'transactions']);
+        Route::get('bank-transactions/{bankTransaction}', [BankController::class, 'showTransaction']);
+        Route::middleware('role:admin,manager')->group(function () {
+            Route::post('bank-transactions', [BankController::class, 'storeTransaction']);
+            Route::post('bank-transactions/import', [BankController::class, 'importTransactions']);
+            Route::post('bank-transactions/preview', [BankController::class, 'previewImport']);
+        });
+
+        // --- reconciliation ---
+        Route::get('reconciliation/report', [ReconciliationController::class, 'report'])
+            ->middleware('role:admin,manager');
+        Route::get('reconciliation/pending', [ReconciliationController::class, 'pending']);
+        Route::get('reconciliation/{bankTransaction}/suggestions', [ReconciliationController::class, 'suggestions']);
+        Route::middleware('role:admin,manager')->group(function () {
+            Route::post('reconciliation/{bankTransaction}/match', [ReconciliationController::class, 'match']);
+            Route::post('reconciliation/{bankTransaction}/dispute', [ReconciliationController::class, 'dispute']);
+            Route::delete('reconciliation/matches/{match}', [ReconciliationController::class, 'unmatch']);
+        });
+
+        // --- cheques & effets de commerce (kembyelet) ---
+        Route::get('instruments', [InstrumentController::class, 'index']);
+        Route::get('instruments/summary', [InstrumentController::class, 'summary']);
+        Route::get('instruments/{instrument}', [InstrumentController::class, 'show']);
+        Route::get('attachments/{attachment}', [InstrumentController::class, 'downloadAttachment']);
+        Route::middleware('role:admin,manager')->group(function () {
+            Route::post('instruments', [InstrumentController::class, 'store']);
+            Route::match(['put', 'patch'], 'instruments/{instrument}', [InstrumentController::class, 'update']);
+            Route::post('instruments/{instrument}/receive', [InstrumentController::class, 'receive']);
+            Route::post('instruments/{instrument}/issue', [InstrumentController::class, 'issue']);
+            Route::post('instruments/{instrument}/deposit', [InstrumentController::class, 'deposit']);
+            Route::post('instruments/{instrument}/pending', [InstrumentController::class, 'markPending']);
+            Route::post('instruments/{instrument}/clear', [InstrumentController::class, 'clear']);
+            Route::post('instruments/{instrument}/bounce', [InstrumentController::class, 'bounce']);
+            Route::post('instruments/{instrument}/settle', [InstrumentController::class, 'settle']);
+            Route::post('instruments/{instrument}/cancel', [InstrumentController::class, 'cancel']);
+            Route::post('instruments/{instrument}/attachments', [InstrumentController::class, 'attach']);
+        });
+
+        // --- installment plans ("khlas bel taqsit") ---
+        Route::get('installment-plans', [InstallmentController::class, 'index']);
+        Route::get('installment-plans/{plan}', [InstallmentController::class, 'show']);
+        Route::get('installment-plans/{plan}/history', [InstallmentController::class, 'history']);
+        Route::get('installments/overdue', [InstallmentController::class, 'overdue']);
+        Route::get('customers/{customerId}/credit', [InstallmentController::class, 'customerCredit'])
+            ->whereNumber('customerId');
+        Route::middleware('role:admin,manager')->group(function () {
+            Route::post('installment-plans', [InstallmentController::class, 'store']);
+            Route::post('installment-plans/{plan}/cancel', [InstallmentController::class, 'cancel']);
+            Route::post('installments/{installment}/pay', [InstallmentController::class, 'pay']);
+            Route::post('installments/refresh-overdue', [InstallmentController::class, 'refreshOverdue']);
+        });
+
+        // --- payments ---
+        Route::get('payments', [PaymentController::class, 'index']);
+        Route::get('payments/summary', [PaymentController::class, 'summary']);
+        Route::get('payments/{payment}', [PaymentController::class, 'show']);
+        Route::post('payments', [PaymentController::class, 'store'])->middleware('role:admin,manager');
+
+        // --- treasury dashboard ---
+        Route::get('dashboard/treasury', [TreasuryController::class, 'dashboard']);
 
         // --- dashboard & reports ---
         Route::get('dashboard/stats', [ReportingController::class, 'dashboard']);

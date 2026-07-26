@@ -40,7 +40,19 @@ class AccountingTest extends TestCase
 
     public function test_default_chart_of_accounts_is_seeded(): void
     {
-        $this->assertSame(8, Account::count());
+        // The eight generic accounts the core posting rules depend on. The
+        // localization migration adds the Tunisian chart alongside these, so
+        // assert on the accounts themselves rather than on a total count.
+        foreach ([
+            Account::CASH, Account::RECEIVABLE, Account::INVENTORY, Account::PAYABLE,
+            Account::EQUITY, Account::REVENUE, Account::COGS, '6000',
+        ] as $code) {
+            $this->assertTrue(
+                Account::where('code', $code)->exists(),
+                "Core account {$code} is missing from the chart."
+            );
+        }
+
         $this->assertSame('Sales revenue', Account::where('code', Account::REVENUE)->value('name'));
         $this->assertTrue(Account::where('code', Account::INVENTORY)->first()->isDebitNormal());
         $this->assertFalse(Account::where('code', Account::PAYABLE)->first()->isDebitNormal());

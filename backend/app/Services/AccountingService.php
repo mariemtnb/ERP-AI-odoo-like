@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Exceptions\UnbalancedEntry;
 use App\Models\Account;
+use App\Models\Journal;
 use App\Models\JournalEntry;
 use App\Models\JournalEntryLine;
 use App\Models\PurchaseOrder;
@@ -30,6 +31,10 @@ class AccountingService
      *
      * @param  array<int, array{account:string|int, debit?:float|string, credit?:float|string, label?:string}>  $lines
      *         `account` is an account code (string) or id (int).
+     * @param  string|null  $journalCode  accounting journal to file the entry
+     *         under (VT, BQ, CH, EF…). Optional — entries without one are
+     *         reported as miscellaneous, which is how every entry predating
+     *         the localization layer behaves.
      */
     public static function post(
         array $lines,
@@ -38,6 +43,7 @@ class AccountingService
         string $referenceType = 'manual',
         ?int $referenceId = null,
         ?string $date = null,
+        ?string $journalCode = null,
     ): JournalEntry {
         if (count($lines) < 2) {
             throw new UnbalancedEntry('A journal entry needs at least two lines.');
@@ -60,10 +66,11 @@ class AccountingService
             throw new UnbalancedEntry('Entry total must be greater than zero.');
         }
 
-        return DB::transaction(function () use ($lines, $user, $memo, $referenceType, $referenceId, $date) {
+        return DB::transaction(function () use ($lines, $user, $memo, $referenceType, $referenceId, $date, $journalCode) {
             $entry = JournalEntry::create([
                 'number' => DocumentService::nextNumber('JE', JournalEntry::class),
                 'entry_date' => $date ?? now()->toDateString(),
+                'journal_id' => Journal::idFor($journalCode),
                 'memo' => $memo,
                 'reference_type' => $referenceType,
                 'reference_id' => $referenceId,
@@ -124,6 +131,7 @@ class AccountingService
             referenceType: 'sale',
             referenceId: $sale->id,
             date: $sale->sale_date?->toDateString(),
+            journalCode: Journal::SALES,
         );
     }
 
@@ -148,6 +156,7 @@ class AccountingService
             referenceType: 'purchase',
             referenceId: $po->id,
             date: $po->received_date?->toDateString(),
+            journalCode: Journal::PURCHASE,
         );
     }
 
@@ -179,6 +188,7 @@ class AccountingService
             memo: "Cancellation of {$sale->number}",
             referenceType: 'sale',
             referenceId: $sale->id,
+            journalCode: Journal::SALES,
         );
     }
 

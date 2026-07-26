@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar, Check, Sparkles } from "lucide-react";
 import { getDashboardStats, getForecast } from "@/api/reports";
+import { TreasuryCards } from "@/features/dashboard/TreasuryCards";
 import { useAuth } from "@/features/auth/AuthContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -123,6 +124,8 @@ export default function DashboardPage() {
           </>
         )}
       </div>
+
+      <TreasuryCards />
 
       {/* Revenue trend + AI insight */}
       <div className="mb-5 grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))" }}>
