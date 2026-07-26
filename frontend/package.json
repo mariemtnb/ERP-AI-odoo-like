@@ -27,6 +27,13 @@
     "tailwind-merge": "^3.0.1",
     "three": "^0.170.0"
   },
+  "comment:optionalDependencies": "Rollup ships its native binary per platform as an optional dep. The lockfile was originally generated inside the Alpine (musl) container, so it carried only the musl build — breaking `npm ci` on glibc CI runners and on Windows dev machines. Pinning every platform we build on keeps the lockfile portable.",
+  "optionalDependencies": {
+    "@rollup/rollup-darwin-arm64": "4.62.2",
+    "@rollup/rollup-linux-x64-gnu": "4.62.2",
+    "@rollup/rollup-linux-x64-musl": "4.62.2",
+    "@rollup/rollup-win32-x64-msvc": "4.62.2"
+  },
   "devDependencies": {
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
