@@ -23,7 +23,11 @@ class EnsureActiveUser
     {
         $user = $request->user();
 
-        if ($user && ! $user->is_active) {
+        // Deny only on an explicit false. An absent attribute means the
+        // instance was never hydrated with it — locking those out would turn
+        // a missing column read into a lockout, which is the wrong failure
+        // mode for an auth gate.
+        if ($user && $user->getAttribute('is_active') !== null && ! $user->is_active) {
             return response()->json(
                 ['detail' => 'This account has been deactivated.'],
                 401

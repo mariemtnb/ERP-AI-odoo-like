@@ -25,6 +25,11 @@ class User extends Authenticatable implements JWTSubject
 
     protected $hidden = ['password'];
 
+    // Mirrors the column default, so a freshly created instance agrees with
+    // what the database will hold. Without it `is_active` is simply absent
+    // in memory until the row is re-read, which reads as "not active".
+    protected $attributes = ['is_active' => true];
+
     protected function casts(): array
     {
         return [
