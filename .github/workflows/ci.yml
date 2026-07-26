@@ -40,9 +40,17 @@ jobs:
           key: composer-${{ matrix.php }}-${{ hashFiles('backend/composer.lock') }}
           restore-keys: composer-${{ matrix.php }}-
 
+      - name: Validate composer.json against composer.lock
+        working-directory: backend
+        run: composer validate --no-check-all --no-check-publish
+
       - name: Install dependencies
         working-directory: backend
         run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Audit dependencies for known vulnerabilities
+        working-directory: backend
+        run: composer audit
 
       - name: Prepare environment
         working-directory: backend
