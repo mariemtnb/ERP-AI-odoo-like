@@ -424,7 +424,77 @@ it describes what the system is configured to do and defers to the accountant.
 
 ---
 
-## 12. Decision Log
+## 12. Administration Layer (Phase 1)
+
+Enterprise foundations added on top of the business modules: organisation
+structure, a permission engine, an audit trail and feature flags.
+
+### 12.1 Additive by construction
+
+The permission engine did **not** replace the existing RBAC. `users.role`
+remains the source of truth for the built-in roles, and `EnsureRole` runs its
+original `in_array($user->role, $roles)` check *first*. Custom roles are an
+extra way **in** — a user holding a role that inherits from `manager` satisfies
+`role:manager` — never a way to be locked out. Every pre-existing test passes
+unchanged, which is the property that matters.
+
+New routes should prefer the finer-grained `can.perm:sales.confirm`; existing
+routes keep their `role:` groups until each module is migrated deliberately.
+
+### 12.2 Permission resolution
+
+First decisive answer wins:
+
+1. `user_permissions` — explicit per-user grant/deny, optionally time-boxed
+2. role lineage — the user's role and everything it inherits
+3. deny by default
+
+Within a level a **deny beats an allow**, so an inherited grant can be revoked
+without unpicking the hierarchy. An unknown permission key is denied, never
+treated as an open door.
+
+**Restrictions do not inherit.** Object and field rules resolve against
+*directly held* roles only. Inheritance propagates capability upward — an admin
+has everything an employee has — but propagating a restriction the same way
+would invert the hierarchy, hiding a column from employees *and* from their
+managers. Object rules likewise **narrow** an existing permission and can never
+widen one: a user who cannot `sales.update` at all is not rescued by an object
+grant.
+
+### 12.3 Audit trail
+
+An `Auditable` trait hooks a model's own lifecycle events, so auditing an
+existing model is one line and touches neither its logic nor any controller.
+Captured: who, when, IP, browser, URL, method, old and new values, changed
+fields only, a business reason, AI attribution, and a batch id grouping bulk
+operations.
+
+Two deliberate properties: secrets are redacted before anything is written, and
+writes are **best-effort** — a logging failure must never roll back the invoice
+it was observing.
+
+Permission changes go to a separate `permission_audits` table. "Who could do
+what, when" is the first question an auditor asks and should not have to be
+dug out of a table full of row edits.
+
+### 12.4 Numbering sequences
+
+Replaces the `count()`-based scheme, which had two real defects: two concurrent
+requests could read the same count and mint duplicate numbers, and deleting a
+record made the next one reuse a number already printed on a document. The
+counter is now reserved under a row lock, with a documented fallback to the old
+behaviour when no sequence row exists.
+
+### 12.5 Feature flags
+
+Modules are gated at the middleware and return **404, not 403** — a disabled
+module should look absent rather than forbidden, so probing the API cannot map
+out which features exist. An unknown flag defaults to **enabled**: a missing row
+must never silently disable a working module.
+
+---
+
+## 13. Decision Log
 
 | # | Decision | Rationale |
 |---|---|---|
