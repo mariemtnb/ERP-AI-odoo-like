@@ -343,8 +343,16 @@ identical, only the vocabulary and the resolved accounts differ.
 ```
 incoming:  draft → received → deposited → pending_clearance → cleared
                                        ↘ bounced → deposited | settled
+                                          cleared → bounced   (sauf bonne fin)
 outgoing:  draft → issued → cleared | bounced → issued | settled
+                            cleared → bounced
 ```
+
+`cleared → bounced` is deliberate: banks credit *sauf bonne fin* and can debit
+the money back days later when the instrument is returned. The bounce posting
+credits back whichever account is actually holding the money — the bank if it
+already cleared, the collection account if it had not — so the treasury
+accounts cannot end up overstated.
 
 Every transition posts its own balanced entry and appends an immutable
 `instrument_events` row carrying the journal entry it produced, so books and

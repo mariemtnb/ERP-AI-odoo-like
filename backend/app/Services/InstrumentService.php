@@ -40,7 +40,10 @@ class InstrumentService
             PaymentInstrument::STATUS_DEPOSITED => [PaymentInstrument::STATUS_PENDING, PaymentInstrument::STATUS_CLEARED, PaymentInstrument::STATUS_BOUNCED],
             PaymentInstrument::STATUS_PENDING => [PaymentInstrument::STATUS_CLEARED, PaymentInstrument::STATUS_BOUNCED],
             PaymentInstrument::STATUS_BOUNCED => [PaymentInstrument::STATUS_DEPOSITED, PaymentInstrument::STATUS_SETTLED],
-            PaymentInstrument::STATUS_CLEARED => [],
+            // Banks credit "sauf bonne fin" and can debit the money back days
+            // later when the cheque is returned — a cleared instrument is not
+            // final in practice, so the books must be able to follow.
+            PaymentInstrument::STATUS_CLEARED => [PaymentInstrument::STATUS_BOUNCED],
             PaymentInstrument::STATUS_SETTLED => [],
             PaymentInstrument::STATUS_CANCELLED => [],
         ],
@@ -48,7 +51,7 @@ class InstrumentService
             PaymentInstrument::STATUS_DRAFT => [PaymentInstrument::STATUS_ISSUED, PaymentInstrument::STATUS_CANCELLED],
             PaymentInstrument::STATUS_ISSUED => [PaymentInstrument::STATUS_CLEARED, PaymentInstrument::STATUS_BOUNCED, PaymentInstrument::STATUS_CANCELLED],
             PaymentInstrument::STATUS_BOUNCED => [PaymentInstrument::STATUS_ISSUED, PaymentInstrument::STATUS_SETTLED],
-            PaymentInstrument::STATUS_CLEARED => [],
+            PaymentInstrument::STATUS_CLEARED => [PaymentInstrument::STATUS_BOUNCED],
             PaymentInstrument::STATUS_SETTLED => [],
             PaymentInstrument::STATUS_CANCELLED => [],
         ],
@@ -343,35 +346,39 @@ class InstrumentService
             $amount = (float) $i->amount;
             $fees = round($fees, 3);
 
-            // Whichever account currently carries the instrument gets credited back.
-            $carrying = $from === PaymentInstrument::STATUS_RECEIVED
-                ? self::accountKey($i)
-                : self::accountKey($i, 'collection');
+            /*
+             * Credit back whichever account is actually holding the money.
+             * An instrument returned after it already cleared takes the money
+             * out of the bank; one returned while still in collection never
+             * reached the bank at all. Getting this wrong would leave the
+             * treasury accounts permanently overstated.
+             */
+            $carryingCode = match (true) {
+                $from === PaymentInstrument::STATUS_CLEARED => self::bankCode($i),
+                $from === PaymentInstrument::STATUS_RECEIVED => AccountMap::code(self::accountKey($i)),
+                default => AccountMap::code(self::accountKey($i, 'collection')),
+            };
 
             $partyKey = $i->isIncoming() && $moveToDoubtful
                 ? 'doubtful_receivable'
                 : self::partyKey($i);
 
-            if ($i->isIncoming()) {
-                $lines = [
+            $lines = $i->isIncoming()
+                ? [
+                    // The customer owes us again.
                     ['account' => AccountMap::code($partyKey), 'debit' => $amount, 'label' => "Unpaid {$i->number}"],
-                    ['account' => AccountMap::code($carrying), 'credit' => $amount, 'label' => "Unpaid {$i->number}"],
-                ];
-                if ($fees > 0) {
-                    // Return charges are ours until they are re-invoiced.
-                    $lines[] = ['account' => AccountMap::code('bank_fees'), 'debit' => $fees, 'label' => "Return fees {$i->number}"];
-                    $lines[] = ['account' => self::bankCode($i), 'credit' => $fees, 'label' => "Return fees {$i->number}"];
-                }
-            } else {
-                // Our own instrument was refused: the supplier is owed again.
-                $lines = [
-                    ['account' => AccountMap::code(self::accountKey($i)), 'debit' => $amount, 'label' => "Unpaid {$i->number}"],
+                    ['account' => $carryingCode, 'credit' => $amount, 'label' => "Unpaid {$i->number}"],
+                ]
+                : [
+                    // Our own instrument was refused: the supplier is owed again.
+                    ['account' => $carryingCode, 'debit' => $amount, 'label' => "Unpaid {$i->number}"],
                     ['account' => AccountMap::code(self::partyKey($i)), 'credit' => $amount, 'label' => "Unpaid {$i->number}"],
                 ];
-                if ($fees > 0) {
-                    $lines[] = ['account' => AccountMap::code('bank_fees'), 'debit' => $fees, 'label' => "Return fees {$i->number}"];
-                    $lines[] = ['account' => self::bankCode($i), 'credit' => $fees, 'label' => "Return fees {$i->number}"];
-                }
+
+            if ($fees > 0) {
+                // Return charges are ours until they are re-invoiced.
+                $lines[] = ['account' => AccountMap::code('bank_fees'), 'debit' => $fees, 'label' => "Return fees {$i->number}"];
+                $lines[] = ['account' => self::bankCode($i), 'credit' => $fees, 'label' => "Return fees {$i->number}"];
             }
 
             $entry = AccountingService::post(
