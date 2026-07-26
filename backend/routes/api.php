@@ -269,7 +269,7 @@ Route::prefix('v1')->group(function () {
         Route::get('me/context', function (Request $request) {
             return response()->json([
                 'permissions' => \App\Services\PermissionService::keysFor($request->user()),
-                'features' => \App\Models\FeatureFlag::all(),
+                'features' => \App\Models\FeatureFlag::map(),
                 'company' => \App\Models\Company::current()?->toApi(),
             ]);
         });
