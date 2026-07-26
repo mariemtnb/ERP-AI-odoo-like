@@ -29,8 +29,15 @@ class FeatureFlag extends Model
         self::$cache = null;
     }
 
-    /** @return array<string,bool> */
-    public static function all(): array
+    /**
+     * Every flag as key => enabled.
+     *
+     * Deliberately NOT named all(): that would clash with Eloquent's
+     * Model::all($columns) and fatal at class-load time.
+     *
+     * @return array<string,bool>
+     */
+    public static function map(): array
     {
         if (self::$cache === null) {
             try {
@@ -52,7 +59,7 @@ class FeatureFlag extends Model
      */
     public static function enabled(string $key): bool
     {
-        return self::all()[$key] ?? true;
+        return self::map()[$key] ?? true;
     }
 
     public function toApi(): array
