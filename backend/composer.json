@@ -6,7 +6,6 @@
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
-        "_comment_php": "8.4 is the real floor: composer.lock pins Symfony 8.1, which requires php >=8.4.1. The previous ^8.3 was aspirational and would fail at install time.",
         "php": "^8.4",
         "barryvdh/laravel-dompdf": "^3.1",
         "laravel/framework": "^13.8",
