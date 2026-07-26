@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureActiveUser;
 use App\Http\Middleware\EnsureFeature;
 use App\Http\Middleware\EnsurePermission;
 use App\Http\Middleware\EnsureRole;
@@ -23,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
             // until each module is migrated deliberately.
             'can.perm' => EnsurePermission::class,
             'feature' => EnsureFeature::class,
+            'active' => EnsureActiveUser::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

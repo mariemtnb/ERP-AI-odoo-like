@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\FeatureFlag;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -27,12 +28,24 @@ class AuthController extends Controller
     }
 
     /**
-     * Public self-service registration. Additive endpoint — creates an
-     * active user with the lowest role (employee) and signs them straight in.
-     * Does not alter any existing route, model or the RBAC contract.
+     * Self-service registration.
+     *
+     * Gated behind the `self_registration` feature flag, which ships OFF.
+     * An employee account can read the entire ERP — every customer, supplier,
+     * price, stock level, journal entry, cheque and bank account — so leaving
+     * this open to the internet would hand a company's whole book of business
+     * to anyone who could reach the login page. Companies that genuinely want
+     * open sign-up can switch it on in Administration → Modules.
      */
     public function register(Request $request)
     {
+        if (! FeatureFlag::enabled('self_registration')) {
+            return response()->json(
+                ['detail' => 'Self-registration is disabled. Ask an administrator for an account.'],
+                403
+            );
+        }
+
         $data = $request->validate([
             'first_name' => ['required', 'string', 'max:150'],
             'last_name' => ['sometimes', 'nullable', 'string', 'max:150'],
@@ -81,6 +94,11 @@ class AuthController extends Controller
             }
             /** @var User $user */
             $user = JWTAuth::authenticate();
+            // Without this a deactivated user could refresh forever, keeping
+            // full access long after being offboarded.
+            if (! $user || ! $user->is_active) {
+                throw new JWTException('Account is not active');
+            }
             JWTAuth::invalidate(); // rotation: blacklist the used refresh token
         } catch (JWTException) {
             return response()->json(['detail' => 'Token is invalid or expired'], 401);

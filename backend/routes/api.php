@@ -35,12 +35,21 @@ Route::prefix('v1')->group(function () {
     // --- auth ---
     Route::post('auth/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
     Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
-    Route::post('auth/refresh', [AuthController::class, 'refresh']);
-    Route::post('auth/logout', [AuthController::class, 'logout']);
+    // Refresh was unthrottled: a stolen refresh token could be exercised in a
+    // tight loop, and the endpoint is an oracle for guessing valid tokens.
+    Route::post('auth/refresh', [AuthController::class, 'refresh'])->middleware('throttle:30,1');
+    Route::post('auth/logout', [AuthController::class, 'logout'])->middleware('throttle:30,1');
 
-    Route::middleware('auth:api')->group(function () {
+    /*
+    | `active` runs on every authenticated request: deactivating an account has
+    | to revoke access immediately, not whenever the current token happens to
+    | expire. `throttle:api` is a blanket ceiling so no endpoint is unbounded.
+    */
+    Route::middleware(['auth:api', 'active', 'throttle:api'])->group(function () {
         Route::get('auth/me', [AuthController::class, 'me']);
-        Route::post('auth/change-password', [AuthController::class, 'changePassword']);
+        // Brute-forcing current_password was previously unbounded.
+        Route::post('auth/change-password', [AuthController::class, 'changePassword'])
+            ->middleware('throttle:10,1');
 
         // --- catalog & stock: everyone reads, managers/admins write ---
         Route::get('categories', [CategoryController::class, 'index']);
