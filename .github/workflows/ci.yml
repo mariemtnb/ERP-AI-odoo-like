@@ -17,8 +17,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # composer.json requires ^8.3; 8.4 is what the README targets.
-        php: ["8.3", "8.4"]
+        # composer.lock pins Symfony 8.1, which requires php >=8.4.1, so 8.4
+        # is the genuine floor — not the ^8.3 composer.json used to claim.
+        php: ["8.4"]
 
     steps:
       - uses: actions/checkout@v4
