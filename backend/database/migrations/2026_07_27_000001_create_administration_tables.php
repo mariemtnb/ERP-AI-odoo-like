@@ -375,6 +375,10 @@ return new class extends Migration
             ['key' => 'pos', 'name' => 'Point of sale', 'enabled' => false],
             ['key' => 'hr', 'name' => 'Human resources', 'enabled' => false],
             ['key' => 'manufacturing', 'name' => 'Manufacturing', 'enabled' => false],
+            // OFF by design: an employee account reads the entire ERP, so open
+            // sign-up would expose a company's whole book of business to
+            // anyone who can reach the login page.
+            ['key' => 'self_registration', 'name' => 'Public self-registration', 'enabled' => false],
         ];
         DB::table('feature_flags')->insert(array_map(fn ($m) => $m + [
             'description' => '',
