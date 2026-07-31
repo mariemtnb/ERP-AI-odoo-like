@@ -1,243 +1,149 @@
 @startuml class-diagram
-' Backend domain class diagram — Laravel models + service layer
-title Intelligent ERP — Class Diagram (backend domain)
+' Where the business rules live. Models are plain data; every rule that
+' matters sits in a service, so no controller can bypass it.
+title Intelligent ERP — Business logic (service layer)
 
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 13
 skinparam classAttributeIconSize 0
+skinparam ArrowColor #6B7684
+skinparam class {
+  BorderColor #9AA5B1
+  BackgroundColor #FFFFFF
+}
+skinparam package {
+  BorderColor #C3CCD6
+  FontStyle bold
+}
 
-package "Models" {
-  class User {
-    +id : int
-    +email : string
-    +first_name / last_name : string
-    +role : Role
-    +is_active : bool
-    +isAdmin() : bool
-    +isManagerial() : bool
-    +toApi() : array
+package "Stock & documents" #F4FBF6 {
+  class StockService {
+    recordMovement()
+    --
+    Every quantity change is a
+    movement. Runs in a locked
+    transaction, refuses to go
+    below zero.
   }
 
-  enum Role {
-    ADMIN
-    MANAGER
-    EMPLOYEE
-  }
-
-  class Category {
-    +name : string
-    +description : string
-  }
-
-  class Product {
-    +sku : string
-    +name : string
-    +cost_price / sale_price : decimal
-    +unit : string
-    +quantity_in_stock : decimal <<global cache>>
-    +min_stock_level : decimal
-    +is_active : bool
-    +isLowStock() : bool
-  }
-
-  class Warehouse {
-    +name : string
-    +address : string
-    +is_default : bool
-    +is_active : bool
-    {static} +defaultWarehouse() : Warehouse
-  }
-
-  class WarehouseStock {
-    +quantity : decimal
-    ' unique per (warehouse, product)
-  }
-
-  class StockMovement <<append-only>> {
-    +movement_type : in|out|adjustment
-    +quantity : decimal
-    +reason : string
-    +reference_type : sale|purchase|transfer|manual
-    +reference_id : int
-    +created_at : datetime
-  }
-
-  class Customer {
-    +name : string
-    +email / phone / address : string
-    +is_active : bool
-  }
-
-  class Supplier {
-    +name : string
-    +email / phone / address : string
-    +is_active : bool
-  }
-
-  class Lead {
-    +name / company : string
-    +email / phone / source : string
-    +status : new|contacted|qualified|won|lost
-    +notes : string
-  }
-
-  class LeadActivity {
-    +type : call|email|meeting|note
-    +summary : string
-    +created_at : datetime
-  }
-
-  class PurchaseOrder {
-    +number : string
-    +status : draft|pending_approval|confirmed|received|cancelled
-    +order_date / received_date : date
-    +total_amount : decimal
-    +approved_at : datetime
-    +recomputeTotal()
-  }
-
-  class PurchaseOrderLine {
-    +quantity : decimal
-    +unit_price : decimal
-    +subtotal() : decimal
-  }
-
-  class Sale {
-    +number : string
-    +status : draft|confirmed|cancelled
-    +sale_date : date
-    +total_amount : decimal
-    +recomputeTotal()
-  }
-
-  class SaleLine {
-    +quantity : decimal
-    +unit_price : decimal
-    +subtotal() : decimal
-  }
-
-  class Invoice {
-    +number : string
-    +issued_at : datetime
-  }
-
-  class Account {
-    +code : string
-    +name : string
-    +type : asset|liability|equity|income|expense
-    +is_active : bool
-    +isDebitNormal() : bool
-  }
-
-  class JournalEntry <<append-only>> {
-    +number : string
-    +entry_date : date
-    +memo : string
-    +reference_type : sale|purchase|manual
-    +reference_id : int
-    +totalDebit() : float
-  }
-
-  class JournalEntryLine {
-    +label : string
-    +debit : decimal
-    +credit : decimal
-  }
-
-  class Conversation {
-    +title : string
-  }
-
-  class Message {
-    +role : user|assistant
-    +content : text
-    +tool_calls : json
-    +pending_action : json
-  }
-
-  class Document <<RAG>> {
-    +title : string
-    +chunk_index : int
-    +content : text
-    +embedding : vector(768)
-  }
-
-  class AuditLog {
-    +actor : user|agent
-    +action : string
-    +payload : json
+  class DocumentService {
+    confirmSale()
+    receivePurchase()
+    cancelSale()
+    nextNumber()
+    --
+    Moves documents through their
+    lifecycle and triggers stock
+    and accounting together.
   }
 }
 
-package "Services (business rules)" {
-  class StockService <<service>> {
-    {static} +recordMovement(productId, type, qty, user, reason, refType, refId, warehouseId) : StockMovement
-    {static} +transfer(productId, fromWh, toWh, qty, user, reason) : StockMovement[]
-    ' row lock + ledger row + cached qty in ONE transaction
+package "Accounting" #FBF4F4 {
+  class AccountingService {
+    post()
+    postSaleConfirmed()
+    postPurchaseReceived()
+    reverseSale()
+    trialBalance()
+    --
+    Refuses any entry where
+    debit does not equal credit.
   }
 
-  class DocumentService <<service>> {
-    {static} +nextNumber(prefix, model) : string
-    {static} +approvalThreshold() : float
-    {static} +confirmPurchase(po, user)
-    {static} +approvePurchase(po, admin)
-    {static} +rejectPurchase(po)
-    {static} +receivePurchase(po, user)
-    {static} +cancelPurchase(po)
-    {static} +confirmSale(sale, user)
-    {static} +cancelSale(sale, user)
-    {static} +generateInvoice(sale) : Invoice
+  class AccountMap {
+    code(key)
+    --
+    Turns "cheques_receivable"
+    into the account the company
+    actually configured.
   }
-
-  class AccountingService <<service>> {
-    {static} +post(lines, user, memo, refType, refId, date) : JournalEntry
-    {static} +postSaleConfirmed(sale, user) : JournalEntry
-    {static} +postPurchaseReceived(po, user) : JournalEntry
-    {static} +reverseSale(sale, user) : JournalEntry
-    {static} +trialBalance(from, to) : array
-    {static} +incomeStatement(from, to) : array
-    ' invariant: SUM(debit) = SUM(credit)
-  }
-
-  class InsufficientStock <<exception>>
-  class InvalidTransition <<exception>>
-  class UnbalancedEntry <<exception>>
 }
 
-' ---- model relationships ----
-User "1" -- "0..*" StockMovement : created_by
-User "1" -- "0..*" Conversation
-Conversation "1" -- "0..*" Message
-User "1" -- "0..*" AuditLog
-User "1" -- "0..*" Document
-Category "1" -- "0..*" Product
-Product "1" -- "0..*" StockMovement
-Product "1" -- "0..*" WarehouseStock
-Warehouse "1" -- "0..*" WarehouseStock
-Warehouse "1" -- "0..*" StockMovement
-Supplier "1" -- "0..*" PurchaseOrder
-PurchaseOrder "1" *-- "1..*" PurchaseOrderLine
-PurchaseOrderLine "0..*" -- "1" Product
-Customer "1" -- "0..*" Sale
-Sale "1" *-- "1..*" SaleLine
-SaleLine "0..*" -- "1" Product
-Sale "1" -- "0..1" Invoice
-Customer "1" -- "0..1" Lead : converted from
-Lead "1" *-- "0..*" LeadActivity
-JournalEntry "1" *-- "2..*" JournalEntryLine
-Account "1" -- "0..*" JournalEntryLine
+package "Treasury (Tunisia)" #F2F8FB {
+  class InstrumentService {
+    receive() / issue()
+    deposit()
+    clear()
+    bounce()
+    --
+    Cheques and traites.
+    Each step posts its own
+    entry and records history.
+  }
 
-' ---- service dependencies ----
-DocumentService ..> StockService : stock moves only\nthrough the service
-DocumentService ..> AccountingService : books posted in the\nsame transaction
-DocumentService ..> PurchaseOrder
-DocumentService ..> Sale
-DocumentService ..> Invoice
-DocumentService ..> InvalidTransition : throws
-StockService ..> StockMovement : creates
-StockService ..> WarehouseStock : locks + updates
-StockService ..> Product : updates global cache
-StockService ..> InsufficientStock : throws
-AccountingService ..> JournalEntry : creates
-AccountingService ..> Account : resolves by code
-AccountingService ..> UnbalancedEntry : throws
+  class InstallmentService {
+    createPlan()
+    applyPayment()
+    markOverdue()
+    customerCredit()
+    --
+    "Khlas bel taqsit".
+    Last instalment absorbs
+    the rounding.
+  }
+
+  class PaymentService {
+    record()
+    settleInstallment()
+    --
+    Cash and transfers post now.
+    Cheques wait until they clear.
+  }
+
+  class ReconciliationService {
+    parseCsv()
+    import()
+    suggestions()
+    match()
+    report()
+    --
+    Matching says "this bank line
+    IS that payment" — it does
+    not post again.
+  }
+}
+
+package "Access & audit" #F4F8FB {
+  class PermissionService {
+    has(user, key)
+    canOn(user, record)
+    fieldAccess()
+    --
+    User grant beats role,
+    deny beats allow,
+    restrictions never inherit.
+  }
+
+  class AuditService {
+    record()
+    asAgent()
+    batch()
+    --
+    Who, when, before, after.
+    Never breaks the operation
+    it is watching.
+  }
+}
+
+' ---- who calls whom ----
+DocumentService --> StockService : moves stock
+DocumentService --> AccountingService : posts entries
+InstrumentService --> AccountingService : posts entries
+InstrumentService --> InstallmentService : settles / reopens
+PaymentService --> AccountingService : posts entries
+PaymentService --> InstallmentService : updates schedule
+ReconciliationService --> InstrumentService : clears on match
+
+' Every posting goes through AccountingService, so one arrow says it all —
+' drawing one per caller just added long curves across the diagram.
+AccountingService --> AccountMap : which account?
+
+note bottom of AccountMap
+  This is why no Tunisian
+  accounting rule is hardcoded:
+  the account is a setting.
+end note
 
 @enduml
