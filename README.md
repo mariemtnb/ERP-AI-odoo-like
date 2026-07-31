@@ -8,11 +8,14 @@ actions. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 | Service | Tech | Dev port |
 |---|---|---|
-| `frontend` | React + TypeScript + Tailwind + shadcn/ui (Vite) | 5173 |
-| `backend` | Laravel 12 (PHP 8.4) + PostgreSQL + JWT | 8000 |
+| `frontend` | React + TypeScript + Tailwind (Vite) | 5173 |
+| `backend` | Laravel (PHP 8.4+) + PostgreSQL + JWT | 8000 |
 | `ai-service` | FastAPI + LangGraph + LangChain | 8001 |
 | `ollama` | Ollama (qwen3:32b) | 11434 |
-| `db` | PostgreSQL 16 | 5432 |
+| `db` | PostgreSQL 16 + pgvector | 5432 |
+
+> **PHP 8.4 is required**, not 8.3 — `composer.lock` pins Symfony 8.1, which
+> needs ≥ 8.4.1. A clean install on 8.3 fails.
 
 ## Quick start
 
@@ -56,6 +59,27 @@ advisory warnings by default. The Tunisian chart of accounts shipped here
 starting point to confirm with your accountant — apply it, edit it, or switch
 back from Settings → Localization → Account mapping.
 
+## Administration
+
+Admin → **Administration** (admin only):
+
+- **Companies, branches and business units** — multi-company structure.
+- **Fiscal years** — closing a period stops anything being backdated into
+  books that have already been reported.
+- **Document numbering** — configurable formats (`{PREFIX}-{YYYY}-{SEQ:4}`).
+  Counters are reserved under a row lock, so two simultaneous requests cannot
+  mint the same invoice number.
+- **Roles and permissions** — custom roles, inheritance, per-user grants,
+  temporary access that expires, and field-level visibility (e.g. hide cost
+  price from employees).
+- **Audit trail** — every change with who, when, from where, and the before
+  and after values. AI actions are marked as such. Exports to CSV.
+- **Modules** — switch accounting, CRM, treasury, AI and the rest on or off
+  without a deployment.
+
+Permissions were added *alongside* the original three roles, not instead of
+them, so nothing that worked before changed behaviour.
+
 ## AI agent
 
 The assistant (sidebar → AI Assistant) is a LangGraph ReAct agent running on a
@@ -86,11 +110,36 @@ Seed demo data: `docker compose -f docker-compose.prod.yml -p erp-prod exec back
   (glibc) images collate text differently, corrupting btree indexes on text
   columns. Fix: `docker compose exec db psql -U erp -d erp -c "REINDEX DATABASE erp;"`
 
+## Not production-ready yet
+
+Honest list of what is missing before this could run a real company:
+
+- **No HTTPS.** The production nginx listens on port 80 only.
+- **No queue worker**, so scheduled jobs and reminders cannot run.
+- **The assistant forgets conversations when the AI service restarts**
+  (in-process memory) and does not work with more than one worker.
+- **No backup procedure** is written down.
+- **No frontend or end-to-end tests** — the backend suite is solid, the UI is
+  not covered.
+- **No two-factor login.**
+
 ## Repository layout
 
 ```
-backend/     Laravel API (app/Http/Controllers, app/Services, app/Models)
+backend/     Laravel API
+  app/Models/        Eloquent models (plain data)
+  app/Services/      all business rules live here
+  app/Http/          controllers + middleware
+  database/          migrations = the authoritative schema
+  tests/Feature/     167 tests, run on every push
 ai-service/  FastAPI + LangGraph agent
 frontend/    React SPA
-docs/        Architecture document and diagrams
+diagrams/    PlantUML — start with overview.puml
+docs/        Architecture document and demo script
 ```
+
+## Contributing
+
+CI runs on every push (`.github/workflows/ci.yml`): backend tests on PHP 8.4,
+`composer audit`, frontend typecheck and build, and a Python syntax check.
+All three must be green.
