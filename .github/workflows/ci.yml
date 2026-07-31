@@ -1,0 +1,115 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "claude/**"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (Laravel, PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # composer.lock pins Symfony 8.1, which requires php >=8.4.1, so 8.4
+        # is the genuine floor — not the ^8.3 composer.json used to claim.
+        php: ["8.4"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          # sqlite drives the test suite (see phpunit.xml); pgsql matches prod.
+          extensions: mbstring, pdo, pdo_sqlite, sqlite3, pdo_pgsql, bcmath, gd, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache composer packages
+        uses: actions/cache@v4
+        with:
+          path: backend/vendor
+          key: composer-${{ matrix.php }}-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: composer-${{ matrix.php }}-
+
+      - name: Validate composer.json against composer.lock
+        working-directory: backend
+        run: composer validate --no-check-all --no-check-publish
+
+      - name: Install dependencies
+        working-directory: backend
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Audit dependencies for known vulnerabilities
+        working-directory: backend
+        run: composer audit
+
+      - name: Prepare environment
+        working-directory: backend
+        run: |
+          php -r "file_exists('.env') || copy('.env.example', '.env');" 2>/dev/null || true
+          php artisan key:generate --force
+          php artisan jwt:secret --force
+
+      - name: Run migrations against a scratch database
+        working-directory: backend
+        # Proves the migrations actually apply in order, which `artisan test`
+        # with RefreshDatabase would otherwise mask on a fresh schema.
+        run: php artisan migrate --force
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+
+      - name: Run tests
+        working-directory: backend
+        run: php artisan test
+
+  frontend:
+    name: Frontend (React + TypeScript)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Typecheck
+        working-directory: frontend
+        run: npx tsc -b
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+
+  ai-service:
+    name: AI service (Python)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Byte-compile the agent
+        working-directory: ai-service
+        # The service's heavy deps (langgraph, torch) are not worth installing
+        # just to check syntax; compileall catches what a lint pass would.
+        run: python -m compileall -q app
