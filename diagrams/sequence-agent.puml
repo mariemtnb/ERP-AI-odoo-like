@@ -1,38 +1,49 @@
 @startuml sequence-agent
-title AI Agent — write action with human-in-the-loop confirmation
+' The assistant asks before it changes anything.
+title AI assistant — it always asks before changing data
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 13
+skinparam ArrowColor #55606E
+skinparam sequence {
+  ParticipantBorderColor #9AA5B1
+  ParticipantBackgroundColor #F7F9FB
+  LifeLineBorderColor #C3CCD6
+}
 
 actor User
-participant "Frontend\n(React)" as FE
-participant "Backend\n(Laravel)" as BE
-participant "AI Service\n(FastAPI + LangGraph)" as AI
-participant "Ollama\n(qwen3:32b)" as LLM
-database PostgreSQL as DB
+participant "ERP app" as APP
+participant "AI service" as AI
+participant "Local AI model" as LLM
 
-User -> FE : "Crée un client nommé Fatma"
-FE -> BE : POST /api/v1/agent/chat/ (JWT)
-BE -> DB : store user message
-BE -> AI : POST /chat {thread_id, message}\nAuthorization: user JWT
+User -> APP : "Add a customer called Fatma"
+APP -> AI : the question + who is asking
+AI -> LLM : what should I do?
+LLM --> AI : "create a customer"
 
-AI -> LLM : messages + tool schemas
-LLM --> AI : tool_call create_customer(...)
-note over AI : write tool → interrupt()\ngraph state checkpointed
-AI --> BE : {type: confirmation_required, action}
-BE -> DB : store pending_action message
-BE --> FE : confirmation card
-FE --> User : Approve / Reject ?
+note over AI
+  This would change data,
+  so the assistant stops here.
+end note
 
-User -> FE : Approve
-FE -> BE : POST /agent/chat/ {approve: true}
-BE -> AI : POST /resume {thread_id, approved}
-note over AI : graph resumes inside the tool
-AI -> BE : POST /api/v1/customers/\n(user's JWT — RBAC enforced)
-BE -> DB : INSERT customer
-BE --> AI : 201 {id, name, ...}
-AI -> LLM : tool result
-LLM --> AI : final answer
-AI --> BE : {type: message, reply, tool_calls}
-BE -> DB : store reply + audit_logs (actor=agent)
-BE --> FE : assistant message
-FE --> User : "Client Fatma créé (ID 2)"
+AI --> APP : Please confirm
+APP --> User : Create customer "Fatma"?\n[ Approve ]  [ Reject ]
+
+User -> APP : Approve
+APP -> AI : approved
+AI -> APP : create the customer\n(using the user's own account)
+APP --> AI : done
+AI --> APP : "Customer Fatma created"
+APP --> User : "Customer Fatma created"
+
+note over APP
+  The assistant goes through the same
+  API a person uses, signed in as that
+  person — so it can never do anything
+  the user is not allowed to do.
+  Every action it takes is logged.
+end note
 
 @enduml

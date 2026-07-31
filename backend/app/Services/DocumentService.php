@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Exceptions\InvalidTransition;
 use App\Models\Invoice;
+use App\Models\NumberingSequence;
 use App\Models\PurchaseOrder;
 use App\Models\Sale;
 use App\Models\StockMovement;
@@ -16,12 +17,34 @@ use Illuminate\Support\Facades\DB;
  */
 class DocumentService
 {
+    /** Prefix → configured sequence key. */
+    private const SEQUENCE_KEYS = [
+        'SO' => 'sale',
+        'PO' => 'purchase',
+        'INV' => 'invoice',
+        'JE' => 'journal_entry',
+        'CHQ' => 'cheque',
+        'EFF' => 'traite',
+        'PAY' => 'payment',
+        'PLAN' => 'installment_plan',
+    ];
+
+    /**
+     * Next document number.
+     *
+     * Delegates to the configured numbering sequence, which reserves the
+     * number under a row lock. The old count()-based scheme it replaces had
+     * two real defects: concurrent requests could read the same count and mint
+     * duplicates, and deleting a record made the next one reuse a number that
+     * had already been issued. NumberingSequence falls back to the legacy
+     * behaviour when no sequence row exists, so nothing breaks if one is
+     * missing.
+     */
     public static function nextNumber(string $prefix, string $model): string
     {
-        $year = now()->year;
-        $count = $model::where('number', 'like', "{$prefix}-{$year}-%")->count();
+        $key = self::SEQUENCE_KEYS[$prefix] ?? strtolower($prefix);
 
-        return sprintf('%s-%d-%04d', $prefix, $year, $count + 1);
+        return NumberingSequence::next($key, $prefix, $model);
     }
 
     // ---------- purchase orders ----------

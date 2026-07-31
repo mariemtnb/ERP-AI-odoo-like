@@ -1,0 +1,41 @@
+@startuml overview
+' One-glance map of the system. Start here.
+title Intelligent ERP — How the system fits together
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 13
+skinparam roundCorner 12
+skinparam ArrowColor #55606E
+skinparam rectangle {
+  BorderColor #9AA5B1
+  BackgroundColor #F7F9FB
+}
+
+actor "User\n(admin · manager · employee)" as user
+
+rectangle "**React app**\nbrowser" as front #E8F4EE
+
+rectangle "**Laravel API**\nbusiness rules + database" as api #E8F0FA
+
+rectangle "**AI service**\nassistant" as ai #F3EBFA
+
+database "**PostgreSQL**" as db #FDF3E3
+
+rectangle "**Ollama**\nlocal AI model" as llm #FAECEC
+
+user --> front
+front --> api : REST + JWT
+api --> db
+api --> ai : chat questions
+ai --> llm : thinks
+ai --> api : acts through the same API,\nsigned in as the user
+
+note bottom of ai
+  The assistant has no database access.
+  It uses the same API a person uses,
+  so permissions apply to it too.
+end note
+
+@enduml

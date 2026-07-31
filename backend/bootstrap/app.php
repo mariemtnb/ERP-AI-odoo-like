@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Middleware\EnsureActiveUser;
+use App\Http\Middleware\EnsureFeature;
+use App\Http\Middleware\EnsurePermission;
 use App\Http\Middleware\EnsureRole;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -17,6 +20,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'role' => EnsureRole::class,
+            // Finer-grained successor to `role:`; existing routes keep theirs
+            // until each module is migrated deliberately.
+            'can.perm' => EnsurePermission::class,
+            'feature' => EnsureFeature::class,
+            'active' => EnsureActiveUser::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

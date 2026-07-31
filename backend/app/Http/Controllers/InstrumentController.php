@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Exceptions\InvalidTransition;
 use App\Exceptions\UnbalancedEntry;
 use App\Models\Attachment;
+use App\Models\AuditEntry;
 use App\Models\PaymentInstrument;
+use App\Services\AuditService;
 use App\Services\InstrumentService;
 use App\Support\DrfPagination;
 use App\Support\LegalValidation;
@@ -276,11 +278,36 @@ class InstrumentController extends Controller
         return response()->json($attachment->toApi(), 201);
     }
 
-    public function downloadAttachment(Attachment $attachment)
+    /**
+     * Stream an attachment.
+     *
+     * The id alone used to be enough to fetch any file in the system — a
+     * scanned cheque carries a RIB, a signature and a counterparty name, so
+     * that was an IDOR worth closing. Access is now tied to the record the
+     * attachment hangs off: if you cannot see the instrument, you cannot have
+     * its scan.
+     */
+    public function downloadAttachment(Request $request, Attachment $attachment)
     {
+        if ($attachment->owner_type === Attachment::OWNER_INSTRUMENT) {
+            $instrument = PaymentInstrument::find($attachment->owner_id);
+            if (! $instrument) {
+                return response()->json(['detail' => 'File not found.'], 404);
+            }
+        }
+
         if (! Storage::disk('local')->exists($attachment->path)) {
             return response()->json(['detail' => 'File not found.'], 404);
         }
+
+        // Reading a scanned financial document is worth recording.
+        AuditService::record(
+            AuditEntry::EVENT_EXPORTED,
+            $attachment,
+            null,
+            ['filename' => $attachment->filename],
+            $request->user(),
+        );
 
         return Storage::disk('local')->download($attachment->path, $attachment->filename);
     }

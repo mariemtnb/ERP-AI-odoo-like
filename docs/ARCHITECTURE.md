@@ -2,10 +2,15 @@
 
 **Project:** Intelligent ERP with Conversational AI Agent
 **Author:** Mariem Tanabene (Internship Project)
-**Version:** 1.1 — Backend stack changed from Django REST Framework to Laravel
-(same REST contract, routes and RBAC matrix; JWT via php-open-source-saver/jwt-auth;
-PDFs via dompdf; stock ledger and document lifecycles preserved 1:1)
-**Date:** 2026-07-02
+**Version:** 1.3 — Sections 1–10 rewritten for the Laravel stack (they still
+described Django long after the port), plus the Tunisia localization layer
+(§11) and the administration layer (§12).
+**Date:** 2026-07-31
+
+> **History:** v1.1 moved the backend from Django REST Framework to Laravel,
+> keeping the REST contract, routes and RBAC matrix identical. JWT via
+> php-open-source-saver/jwt-auth, PDFs via dompdf; the stock ledger and
+> document lifecycles were preserved 1:1.
 
 ---
 
@@ -69,7 +74,7 @@ SMEs manage operations across fragmented tools (Excel, paper, email), causing da
 | Security | JWT (short-lived access, rotating refresh), RBAC on every endpoint, agent inherits user permissions, audit log, input validation, OWASP top-10 hygiene |
 | Performance | API p95 < 300 ms (excluding LLM); pagination everywhere; DB indexes on FKs and search fields |
 | Reliability | Stock changes are atomic DB transactions; append-only movement ledger enables reconciliation |
-| Maintainability | Modular Django apps, typed frontend, service layer for business logic, ≥ meaningful test coverage on business rules |
+| Maintainability | All business rules in a service layer, typed frontend, meaningful test coverage on the rules that matter |
 | Portability | Fully dockerized; single `docker compose up` for dev |
 | Usability | Responsive UI, French/English-ready labels, optimistic loading states |
 | Privacy | LLM runs locally via Ollama — no business data leaves the machine |
@@ -115,7 +120,7 @@ Textual UML use-case description example (UC-07 Confirm sale):
 | Reports/PDF | ✔ | ✔ | ✖ |
 | AI agent | ✔ (all tools) | ✔ (scoped) | ✔ (read + create customer/sale) |
 
-Implementation: Django Groups = roles; DRF permission classes check model-level permissions; the AI service passes the user's JWT to the backend so **the backend remains the single enforcement point**.
+Implementation: the `role:` middleware gates route groups in `routes/api.php`, backed by the permission engine in §12. The AI service passes the user's JWT to the backend, so **the backend remains the single enforcement point** for people and the agent alike.
 
 ---
 
@@ -172,9 +177,9 @@ audit_log(id, user_id FK, actor ENUM(user,agent), action, entity_type, entity_id
 
 ---
 
-## 5. API Architecture (Django REST Framework)
+## 5. API Architecture (Laravel)
 
-Style: REST, JSON, versioned under `/api/v1/`. JWT via `djangorestframework-simplejwt`.
+Style: REST, JSON, versioned under `/api/v1/`. JWT via `php-open-source-saver/jwt-auth`.
 
 ```
 POST   /api/v1/auth/login            → access + refresh
@@ -196,7 +201,11 @@ GET    /api/v1/auth/me
 /api/v1/agent/conversations/         GET history
 ```
 
-Standards: pagination (`page`/`page_size`), consistent error envelope `{ "detail": ..., "errors": {...} }`, OpenAPI schema via `drf-spectacular` (free Swagger UI for the defense/demo).
+Standards: pagination (`page`/`page_size`) via `Support\DrfPagination`, consistent error envelope `{ "detail": ..., "errors": {...} }`.
+
+> **Not yet built:** there is no OpenAPI/Swagger endpoint. The README used to
+> advertise `/api/docs/`; that was inherited from the Django stack and the
+> route does not exist. `routes/api.php` is currently the API reference.
 
 ---
 
@@ -210,29 +219,30 @@ erp-ai/
 ├── docker-compose.prod.yml
 ├── .env.example
 ├── docs/                         # this document, diagrams, API notes
-├── backend/                      # Django REST Framework
+├── backend/                      # Laravel
 │   ├── Dockerfile
-│   ├── requirements.txt
-│   ├── manage.py
-│   ├── config/                   # settings/ (base, dev, prod), urls, asgi
-│   └── apps/
-│       ├── accounts/             # users, auth, roles
-│       ├── catalog/              # products, categories
-│       ├── inventory/            # stock movements, alerts, services/stock.py
-│       ├── partners/             # customers, suppliers
-│       ├── purchasing/           # purchase orders
-│       ├── sales/                # sales, invoices
-│       ├── reporting/            # dashboard, reports, PDF (WeasyPrint)
-│       ├── assistant/            # conversations, proxy to AI service, agent tool endpoints
-│       └── core/                 # shared: audit log, base models, permissions
+│   ├── composer.json
+│   ├── artisan
+│   ├── bootstrap/app.php         # routing, middleware aliases, exceptions
+│   ├── config/                   # database, auth, jwt, cors…
+│   ├── database/migrations/      # the authoritative schema
+│   ├── routes/api.php            # every endpoint + the RBAC matrix
+│   └── app/
+│       ├── Models/               # Eloquent models (plain data + toApi())
+│       ├── Services/             # ALL business rules live here
+│       │                         # Stock, Document, Accounting, Instrument,
+│       │                         # Installment, Payment, Reconciliation,
+│       │                         # Permission, Audit
+│       ├── Http/Controllers/     # validate → call a service → return JSON
+│       ├── Http/Middleware/      # role, permission, feature, active-user
+│       └── Support/              # AccountMap, LegalValidation, pagination
 ├── ai-service/                   # FastAPI + LangGraph + LangChain + Ollama
 │   ├── Dockerfile
-│   ├── pyproject.toml
+│   ├── requirements.txt
 │   └── app/
-│       ├── main.py               # FastAPI, /chat endpoint (SSE streaming)
-│       ├── graph/                # LangGraph agent definition
-│       ├── tools/                # ERP tools → HTTP calls to backend with user JWT
-│       └── prompts/
+│       ├── main.py               # /chat, /resume, /embed, /extract-invoice
+│       ├── graph/                # LangGraph agent + system prompt
+│       └── tools/                # ERP tools → HTTP calls to backend with user JWT
 └── frontend/                     # React + TS + Tailwind + shadcn/ui (Vite)
     ├── Dockerfile
     └── src/
@@ -244,26 +254,28 @@ erp-ai/
         └── App.tsx
 ```
 
-Why three services (vs. AI inside Django): the LLM workload is async/streaming-heavy and evolves independently; FastAPI + LangGraph is the idiomatic stack; and the separation *forces* the agent to go through the public API with a user JWT — which is exactly the security model we promised ("the agent never touches the database").
+Why three services (vs. the AI inside the Laravel app): the LLM workload is async-heavy and evolves independently; FastAPI + LangGraph is the idiomatic stack for it; and the separation *forces* the agent to go through the public API with a user JWT — which is exactly the security model we promised ("the agent never touches the database").
 
 ---
 
 ## 7. AI Architecture
 
 ```
-User ──chat──▶ Frontend ──POST /agent/chat (JWT)──▶ Django (assistant app)
+User ──chat──▶ Frontend ──POST /agent/chat (JWT)──▶ Laravel (AssistantController)
                                                         │  validates JWT, stores message
                                                         ▼
                                               AI Service (FastAPI)
                                               LangGraph ReAct agent
                                               ├─ LLM: Ollama (qwen3:32b — best local tool-calling)
-                                              └─ Tools (LangChain @tool) ──HTTP + user's JWT──▶ Django REST API
+                                              └─ Tools (LangChain @tool) ──HTTP + user's JWT──▶ Laravel REST API
                                                         │
-                                              streamed tokens/events back ──▶ user
+                                              reply + tool calls back ──▶ user
 ```
 
+See also `diagrams/sequence-agent.puml` for the human-approval step drawn out.
+
 Design decisions:
-1. **Tools = HTTP calls to the existing REST API** with the *end user's* JWT forwarded. RBAC is enforced once, in Django. The AI service holds no DB credentials.
+1. **Tools = HTTP calls to the existing REST API** with the *end user's* JWT forwarded. RBAC is enforced once, in Laravel. The AI service holds no DB credentials.
 2. **LangGraph** graph: `agent → (tool_calls?) → tools → agent → ... → end`, with an interrupt-before-write node: write tools (`create_sale`, `update_stock`, …) pause the graph and return a confirmation card to the UI; the user approves → graph resumes.
 3. **Tool registry** (Phase 2): `search_product`, `search_customer`, `search_supplier`, `get_dashboard_statistics`, `get_low_stock`, `generate_sales_report`, `generate_stock_report`, `create_customer`, `update_customer`, `create_supplier`, `create_product`, `update_stock`, `create_purchase_order`, `create_sale`, `generate_invoice`. Each tool = Pydantic schema + one API call — trivially extensible.
 4. **Audit:** every tool invocation logged to `audit_log` with `actor=agent`.
@@ -274,9 +286,10 @@ Design decisions:
 ## 8. Security Architecture
 
 - **AuthN:** JWT — access 15 min, refresh 7 days with rotation + blacklist; refresh stored in memory/localStorage with axios interceptor auto-refresh (httpOnly cookie is the upgrade path).
-- **AuthZ:** DRF permission classes + Django model permissions per role group; object-level checks where needed. Single enforcement point (backend) for humans *and* the agent.
+- **AuthZ:** route-group middleware (`role:`, `can.perm:`, `feature:`, `active`) plus the permission engine (roles, inheritance, per-user grants, object- and field-level rules). Single enforcement point (backend) for humans *and* the agent.
 - **Agent safety:** allow-listed tools only; user-JWT passthrough; human-in-the-loop confirmation for writes; audit log; prompt-injection mitigation (tool outputs treated as data, system prompt constraints, no raw SQL ever).
-- **Transport/app:** HTTPS in prod (reverse proxy), CORS allow-list, DRF throttling on auth + agent endpoints, ORM only (no raw SQL), serializer validation, secrets via env vars (`.env` git-ignored, `.env.example` committed).
+- **Transport/app:** CORS allow-list, rate limiting (a blanket per-user ceiling plus tighter limits on auth and agent endpoints), Eloquent query builder with bound parameters everywhere, request validation, secrets via env vars (`.env` git-ignored, `.env.example` committed).
+- **Not yet done:** HTTPS is *not* configured — the production nginx listens on port 80 only. This is a deployment blocker, not a design choice.
 - **Data:** local LLM ⇒ zero data egress; DB volume backups.
 
 ---
@@ -284,9 +297,9 @@ Design decisions:
 ## 9. Deployment Architecture (Docker)
 
 Dev: `docker compose up` starts 5 containers —
-`postgres:16` (volume) · `backend` (Django, dev server) · `ai-service` (FastAPI/uvicorn) · `ollama/ollama` (volume for model weights) · `frontend` (Vite dev server, HMR).
+`pgvector/pgvector:pg16` (volume) · `backend` (PHP built-in server) · `ai-service` (FastAPI/uvicorn) · `ollama/ollama` (volume for model weights) · `frontend` (Vite dev server, HMR).
 
-Prod (compose.prod): backend under **gunicorn**, frontend built and served by **nginx** which also reverse-proxies `/api` → backend and `/agent` streaming → AI service; only nginx exposes a port.
+Prod (compose.prod): backend under **FrankenPHP** with cached config and routes, frontend built and served by **nginx**, which also reverse-proxies `/api` → backend; only nginx exposes a port. No queue worker runs yet, so scheduled and background jobs are not available.
 
 ---
 
@@ -424,16 +437,86 @@ it describes what the system is configured to do and defers to the accountant.
 
 ---
 
-## 12. Decision Log
+## 12. Administration Layer (Phase 1)
+
+Enterprise foundations added on top of the business modules: organisation
+structure, a permission engine, an audit trail and feature flags.
+
+### 12.1 Additive by construction
+
+The permission engine did **not** replace the existing RBAC. `users.role`
+remains the source of truth for the built-in roles, and `EnsureRole` runs its
+original `in_array($user->role, $roles)` check *first*. Custom roles are an
+extra way **in** — a user holding a role that inherits from `manager` satisfies
+`role:manager` — never a way to be locked out. Every pre-existing test passes
+unchanged, which is the property that matters.
+
+New routes should prefer the finer-grained `can.perm:sales.confirm`; existing
+routes keep their `role:` groups until each module is migrated deliberately.
+
+### 12.2 Permission resolution
+
+First decisive answer wins:
+
+1. `user_permissions` — explicit per-user grant/deny, optionally time-boxed
+2. role lineage — the user's role and everything it inherits
+3. deny by default
+
+Within a level a **deny beats an allow**, so an inherited grant can be revoked
+without unpicking the hierarchy. An unknown permission key is denied, never
+treated as an open door.
+
+**Restrictions do not inherit.** Object and field rules resolve against
+*directly held* roles only. Inheritance propagates capability upward — an admin
+has everything an employee has — but propagating a restriction the same way
+would invert the hierarchy, hiding a column from employees *and* from their
+managers. Object rules likewise **narrow** an existing permission and can never
+widen one: a user who cannot `sales.update` at all is not rescued by an object
+grant.
+
+### 12.3 Audit trail
+
+An `Auditable` trait hooks a model's own lifecycle events, so auditing an
+existing model is one line and touches neither its logic nor any controller.
+Captured: who, when, IP, browser, URL, method, old and new values, changed
+fields only, a business reason, AI attribution, and a batch id grouping bulk
+operations.
+
+Two deliberate properties: secrets are redacted before anything is written, and
+writes are **best-effort** — a logging failure must never roll back the invoice
+it was observing.
+
+Permission changes go to a separate `permission_audits` table. "Who could do
+what, when" is the first question an auditor asks and should not have to be
+dug out of a table full of row edits.
+
+### 12.4 Numbering sequences
+
+Replaces the `count()`-based scheme, which had two real defects: two concurrent
+requests could read the same count and mint duplicate numbers, and deleting a
+record made the next one reuse a number already printed on a document. The
+counter is now reserved under a row lock, with a documented fallback to the old
+behaviour when no sequence row exists.
+
+### 12.5 Feature flags
+
+Modules are gated at the middleware and return **404, not 403** — a disabled
+module should look absent rather than forbidden, so probing the API cannot map
+out which features exist. An unknown flag defaults to **enabled**: a missing row
+must never silently disable a working module.
+
+---
+
+## 13. Decision Log
 
 | # | Decision | Rationale |
 |---|---|---|
 | D1 | Monorepo, 3 services | Simple for one intern; clean service boundaries |
-| D2 | AI service separate from Django (FastAPI) | Streaming, independent evolution, security boundary |
+| D2 | AI service separate from the Laravel app (FastAPI) | Independent evolution, security boundary |
 | D3 | Agent tools call REST API with user JWT | Single RBAC enforcement point; agent never touches DB |
 | D4 | Append-only stock movement ledger + cached quantity | Auditability + performance |
 | D5 | Vite (not Next.js) | SPA behind an API; no SSR need; simpler Docker |
-| D6 | drf-spectacular OpenAPI | Free interactive docs for demo & AI tool grounding |
+| D6 | ~~drf-spectacular OpenAPI~~ | Dropped with Django. No OpenAPI spec exists yet — see §5 |
 | D7 | qwen3:32b on Ollama (env-swappable) | Strongest local tool calling; no hardware constraint; local privacy |
-| D8 | WeasyPrint for PDF | HTML/CSS templates → professional invoices/reports |
+| D8 | dompdf for PDF (`barryvdh/laravel-dompdf`) | Blade templates → invoices, reports, statements |
 | D9 | Human-in-the-loop for agent writes | Safety requirement FR-9.4 |

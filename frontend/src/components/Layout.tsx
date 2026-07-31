@@ -4,10 +4,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   Bell, BookOpen, Boxes, CalendarClock, Contact, FileText, Landmark,
   LayoutDashboard, LogOut, Moon, PanelLeftClose, PanelLeftOpen, Package,
-  ReceiptText, Scale, Search, Settings, ShoppingBag,
+  ReceiptText, Scale, Search, Settings, ShieldCheck, ShoppingBag,
   ShoppingCart, Sparkles, Sun, Truck, Users, UserSquare2,
 } from "lucide-react";
 import { useTheme } from "@/lib/theme";
+import { useSession } from "@/lib/session";
 import { CommandPalette } from "@/components/CommandPalette";
 import { BrandMark } from "@/components/BrandMark";
 import { Button } from "@/components/ui/button";
@@ -15,33 +16,43 @@ import { IconButton } from "@/components/ui/icon-button";
 import { useAuth } from "@/features/auth/AuthContext";
 import type { Role } from "@/types";
 
-type NavItem = { to: string; label: string; icon: typeof Users; roles?: Role[]; live?: boolean };
+type NavItem = {
+  to: string;
+  label: string;
+  icon: typeof Users;
+  roles?: Role[];
+  live?: boolean;
+  /** Module this entry belongs to; hidden when that flag is off. */
+  feature?: string;
+};
 
 /* Flat nav list, order and icons per the prototype sidebar. */
 const NAV: NavItem[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/products", label: "Products", icon: Package },
-  { to: "/inventory", label: "Inventory", icon: Boxes },
-  { to: "/customers", label: "Customers", icon: UserSquare2 },
-  { to: "/suppliers", label: "Suppliers", icon: Truck },
-  { to: "/purchases", label: "Purchases", icon: ShoppingBag },
-  { to: "/sales", label: "Sales", icon: ShoppingCart },
-  { to: "/crm", label: "CRM", icon: Contact },
-  { to: "/accounting", label: "Accounting", icon: BookOpen, roles: ["admin", "manager"] },
+  { to: "/products", label: "Products", icon: Package, feature: "inventory" },
+  { to: "/inventory", label: "Inventory", icon: Boxes, feature: "inventory" },
+  { to: "/customers", label: "Customers", icon: UserSquare2, feature: "sales" },
+  { to: "/suppliers", label: "Suppliers", icon: Truck, feature: "purchasing" },
+  { to: "/purchases", label: "Purchases", icon: ShoppingBag, feature: "purchasing" },
+  { to: "/sales", label: "Sales", icon: ShoppingCart, feature: "sales" },
+  { to: "/crm", label: "CRM", icon: Contact, feature: "crm" },
+  { to: "/accounting", label: "Accounting", icon: BookOpen, roles: ["admin", "manager"], feature: "accounting" },
   // Treasury — cheques, effets, instalments and the bank.
-  { to: "/instruments", label: "Cheques & Kembyelet", icon: ReceiptText, roles: ["admin", "manager"] },
-  { to: "/installments", label: "Installments", icon: CalendarClock, roles: ["admin", "manager"] },
-  { to: "/banking", label: "Banking", icon: Landmark, roles: ["admin", "manager"] },
-  { to: "/reconciliation", label: "Reconciliation", icon: Scale, roles: ["admin", "manager"] },
-  { to: "/reports", label: "Reports", icon: FileText, roles: ["admin", "manager"] },
-  { to: "/assistant", label: "AI Assistant", icon: Sparkles, live: true },
+  { to: "/instruments", label: "Cheques & Kembyelet", icon: ReceiptText, roles: ["admin", "manager"], feature: "treasury" },
+  { to: "/installments", label: "Installments", icon: CalendarClock, roles: ["admin", "manager"], feature: "treasury" },
+  { to: "/banking", label: "Banking", icon: Landmark, roles: ["admin", "manager"], feature: "banking" },
+  { to: "/reconciliation", label: "Reconciliation", icon: Scale, roles: ["admin", "manager"], feature: "banking" },
+  { to: "/reports", label: "Reports", icon: FileText, roles: ["admin", "manager"], feature: "reports" },
+  { to: "/assistant", label: "AI Assistant", icon: Sparkles, live: true, feature: "ai" },
   { to: "/users", label: "Users", icon: Users, roles: ["admin"] },
-  { to: "/settings/localization", label: "Localization", icon: Settings, roles: ["admin"] },
+  { to: "/settings/localization", label: "Localization", icon: Settings, roles: ["admin"], feature: "localization" },
+  { to: "/settings/administration", label: "Administration", icon: ShieldCheck, roles: ["admin"] },
 ];
 
 export default function Layout() {
   const { user, logout } = useAuth();
   const { theme, toggle } = useTheme();
+  const { feature } = useSession();
   const location = useLocation();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
@@ -58,7 +69,10 @@ export default function Layout() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const items = NAV.filter((i) => !i.roles || i.roles.includes(user!.role));
+  // Role gates the entry; the feature flag hides the whole module.
+  const items = NAV.filter(
+    (i) => (!i.roles || i.roles.includes(user!.role)) && (!i.feature || feature(i.feature))
+  );
   const initials =
     ((user?.first_name?.[0] ?? "") + (user?.last_name?.[0] ?? "")).toUpperCase() ||
     (user?.email?.[0] ?? "?").toUpperCase();
