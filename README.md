@@ -29,7 +29,8 @@ Demo accounts: `admin@erp.local` / `Admin123!`, `manager@erp.local` /
 Backend tests: `docker compose exec backend php artisan test`.
 
 - Frontend: http://localhost:5173
-- API docs (Swagger): http://localhost:8000/api/docs/
+- API reference: `backend/routes/api.php` (no Swagger endpoint yet — the old
+  `/api/docs/` came from the Django stack and does not exist)
 - AI service readiness: http://localhost:8001/ready
 
 ## Tunisia localization
