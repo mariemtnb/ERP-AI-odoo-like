@@ -32,6 +32,29 @@ Backend tests: `docker compose exec backend php artisan test`.
 - API docs (Swagger): http://localhost:8000/api/docs/
 - AI service readiness: http://localhost:8001/ready
 
+## Tunisia localization
+
+The ERP ships a localization layer for Tunisian business practice:
+
+- **Company fiscal profile** — matricule fiscal and its parts, régime fiscal,
+  VAT rate, timbre fiscal, TND with 3 decimals, invoice numbering, payment
+  terms (Settings → Localization, admin only).
+- **Cheques and effets de commerce** (traites / *kembyelet*) with their full
+  lifecycle: received → deposited for collection → cleared, or **bounced**
+  with a proper accounting reversal.
+- **Installments** — *khlas bel taqsit*: down payment plus scheduled
+  échéances, partial settlement, overdue tracking, customer credit view.
+- **Banks & reconciliation** — Tunisian banks seeded, RIB/IBAN, CSV statement
+  import, assisted matching against payments, cheques and instalments, plus a
+  reconciliation report (PDF).
+
+**Nothing legal is hardcoded.** Every posting resolves its account through a
+configurable semantic mapping (`account_mappings`), and identifier checks are
+advisory warnings by default. The Tunisian chart of accounts shipped here
+(411 Clients, 401 Fournisseurs, 5112 Chèques à encaisser…) is a practical
+starting point to confirm with your accountant — apply it, edit it, or switch
+back from Settings → Localization → Account mapping.
+
 ## AI agent
 
 The assistant (sidebar → AI Assistant) is a LangGraph ReAct agent running on a

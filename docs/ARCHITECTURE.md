@@ -307,7 +307,124 @@ Phase 3 (optional, post-week 8): OCR (invoice extraction), RAG over documents, s
 
 ---
 
-## 11. Decision Log
+## 11. Tunisia Localization Layer
+
+Added on top of the generic ERP so the system fits how Tunisian SMEs actually
+work: cheques and *effets de commerce* circulate as money, sales are financed
+in instalments, and the books are kept per journal against a local chart of
+accounts.
+
+### 11.1 Design principle — configuration, not code
+
+**No Tunisian legal or fiscal rule is hardcoded.** Two mechanisms enforce this:
+
+1. **Semantic account mapping** (`account_mappings`). Posting services ask for
+   `cheques_receivable`, never for a literal code; `App\Support\AccountMap`
+   resolves the key. Re-pointing a key, or applying the Tunisian chart
+   wholesale, is a settings change made from the UI.
+2. **Advisory legal validation** (`App\Support\LegalValidation`). Checks on RIB
+   length, IBAN prefix and tax-identifier shape return *warnings*; the system
+   saves anyway. A company that wants hard enforcement flips
+   `enforce_legal_validation` on its profile, and the same warnings become
+   422s. System behaviour and legal validation are deliberately separate.
+
+The Tunisian chart shipped in the migration (411 Clients, 401 Fournisseurs,
+413 Effets à recevoir, 5112 Chèques à encaisser, 532 Banques, 54 Caisse…) is a
+**practical default to confirm with the company's accountant**, not an
+authoritative statement of Tunisian accounting law. Defaults keep pointing at
+the pre-existing generic chart so the localization migration changes no
+existing behaviour; the Tunisian chart is opt-in.
+
+### 11.2 Payment instruments (cheques & kembyelet)
+
+Cheques and traites share one table and one state machine — their lifecycle is
+identical, only the vocabulary and the resolved accounts differ.
+
+```
+incoming:  draft → received → deposited → pending_clearance → cleared
+                                       ↘ bounced → deposited | settled
+                                          cleared → bounced   (sauf bonne fin)
+outgoing:  draft → issued → cleared | bounced → issued | settled
+                            cleared → bounced
+```
+
+`cleared → bounced` is deliberate: banks credit *sauf bonne fin* and can debit
+the money back days later when the instrument is returned. The bounce posting
+credits back whichever account is actually holding the money — the bank if it
+already cleared, the collection account if it had not — so the treasury
+accounts cannot end up overstated.
+
+Every transition posts its own balanced entry and appends an immutable
+`instrument_events` row carrying the journal entry it produced, so books and
+instrument history cannot drift apart. The core insight the postings encode:
+
+> Receiving a cheque does not settle a debt — it changes its form.
+> `Dr Cheques receivable / Cr Accounts receivable`. That is precisely why a
+> bounce can put the debt back.
+
+Bouncing reverses whatever was recognised, restores the counterparty's debt
+(optionally onto *clients douteux*), expenses the return fee, and reopens any
+instalment the instrument was covering.
+
+### 11.3 Installments — "khlas bel taqsit"
+
+A plan reschedules an existing debt, so **creating one posts nothing**; the
+receivable already exists from the invoice. Money is recognised when an
+instalment is actually paid. Down payment becomes instalment #1 due
+immediately; the last instalment absorbs the rounding remainder so the schedule
+always sums exactly to the financed amount.
+
+### 11.4 Banking & reconciliation
+
+Statement lines are imported from CSV (comma/semicolon, FR or EN headers,
+`d/m/Y` or ISO dates, signed amount or separate débit/crédit columns) or keyed
+in; XLSX is parsed client-side and posted as rows, keeping the backend free of
+a spreadsheet dependency. Re-importing an overlapping statement is safe —
+identical lines are skipped.
+
+Matching **asserts** that a bank line *is* a given payment; it does not post,
+because that payment posted when it was recorded. Only `adjustment` matches
+(bank charges, interest, unidentified lines) post — to the mapped fees or
+suspense account. Matching a deposited cheque runs its `clear` transition,
+since the bank line *is* the moment it cleared.
+
+### 11.5 Postings summary
+
+| Event | Entry |
+|---|---|
+| Cheque/traite received | Dr Instruments receivable / Cr Accounts receivable |
+| Deposited for collection | Dr Instruments in collection / Cr Instruments receivable |
+| Cleared (incoming) | Dr Bank + Dr Fees / Cr Instruments in collection |
+| Bounced (incoming) | Dr Receivable (or Doubtful) / Cr Instruments in collection; fees to Bank |
+| Cheque issued to supplier | Dr Accounts payable / Cr Instruments payable |
+| Cleared (outgoing) | Dr Instruments payable / Cr Bank |
+| Cash/transfer received | Dr Cash or Bank / Cr Receivable |
+| Advance received | Dr Cash or Bank / Cr Customer advances |
+| Cash deposited to bank | Dr Bank / Cr Cash |
+| Instalment paid | as per its payment method (above) |
+| Reconciliation adjustment | Dr Fees or Bank / Cr Bank or Suspense |
+
+Instalment plans and bank matches post nothing by themselves — by design.
+
+### 11.6 RBAC
+
+Reads are open to any authenticated user; anything that posts to the ledger
+(instrument transitions, payments, matching, instalment settlement) is
+manager/admin. Localization settings — fiscal profile, journals, account
+mapping, chart template — are **admin only**, since re-pointing a mapping
+changes where every future entry lands.
+
+### 11.7 AI agent
+
+Thirteen read tools and eight write tools cover the layer. Writes keep the same
+human-in-the-loop interrupt as the rest of the agent. Two prompt rules matter:
+the agent must call `explain_journal_entry` rather than reasoning about
+accounting from memory, and it must never assert what Tunisian law requires —
+it describes what the system is configured to do and defers to the accountant.
+
+---
+
+## 12. Decision Log
 
 | # | Decision | Rationale |
 |---|---|---|

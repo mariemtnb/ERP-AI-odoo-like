@@ -81,7 +81,7 @@ class DemoSeeder extends Seeder
             'quantity' => 50, 'unit_price' => 0.40,
         ]);
         $po->load('lines')->recomputeTotal();
-        DocumentService::confirmPurchase($po);
+        DocumentService::confirmPurchase($po, $admin);
         DocumentService::receivePurchase($po, $admin);
 
         // One confirmed sale with invoice.
@@ -97,5 +97,8 @@ class DemoSeeder extends Seeder
         $sale->load('lines')->recomputeTotal();
         DocumentService::confirmSale($sale, $admin);
         DocumentService::generateInvoice($sale);
+
+        // Tunisian treasury demo: cheques, traites, installments, statement.
+        $this->call(TunisiaDemoSeeder::class);
     }
 }
