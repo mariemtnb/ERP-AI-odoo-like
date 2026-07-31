@@ -1,53 +1,51 @@
 @startuml sequence-sale-posting
-title Confirming a sale — stock and books updated in one transaction
+' What happens when a sale is confirmed.
+title Confirming a sale — stock and books move together
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 13
+skinparam ArrowColor #55606E
+skinparam sequence {
+  ParticipantBorderColor #9AA5B1
+  ParticipantBackgroundColor #F7F9FB
+  LifeLineBorderColor #C3CCD6
+}
 
 actor User
-participant "SaleController" as C
-participant "DocumentService" as DS
-participant "StockService" as SS
-participant "AccountingService" as AS
+participant "Documents" as DS
+participant "Stock" as SS
+participant "Accounting" as AS
 database PostgreSQL as DB
 
-User -> C : POST /sales/{id}/confirm
-C -> DS : confirmSale(sale, user)
+User -> DS : Confirm this sale
 
-group Single DB transaction
-  DS -> DS : guard: status = draft, has lines
+group One database transaction
+  DS -> SS : take the goods out of stock
+  SS -> DB : record a stock movement
 
-  loop for each sale line
-    DS -> SS : recordMovement(product, OUT, qty, ref=sale)
-    SS -> DB : SELECT … FOR UPDATE (product, warehouse_stock)
-    alt insufficient stock
-      SS --> DS : throw InsufficientStock
-      DS --> C : rollback everything
-      C --> User : 409 — nothing was written
-    else stock available
-      SS -> DB : INSERT stock_movement (append-only)
-      SS -> DB : UPDATE warehouse_stock + product cache
-    end
-  end
+  DS -> DB : mark the sale confirmed
 
-  DS -> DB : UPDATE sale.status = confirmed
-
-  DS -> AS : postSaleConfirmed(sale, user)
-  AS -> AS : build lines\nDr Receivable / Cr Revenue (selling price)\nDr COGS / Cr Inventory (cost price)
-  AS -> AS : assert SUM(debit) = SUM(credit)
-  alt unbalanced
-    AS --> DS : throw UnbalancedEntry
-    DS --> C : rollback everything
-  else balanced
-    AS -> DB : INSERT journal_entry + lines (append-only)
-  end
+  DS -> AS : record the money side
+  AS -> AS : check debit = credit
+  AS -> DB : write the accounting entry
 end
 
-C --> User : 200 — sale confirmed
+DS --> User : Sale confirmed
 
 note over SS, AS
-  Stock and the ledger commit together, so the
-  books can never disagree with the warehouse.
-  Both are append-only: a cancellation posts a
-  reversing movement and a reversing entry
-  rather than deleting history.
+  If anything fails — not enough stock,
+  or an entry that does not balance —
+  the whole thing is undone and
+  nothing is saved.
+end note
+
+note over DB
+  Nothing is ever deleted.
+  Cancelling a sale writes an
+  opposite movement and an
+  opposite entry instead.
 end note
 
 @enduml

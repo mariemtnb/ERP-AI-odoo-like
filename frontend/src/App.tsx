@@ -2,11 +2,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { ThemeProvider } from "@/lib/theme";
+import { SessionProvider } from "@/lib/session";
 import { AuthProvider } from "@/features/auth/AuthContext";
 import LoginPage from "@/features/auth/LoginPage";
 import SignupPage from "@/features/auth/SignupPage";
 import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
 import AccountingPage from "@/features/accounting/AccountingPage";
+import AdministrationPage from "@/features/admin/AdministrationPage";
 import BankingPage from "@/features/treasury/BankingPage";
 import InstallmentsPage from "@/features/treasury/InstallmentsPage";
 import InstrumentsPage from "@/features/treasury/InstrumentsPage";
@@ -30,6 +32,9 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
       <AuthProvider>
+        {/* Effective permissions + enabled modules, so the shell can hide
+            what this user cannot reach. The backend still enforces both. */}
+        <SessionProvider>
         <BrowserRouter>
           <Routes>
             <Route path="/welcome" element={<LandingPage />} />
@@ -69,11 +74,13 @@ export default function App() {
                 <Route element={<ProtectedRoute roles={["admin"]} />}>
                   <Route path="users" element={<UsersPage />} />
                   <Route path="settings/localization" element={<LocalizationPage />} />
+                  <Route path="settings/administration" element={<AdministrationPage />} />
                 </Route>
               </Route>
             </Route>
           </Routes>
         </BrowserRouter>
+        </SessionProvider>
       </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>

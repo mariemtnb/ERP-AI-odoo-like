@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdministrationController;
 use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BankController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\SaleController;
 use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -33,12 +35,21 @@ Route::prefix('v1')->group(function () {
     // --- auth ---
     Route::post('auth/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
     Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
-    Route::post('auth/refresh', [AuthController::class, 'refresh']);
-    Route::post('auth/logout', [AuthController::class, 'logout']);
+    // Refresh was unthrottled: a stolen refresh token could be exercised in a
+    // tight loop, and the endpoint is an oracle for guessing valid tokens.
+    Route::post('auth/refresh', [AuthController::class, 'refresh'])->middleware('throttle:30,1');
+    Route::post('auth/logout', [AuthController::class, 'logout'])->middleware('throttle:30,1');
 
-    Route::middleware('auth:api')->group(function () {
+    /*
+    | `active` runs on every authenticated request: deactivating an account has
+    | to revoke access immediately, not whenever the current token happens to
+    | expire. `throttle:api` is a blanket ceiling so no endpoint is unbounded.
+    */
+    Route::middleware(['auth:api', 'active', 'throttle:api'])->group(function () {
         Route::get('auth/me', [AuthController::class, 'me']);
-        Route::post('auth/change-password', [AuthController::class, 'changePassword']);
+        // Brute-forcing current_password was previously unbounded.
+        Route::post('auth/change-password', [AuthController::class, 'changePassword'])
+            ->middleware('throttle:10,1');
 
         // --- catalog & stock: everyone reads, managers/admins write ---
         Route::get('categories', [CategoryController::class, 'index']);
@@ -254,6 +265,66 @@ Route::prefix('v1')->group(function () {
         Route::post('agent/chat', [AssistantController::class, 'chat'])->middleware('throttle:30,1');
         Route::get('agent/conversations', [AssistantController::class, 'conversations']);
         Route::delete('agent/conversations/{id}', [AssistantController::class, 'destroyConversation']);
+
+        /*
+        |--------------------------------------------------------------------
+        | Administration (Phase 1) — admin only
+        |--------------------------------------------------------------------
+        | Organisation structure, the permission engine, the audit trail and
+        | feature flags. `me/context` is the one exception: every signed-in
+        | user needs their own effective permissions and the enabled modules
+        | in order to render the correct UI.
+        */
+        Route::get('me/context', function (Request $request) {
+            return response()->json([
+                'permissions' => \App\Services\PermissionService::keysFor($request->user()),
+                'features' => \App\Models\FeatureFlag::map(),
+                'company' => \App\Models\Company::current()?->toApi(),
+            ]);
+        });
+
+        Route::middleware('role:admin')->prefix('admin')->group(function () {
+            // organisation
+            Route::get('companies', [AdministrationController::class, 'companies']);
+            Route::post('companies', [AdministrationController::class, 'storeCompany']);
+            Route::match(['put', 'patch'], 'companies/{company}', [AdministrationController::class, 'updateCompany']);
+            Route::get('branches', [AdministrationController::class, 'branches']);
+            Route::post('branches', [AdministrationController::class, 'storeBranch']);
+            Route::get('business-units', [AdministrationController::class, 'businessUnits']);
+            Route::post('business-units', [AdministrationController::class, 'storeBusinessUnit']);
+
+            // fiscal years & numbering
+            Route::get('fiscal-years', [AdministrationController::class, 'fiscalYears']);
+            Route::post('fiscal-years', [AdministrationController::class, 'storeFiscalYear']);
+            Route::match(['put', 'patch'], 'fiscal-years/{fiscalYear}', [AdministrationController::class, 'updateFiscalYearStatus']);
+            Route::get('sequences', [AdministrationController::class, 'sequences']);
+            Route::match(['put', 'patch'], 'sequences/{sequence}', [AdministrationController::class, 'updateSequence']);
+
+            // permissions
+            Route::get('permissions', [AdministrationController::class, 'permissions']);
+            Route::get('roles', [AdministrationController::class, 'roles']);
+            Route::post('roles', [AdministrationController::class, 'storeRole']);
+            Route::match(['put', 'patch'], 'roles/{role}/permissions', [AdministrationController::class, 'updateRolePermissions']);
+            Route::delete('roles/{role}', [AdministrationController::class, 'destroyRole']);
+            Route::get('users/{user}/permissions', [AdministrationController::class, 'userPermissions']);
+            Route::post('users/{user}/permissions', [AdministrationController::class, 'grantPermission']);
+            Route::delete('users/{user}/permissions', [AdministrationController::class, 'revokePermission']);
+            Route::post('field-permissions', [AdministrationController::class, 'storeFieldPermission']);
+            Route::get('permission-audit', [AdministrationController::class, 'permissionAudit']);
+
+            // audit trail
+            Route::get('audit', [AdministrationController::class, 'audit']);
+            Route::get('audit/export', [AdministrationController::class, 'exportAudit']);
+
+            // feature flags
+            Route::get('features', [AdministrationController::class, 'features']);
+            Route::match(['put', 'patch'], 'features/{feature}', [AdministrationController::class, 'updateFeature']);
+        });
+
+        // Activity timeline for a single record — any authenticated user may
+        // read the history of something they can already see.
+        Route::get('timeline/{type}/{id}', [AdministrationController::class, 'timeline'])
+            ->whereNumber('id');
 
         // --- users: admin only ---
         Route::middleware('role:admin')->group(function () {
