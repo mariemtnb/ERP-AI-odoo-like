@@ -1,107 +1,87 @@
 @startuml use-case
-title Intelligent ERP — Use Case Diagram
+' Who can do what. Grouped instead of listing every screen.
+title Intelligent ERP — Who does what
 
 left to right direction
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 13
 skinparam actorStyle awesome
+skinparam ArrowColor #6B7684
+skinparam usecase {
+  BorderColor #9AA5B1
+  BackgroundColor #FFFFFF
+}
+skinparam rectangle {
+  BorderColor #C3CCD6
+}
 
-actor "Employee" as employee
-actor "Manager" as manager
-actor "Administrator" as admin
-actor "AI Agent" as agent <<system>>
+actor Employee as employee
+actor Manager as manager
+actor Administrator as admin
+actor "AI assistant" as agent <<system>>
 
 manager --|> employee
 admin --|> manager
 
 rectangle "Intelligent ERP" {
-  usecase "UC-01 Authenticate\n(login / register / refresh)" as UC01
-  usecase "UC-02 Manage users & roles" as UC02
-  usecase "UC-03 Manage products\n& categories" as UC03
-  usecase "UC-04 Record stock movement" as UC04
-  usecase "UC-05 Transfer stock\nbetween warehouses" as UC05
-  usecase "UC-06a Create customer" as UC06a
-  usecase "UC-06b Manage customers\n& suppliers" as UC06b
-  usecase "UC-07 Create purchase order" as UC07
-  usecase "UC-08 Approve large\npurchase order" as UC08
-  usecase "UC-09 Receive goods" as UC09
-  usecase "UC-10 Create & confirm sale" as UC10
-  usecase "UC-11 Generate invoice" as UC11
-  usecase "UC-12 Work the CRM pipeline\n(leads & activities)" as UC12
-  usecase "UC-13 Convert lead\nto customer" as UC13
-  usecase "UC-14 View dashboard\n& forecast" as UC14
-  usecase "UC-15 Generate reports\n& export PDF" as UC15
-  usecase "UC-16 Consult the ledger\n(journal)" as UC16
-  usecase "UC-17 Post manual\njournal entry" as UC17
-  usecase "UC-18 View trial balance\n& income statement" as UC18
-  usecase "UC-19 Import invoice by OCR" as UC19
-  usecase "UC-20 Chat with AI assistant" as UC20
-  usecase "UC-21 Approve / reject\nagent action" as UC21
-  usecase "Consult data & history" as UCREAD
 
-  usecase "Post accounting entry" as POST
-  usecase "Move stock" as MOVE
+  package "Everyone signed in" #F4FBF6 {
+    usecase "Look up products,\ncustomers and stock" as UC1
+    usecase "Create a sale" as UC2
+    usecase "Add a customer\nor a lead" as UC3
+    usecase "Ask the assistant" as UC4
+  }
+
+  package "Manager" #F7F4FB {
+    usecase "Manage catalog\nand stock" as UC5
+    usecase "Buy and receive\ngoods" as UC6
+    usecase "Record cheques\nand traites" as UC7
+    usecase "Set up instalment\nplans" as UC8
+    usecase "Reconcile the bank" as UC9
+    usecase "Read reports\nand the books" as UC10
+  }
+
+  package "Administrator" #F4F8FB {
+    usecase "Manage users\nand roles" as UC11
+    usecase "Configure company,\ntax and numbering" as UC12
+    usecase "Switch modules\non and off" as UC13
+    usecase "Read the audit trail" as UC14
+    usecase "Approve large\npurchase orders" as UC15
+  }
 }
 
-employee --> UC01
-employee --> UCREAD
-employee --> UC06a
-employee --> UC10
-employee --> UC12
-employee --> UC14
-employee --> UC20
+employee --> UC1
+employee --> UC2
+employee --> UC3
+employee --> UC4
 
-manager --> UC03
-manager --> UC04
-manager --> UC05
-manager --> UC06b
-manager --> UC07
-manager --> UC09
-manager --> UC11
-manager --> UC13
-manager --> UC15
-manager --> UC16
-manager --> UC17
-manager --> UC18
-manager --> UC19
+manager --> UC5
+manager --> UC6
+manager --> UC7
+manager --> UC8
+manager --> UC9
+manager --> UC10
 
-admin --> UC02
-admin --> UC08
+admin --> UC11
+admin --> UC12
+admin --> UC13
+admin --> UC14
+admin --> UC15
 
-' ---- automatic side effects ----
-UC09 ..> MOVE : <<include>>\nstock IN
-UC10 ..> MOVE : <<include>>\nstock OUT
-UC05 ..> MOVE : <<include>>\nOUT + IN
-UC09 ..> POST : <<include>>\nDr Inventory / Cr Payable
-UC10 ..> POST : <<include>>\nDr Receivable / Cr Revenue\n+ Dr COGS / Cr Inventory
-UC17 ..> POST : <<include>>
-UC07 ..> UC08 : <<extend>>\ntotal >= threshold
-UC11 ..> UC10 : <<extend>>\nconfirmed sales only
-UC19 ..> UC07 : <<extend>>\nprefills the order
-UC20 ..> UC21 : <<extend>>\nwrite action proposed
+' The assistant acts for a person, never beyond that person's rights.
+' Two arrows, not one per use case — the rule is the same everywhere.
+agent ..> UC1 : can read
+agent ..> UC2 : can write,\nafter approval
 
-' ---- the agent acts on behalf of the user ----
-UC21 ..> agent : resumes
-agent --> UCREAD : via REST API\n(user's JWT)
-agent --> UC06a
-agent --> UC04
-agent --> UC07
-agent --> UC10
-agent --> UC11
-agent --> UC18
-
-note right of agent
-  The agent acts ON BEHALF of the
-  logged-in user: every tool call is an
-  HTTP request carrying the user's JWT,
-  so RBAC applies identically. Write tools
-  pause for UC-21 confirmation and are
-  recorded in the audit log.
-end note
-
-note bottom of POST
-  Double-entry: every posting is balanced
-  (SUM debit = SUM credit) and append-only —
-  cancelling a sale posts a reversal rather
-  than deleting the original entry.
+note as N1 #FFFDF0
+  The assistant works on behalf of the
+  signed-in user, with exactly that
+  user's permissions — so it can read
+  and write whatever they could.
+  Anything that changes data waits for
+  the user to approve it first.
 end note
 
 @enduml

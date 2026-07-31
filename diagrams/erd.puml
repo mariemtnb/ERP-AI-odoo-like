@@ -1,277 +1,245 @@
 @startuml erd
-' Entity–Association diagram (database schema) — Intelligent ERP
-title Intelligent ERP — Entity–Association Diagram
+' Database structure. Only the columns that explain the model are shown —
+' every table also has id, created_at and updated_at.
+title Intelligent ERP — Database structure
 
 hide circle
-skinparam linetype ortho
+hide empty members
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 12
+skinparam ArrowColor #6B7684
+skinparam entity {
+  BorderColor #9AA5B1
+  BackgroundColor #FFFFFF
+}
+skinparam package {
+  BorderColor #C3CCD6
+  FontStyle bold
+}
 
-package "Identity & audit" {
+package "Company & access" #F4F8FB {
+  entity companies {
+    code, name
+    currency, timezone
+  }
+  entity branches {
+    code, name
+  }
+  entity fiscal_years {
+    starts_on, ends_on
+    status (open | closed)
+  }
+  entity numbering_sequences {
+    key, format
+    next_number
+  }
   entity users {
-    * id : bigint <<PK>>
-    --
-    * email : varchar <<unique>>
-    * password : varchar
-    first_name / last_name : varchar
-    * role : varchar (admin|manager|employee)
-    * is_active : boolean
-    created_at / updated_at
+    email, password
+    role, is_active
   }
-
-  entity audit_logs {
-    * id : bigint <<PK>>
-    --
-    * user_id : bigint <<FK>>
-    * actor : varchar (user|agent)
-    * action : varchar
-    payload : jsonb
-    * created_at : timestamp
+  entity roles {
+    key, parent_id
+  }
+  entity permissions {
+    key (e.g. sales.confirm)
+  }
+  entity audit_entries {
+    event, who, when
+    old / new values
+  }
+  entity feature_flags {
+    key, enabled
   }
 }
 
-package "Catalog & inventory" {
+package "Catalog & stock" #F4FBF6 {
   entity categories {
-    * id : bigint <<PK>>
-    --
-    * name : varchar <<unique>>
-    description : text
+    name
   }
-
   entity products {
-    * id : bigint <<PK>>
-    --
-    * sku : varchar <<unique>>
-    * name : varchar
-    category_id : bigint <<FK>>
-    cost_price / sale_price : decimal(12,2)
-    unit : varchar
-    quantity_in_stock : decimal(12,3) <<global cache>>
-    min_stock_level : decimal(12,3)
-    * is_active : boolean
+    sku, name
+    cost_price, sale_price
+    quantity_in_stock
   }
-
   entity warehouses {
-    * id : bigint <<PK>>
-    --
-    * name : varchar <<unique>>
-    address : text
-    * is_default : boolean
-    * is_active : boolean
+    name
   }
-
   entity warehouse_stocks {
-    * id : bigint <<PK>>
-    --
-    * warehouse_id : bigint <<FK>>
-    * product_id : bigint <<FK>>
-    * quantity : decimal(12,3)
-    <<unique (warehouse_id, product_id)>>
+    quantity
   }
-
   entity stock_movements {
-    * id : bigint <<PK>>
-    --
-    * product_id : bigint <<FK>>
-    warehouse_id : bigint <<FK>>
-    * movement_type : varchar (in|out|adjustment)
-    * quantity : decimal(12,3)
-    reason : varchar
-    reference_type : varchar (sale|purchase|transfer|manual)
-    reference_id : bigint
-    * created_by : bigint <<FK users>>
-    * created_at : timestamp
-    ' append-only ledger: source of truth for stock
+    type (in | out | adjust)
+    quantity, reason
   }
 }
 
-package "Partners & CRM" {
+package "Partners & CRM" #FBF7F2 {
   entity customers {
-    * id : bigint <<PK>>
-    --
-    * name : varchar
-    email / phone / address / notes
-    * is_active : boolean
+    name, phone
   }
-
   entity suppliers {
-    * id : bigint <<PK>>
-    --
-    * name : varchar
-    email / phone / address / notes
-    * is_active : boolean
+    name, phone
   }
-
   entity leads {
-    * id : bigint <<PK>>
-    --
-    * name : varchar
-    company / email / phone / source
-    * status : varchar (new|contacted|qualified|won|lost)
-    notes : text
-    assigned_to : bigint <<FK users>>
-    customer_id : bigint <<FK>> (set on conversion)
-    * created_by : bigint <<FK users>>
+    name, status
   }
-
   entity lead_activities {
-    * id : bigint <<PK>>
-    --
-    * lead_id : bigint <<FK>>
-    * type : varchar (call|email|meeting|note)
-    * summary : text
-    * created_by : bigint <<FK users>>
-    * created_at : timestamp
+    type, summary
   }
 }
 
-package "Documents" {
-  entity purchase_orders {
-    * id : bigint <<PK>>
-    --
-    * number : varchar <<unique>> (PO-YYYY-NNNN)
-    * supplier_id : bigint <<FK>>
-    * status : varchar (draft|pending_approval|confirmed|received|cancelled)
-    * order_date : date
-    received_date : date
-    * total_amount : decimal(14,2)
-    approved_by : bigint <<FK users>>
-    approved_at : timestamp
-    * created_by : bigint <<FK users>>
-  }
-
-  entity purchase_order_lines {
-    * id : bigint <<PK>>
-    --
-    * purchase_order_id : bigint <<FK>>
-    * product_id : bigint <<FK>>
-    * quantity : decimal(12,3)
-    * unit_price : decimal(12,2)
-  }
-
+package "Sales & purchasing" #F7F4FB {
   entity sales {
-    * id : bigint <<PK>>
-    --
-    * number : varchar <<unique>> (SO-YYYY-NNNN)
-    * customer_id : bigint <<FK>>
-    * status : varchar (draft|confirmed|cancelled)
-    * sale_date : date
-    * total_amount : decimal(14,2)
-    * created_by : bigint <<FK users>>
+    number, status
+    total_amount
   }
-
   entity sale_lines {
-    * id : bigint <<PK>>
-    --
-    * sale_id : bigint <<FK>>
-    * product_id : bigint <<FK>>
-    * quantity : decimal(12,3)
-    * unit_price : decimal(12,2)
+    quantity, unit_price
   }
-
+  entity purchase_orders {
+    number, status
+    total_amount
+  }
+  entity purchase_order_lines {
+    quantity, unit_price
+  }
   entity invoices {
-    * id : bigint <<PK>>
-    --
-    * number : varchar <<unique>> (INV-YYYY-NNNN)
-    * sale_id : bigint <<FK, unique>> (1–1)
-    * issued_at : timestamp
+    number
   }
 }
 
-package "Accounting (double-entry)" {
+package "Accounting" #FBF4F4 {
   entity accounts {
-    * id : bigint <<PK>>
-    --
-    * code : varchar <<unique>> (1000, 1100, …)
-    * name : varchar
-    * type : varchar (asset|liability|equity|income|expense)
-    * is_active : boolean
+    code, name, type
   }
-
+  entity journals {
+    code (VT, AC, BQ, CH...)
+  }
   entity journal_entries {
-    * id : bigint <<PK>>
-    --
-    * number : varchar <<unique>> (JE-YYYY-NNNN)
-    * entry_date : date
-    memo : varchar
-    reference_type : varchar (sale|purchase|manual)
-    reference_id : bigint
-    * created_by : bigint <<FK users>>
-    ' append-only: cancellations post a reversal
+    number, entry_date
   }
-
   entity journal_entry_lines {
-    * id : bigint <<PK>>
-    --
-    * journal_entry_id : bigint <<FK>>
-    * account_id : bigint <<FK>>
-    label : varchar
-    * debit : decimal(14,2)
-    * credit : decimal(14,2)
-    ' invariant: SUM(debit) = SUM(credit) per entry
+    debit, credit
+  }
+  entity account_mappings {
+    key -> account_code
   }
 }
 
-package "AI assistant" {
+package "Treasury (Tunisia)" #F2F8FB {
+  entity payment_instruments {
+    kind (cheque | traite)
+    amount, due_date
+    status
+  }
+  entity instrument_events {
+    event, status change
+  }
+  entity installment_plans {
+    number, total_amount
+  }
+  entity installments {
+    due_date, amount
+    paid_amount, status
+  }
+  entity payments {
+    method, amount
+  }
+}
+
+package "Banking" #F8FBF2 {
+  entity banks {
+    code, name
+  }
+  entity bank_accounts {
+    label, rib
+  }
+  entity bank_transactions {
+    date, label, amount
+    status (matched?)
+  }
+  entity reconciliation_matches {
+    amount
+  }
+}
+
+package "AI assistant" #F9F2FB {
   entity conversations {
-    * id : bigint <<PK>>
-    --
-    * user_id : bigint <<FK>>
-    title : varchar
-    * created_at : timestamp
+    title
   }
-
   entity messages {
-    * id : bigint <<PK>>
-    --
-    * conversation_id : bigint <<FK>>
-    * role : varchar (user|assistant)
-    content : text
-    tool_calls : jsonb
-    pending_action : jsonb
+    role, content
   }
-
   entity documents {
-    * id : bigint <<PK>>
-    --
-    * title : varchar
-    * chunk_index : int
-    * content : text
-    embedding : vector(768) <<pgvector>>
-    * created_by : bigint <<FK users>>
+    title, content
+    embedding (vector)
   }
 }
 
-' ---- relationships ----
+' ---- company & access ----
+companies ||--o{ branches
+companies ||--o{ fiscal_years
+companies ||--o{ numbering_sequences
+roles ||--o{ roles : inherits
+users }o--|| roles
+roles }o--o{ permissions
+
+' ---- catalog & stock ----
 categories ||--o{ products
 products ||--o{ stock_movements
 products ||--o{ warehouse_stocks
 warehouses ||--o{ warehouse_stocks
-warehouses ||--o{ stock_movements
-products ||--o{ purchase_order_lines
-products ||--o{ sale_lines
-suppliers ||--o{ purchase_orders
-purchase_orders ||--o{ purchase_order_lines
+
+' ---- CRM ----
+leads ||--o{ lead_activities
+leads }o--o| customers : converts to
+
+' ---- sales & purchasing ----
 customers ||--o{ sales
 sales ||--o{ sale_lines
+sale_lines }o--|| products
 sales ||--o| invoices
-customers ||--o| leads
-leads ||--o{ lead_activities
-accounts ||--o{ journal_entry_lines
-journal_entries ||--o{ journal_entry_lines
-users ||--o{ stock_movements : created_by
-users ||--o{ purchase_orders : created_by
-users ||--o{ purchase_orders : approved_by
-users ||--o{ sales : created_by
-users ||--o{ journal_entries : created_by
-users ||--o{ leads : assigned_to
-users ||--o{ conversations
-users ||--o{ documents
-conversations ||--o{ messages
-users ||--o{ audit_logs
+suppliers ||--o{ purchase_orders
+purchase_orders ||--o{ purchase_order_lines
+purchase_order_lines }o--|| products
 
-' ---- document → ledger links (logical, via reference_type/reference_id) ----
-sales ..> stock_movements : "OUT on confirm"
-purchase_orders ..> stock_movements : "IN on receipt"
-sales ..> journal_entries : "revenue + COGS on confirm"
-purchase_orders ..> journal_entries : "inventory + payable on receipt"
+' ---- accounting ----
+journals ||--o{ journal_entries
+journal_entries ||--o{ journal_entry_lines
+journal_entry_lines }o--|| accounts
+account_mappings }o--|| accounts
+
+' ---- treasury ----
+customers ||--o{ payment_instruments
+payment_instruments ||--o{ instrument_events
+installment_plans ||--o{ installments
+customers ||--o{ installment_plans
+payments }o--o| installments
+payments }o--o| payment_instruments
+payments }o--o| journal_entries : posts
+
+' ---- banking ----
+banks ||--o{ bank_accounts
+bank_accounts ||--o{ bank_transactions
+bank_accounts ||--o{ payment_instruments : deposited into
+bank_transactions ||--o{ reconciliation_matches
+
+' ---- AI ----
+users ||--o{ conversations
+conversations ||--o{ messages
+
+' Documents also drive stock and the ledger, but those links are logical
+' (reference_type + reference_id) rather than foreign keys. Drawing them
+' turned the diagram into spaghetti, so they are written out instead —
+' see sequence-sale-posting for how it actually runs.
+note as N1 #FFFDF0
+  **What triggers what**
+  Confirming a sale       -> stock out + revenue entry
+  Receiving a purchase    -> stock in  + payable entry
+  Cheque changes status   -> its own entry each time
+  Cancelling anything     -> an opposite entry, never a delete
+end note
 
 @enduml
