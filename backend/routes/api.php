@@ -9,6 +9,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\InstallmentController;
 use App\Http\Controllers\InstrumentController;
 use App\Http\Controllers\LocalizationController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReconciliationController;
@@ -238,6 +239,21 @@ Route::prefix('v1')->group(function () {
 
         // --- treasury dashboard ---
         Route::get('dashboard/treasury', [TreasuryController::class, 'dashboard']);
+
+        /*
+        |--------------------------------------------------------------------
+        | Notifications — behind the notifications feature flag.
+        | Everyone reads and manages their OWN; a scan (which generates the
+        | time-based ones) is a manager/admin action.
+        */
+        Route::middleware('feature:notifications')->group(function () {
+            Route::get('notifications', [NotificationController::class, 'index']);
+            Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount']);
+            Route::post('notifications/read-all', [NotificationController::class, 'markAllRead']);
+            Route::post('notifications/{notification}/read', [NotificationController::class, 'markRead']);
+            Route::post('notifications/scan', [NotificationController::class, 'scan'])
+                ->middleware('role:admin,manager');
+        });
 
         // --- dashboard & reports ---
         Route::get('dashboard/stats', [ReportingController::class, 'dashboard']);
