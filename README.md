@@ -36,6 +36,20 @@ Backend tests: `docker compose exec backend php artisan test`.
   `/api/docs/` came from the Django stack and does not exist)
 - AI service readiness: http://localhost:8001/ready
 
+## Notifications
+
+The bell in the top bar shows alerts generated from the state of the business:
+a cheque or traite due within a week, a bounced instrument, an overdue
+instalment, a product low on stock, or a purchase order waiting for approval.
+They go to the people who can act (managers/admins) and each person sees only
+their own. Clicking one opens the relevant screen.
+
+Time-based alerts are produced by a scan — `php artisan notifications:scan`,
+meant to run on a schedule, or `POST /notifications/scan` / the "check now"
+button in the bell for managers. (There is no scheduler worker in the
+deployment yet, so for now it is run on demand.) Email/SMS aren't built — they
+need a provider; the service is shaped so a channel can be added later.
+
 ## Tunisia localization
 
 The ERP ships a localization layer for Tunisian business practice:
