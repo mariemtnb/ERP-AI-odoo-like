@@ -10,7 +10,9 @@ use App\Http\Controllers\InstallmentController;
 use App\Http\Controllers\InstrumentController;
 use App\Http\Controllers\LocalizationController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OwnerController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReconciliationController;
 use App\Http\Controllers\TreasuryController;
@@ -254,6 +256,39 @@ Route::prefix('v1')->group(function () {
             Route::post('notifications/scan', [NotificationController::class, 'scan'])
                 ->middleware('role:admin,manager');
         });
+
+        /*
+        |--------------------------------------------------------------------
+        | Payroll ("gestion de paie") — behind the payroll feature flag.
+        | Everyone with access reads; managers/admins run payroll and pay
+        | advances, since both post to the ledger.
+        */
+        Route::middleware('feature:payroll')->group(function () {
+            Route::get('employees', [PayrollController::class, 'employees']);
+            Route::get('employees/{employee}', [PayrollController::class, 'showEmployee']);
+            Route::get('advances', [PayrollController::class, 'advances']);
+            Route::get('payroll/runs', [PayrollController::class, 'runs']);
+            Route::get('payroll/runs/{run}', [PayrollController::class, 'showRun']);
+
+            Route::middleware('role:admin,manager')->group(function () {
+                Route::post('employees', [PayrollController::class, 'storeEmployee']);
+                Route::match(['put', 'patch'], 'employees/{employee}', [PayrollController::class, 'updateEmployee']);
+
+                Route::post('advances', [PayrollController::class, 'requestAdvance']);
+                Route::post('advances/{advance}/pay', [PayrollController::class, 'payAdvance']);
+                Route::post('advances/{advance}/cancel', [PayrollController::class, 'cancelAdvance']);
+
+                Route::post('payroll/runs', [PayrollController::class, 'createRun']);
+                Route::post('payroll/payslips/{payslip}/lines', [PayrollController::class, 'addLine']);
+                Route::delete('payroll/lines/{line}', [PayrollController::class, 'removeLine']);
+                Route::post('payroll/runs/{run}/approve', [PayrollController::class, 'approveRun']);
+                Route::post('payroll/runs/{run}/pay', [PayrollController::class, 'payRun']);
+            });
+        });
+
+        // --- owner's profit view (managers/admins) ---
+        Route::get('owner/profit', [OwnerController::class, 'profit'])
+            ->middleware('role:admin,manager');
 
         // --- dashboard & reports ---
         Route::get('dashboard/stats', [ReportingController::class, 'dashboard']);

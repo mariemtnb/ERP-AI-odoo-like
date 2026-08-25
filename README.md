@@ -73,6 +73,24 @@ advisory warnings by default. The Tunisian chart of accounts shipped here
 starting point to confirm with your accountant — apply it, edit it, or switch
 back from Settings → Localization → Account mapping.
 
+## Owner tools & payroll
+
+- **Profit** (sidebar, managers/admins) — revenue, cost of goods, gross and net
+  profit, where the money went, and the products that made the best margin.
+  Read straight from the accounting, so it always matches the books.
+- **Payroll** ("gestion de paie") — employees, monthly pay runs and payslips
+  with bonus (prime) and deduction lines, all posted to the ledger. Employees
+  can take an **advance on salary** (sickness, family matters); it moves money
+  now and is taken back from the next payslip automatically. No tax or
+  social-charge rate is hardcoded — those are deduction lines the company sets.
+- The **AI assistant** can read the profit figures and give the owner short,
+  concrete suggestions, replies in the user's language (Arabic, Derja, French,
+  English), and has an optional **auto mode** — off by default; when on it
+  approves its own actions, but every one still runs with the user's
+  permissions and is audit-logged.
+- **Themes** — dark, light and a warm **creme** paper theme; the top-bar button
+  cycles between them.
+
 ## Administration
 
 Admin → **Administration** (admin only):
