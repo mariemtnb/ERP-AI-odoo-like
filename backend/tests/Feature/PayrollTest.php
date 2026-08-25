@@ -31,6 +31,10 @@ class PayrollTest extends TestCase
     {
         parent::setUp();
         AccountMap::flush();
+        // The flag cache is a per-process static; a fresh DB per test isn't
+        // enough on its own, so clear it or an earlier test that toggles the
+        // payroll flag leaks its value into this one.
+        \App\Models\FeatureFlag::flush();
         $this->manager = User::create(['email' => 'm@t.t', 'password' => 'x', 'role' => 'manager']);
         $this->emp = Employee::create([
             'code' => 'EMP-1', 'first_name' => 'Ali', 'last_name' => 'Ben Salah',
