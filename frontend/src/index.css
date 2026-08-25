@@ -191,7 +191,8 @@
    Warm off-white canvas (never pure white); status hues darkened
    for contrast on light surfaces.
    ============================================================ */
-:root[data-theme="light"] {
+:root[data-theme="light"],
+:root[data-theme="creme"] {
   color-scheme: light;
 
   /* status hues: the -400 tokens are used as foregrounds, so on light
@@ -257,6 +258,35 @@
   --danger: 347 77% 50%;
   --info: 201 96% 39%;
   --violet: 263 83% 58%;
+}
+
+/* Creme — the light theme on a warm paper background. It reuses every light
+   token above (see the shared selector) and only warms the surfaces, so it
+   keeps light's contrast while feeling softer on the eyes. */
+:root[data-theme="creme"] {
+  --bg-app: #f4ecdb;
+  --bg-panel: #fbf5e9;
+  --surface-base: #fbf5e9;
+  --surface-card: #fcf7ee;
+  --surface-hover: #efe6d2;
+  --surface-inset: #f2e9d6;
+
+  --border: #e4d8bf;
+  --border-subtle: color-mix(in oklab, #e4d8bf 70%, transparent);
+  --border-strong: #d3c39f;
+
+  --shadow-xs: 0 1px 2px rgba(80, 60, 20, 0.06);
+  --shadow-sm: 0 1px 2px rgba(80, 60, 20, 0.06), 0 2px 6px rgba(80, 60, 20, 0.05);
+  --shadow-md: 0 4px 12px rgba(80, 60, 20, 0.08), 0 1px 3px rgba(80, 60, 20, 0.06);
+  --shadow-lg: 0 12px 32px rgba(80, 60, 20, 0.1), 0 2px 8px rgba(80, 60, 20, 0.06);
+
+  /* HSL channel layer (Tailwind utilities) */
+  --bg: 43 46% 91%;
+  --surface: 42 60% 96%;
+  --surface-2: 41 42% 90%;
+  --surface-3: 41 38% 88%;
+  --stroke: 43 34% 82%;
+  --stroke-soft: 43 30% 86%;
 }
 
 @layer components {

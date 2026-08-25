@@ -275,6 +275,33 @@ def build_tools(token: str) -> list:
         return {"profile": profile, "account_mappings": mappings}
 
     @tool
+    def get_profit_summary(date_from: str = "", date_to: str = "") -> dict:
+        """The owner's profit picture for a period (dates YYYY-MM-DD): revenue,
+        cost of goods, gross profit, salaries, other expenses, net profit and
+        the margins. Read this before giving the owner any read of how the
+        business is doing. Manager/admin only."""
+        params = {}
+        if date_from:
+            params["from"] = date_from
+        if date_to:
+            params["to"] = date_to
+        result = _fmt(http.get("/owner/profit", params=params))
+        return result.get("summary", result) if isinstance(result, dict) else result
+
+    @tool
+    def get_best_products(date_from: str = "", date_to: str = "") -> dict:
+        """The products that made the most profit in a period, with quantity
+        sold, revenue, margin and margin %. Use this to answer "what sells best"
+        or to suggest what to push. Manager/admin only."""
+        params = {}
+        if date_from:
+            params["from"] = date_from
+        if date_to:
+            params["to"] = date_to
+        result = _fmt(http.get("/owner/profit", params=params))
+        return {"best_products": result.get("best_products", [])} if isinstance(result, dict) else result
+
+    @tool
     def search_documents(query: str) -> dict:
         """Semantic search in the company's document base (contracts, notes,
         policies…). Returns the most relevant passages with similarity scores.
@@ -611,6 +638,8 @@ def build_tools(token: str) -> list:
         get_customer_credit, list_unreconciled_bank_transactions, suggest_bank_match,
         get_reconciliation_report, list_bank_accounts, explain_journal_entry,
         get_localization_settings,
+        # owner / profit
+        get_profit_summary, get_best_products,
         # writes
         create_customer, update_customer, create_supplier, create_product,
         update_stock, create_purchase_order, create_sale, confirm_sale,
