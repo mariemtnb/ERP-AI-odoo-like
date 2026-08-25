@@ -21,6 +21,7 @@ class AccountMapping extends Model
         'notes_receivable', 'notes_in_collection', 'notes_payable',
         'customer_advances', 'supplier_advances', 'doubtful_receivable',
         'vat_collected', 'vat_deductible', 'stamp_duty', 'bank_fees', 'suspense',
+        'salary_expense', 'salaries_payable', 'employee_advances', 'payroll_deductions',
     ];
 
     protected $fillable = ['key', 'account_code', 'label', 'description'];
