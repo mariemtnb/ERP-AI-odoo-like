@@ -266,7 +266,7 @@ User ──chat──▶ Frontend ──POST /agent/chat (JWT)──▶ Laravel 
                                                         ▼
                                               AI Service (FastAPI)
                                               LangGraph ReAct agent
-                                              ├─ LLM: Ollama (qwen3:32b — best local tool-calling)
+                                              ├─ LLM: Ollama (qwen3:14b — fits 12GB VRAM, fast tool-calling)
                                               └─ Tools (LangChain @tool) ──HTTP + user's JWT──▶ Laravel REST API
                                                         │
                                               reply + tool calls back ──▶ user
@@ -279,7 +279,7 @@ Design decisions:
 2. **LangGraph** graph: `agent → (tool_calls?) → tools → agent → ... → end`, with an interrupt-before-write node: write tools (`create_sale`, `update_stock`, …) pause the graph and return a confirmation card to the UI; the user approves → graph resumes.
 3. **Tool registry** (Phase 2): `search_product`, `search_customer`, `search_supplier`, `get_dashboard_statistics`, `get_low_stock`, `generate_sales_report`, `generate_stock_report`, `create_customer`, `update_customer`, `create_supplier`, `create_product`, `update_stock`, `create_purchase_order`, `create_sale`, `generate_invoice`. Each tool = Pydantic schema + one API call — trivially extensible.
 4. **Audit:** every tool invocation logged to `audit_log` with `actor=agent`.
-5. Model: `qwen3:32b` (top-tier local function calling; hardware is not a constraint); config-swappable via `OLLAMA_MODEL` env var — `qwen3:14b` as a faster fallback if chat latency ever matters more than reasoning depth.
+5. Model: `qwen3:14b` default (fits fully in ~12GB VRAM for low latency; strong local function calling); config-swappable via `OLLAMA_MODEL` env var — bump to `qwen3:32b` when a larger GPU makes deeper reasoning worth the extra latency.
 
 ---
 
@@ -517,6 +517,6 @@ must never silently disable a working module.
 | D4 | Append-only stock movement ledger + cached quantity | Auditability + performance |
 | D5 | Vite (not Next.js) | SPA behind an API; no SSR need; simpler Docker |
 | D6 | ~~drf-spectacular OpenAPI~~ | Dropped with Django. No OpenAPI spec exists yet — see §5 |
-| D7 | qwen3:32b on Ollama (env-swappable) | Strongest local tool calling; no hardware constraint; local privacy |
+| D7 | qwen3:14b on Ollama (env-swappable) | Strong local tool calling that fits a 12GB GPU; local privacy; swap to 32b on bigger hardware |
 | D8 | dompdf for PDF (`barryvdh/laravel-dompdf`) | Blade templates → invoices, reports, statements |
 | D9 | Human-in-the-loop for agent writes | Safety requirement FR-9.4 |

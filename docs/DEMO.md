@@ -83,9 +83,9 @@ Ask the assistant, in French: *"Quels chèques sont impayés ?"* then
 
 ## 6. Architecture slide (1 min)
 Show diagrams/: ERD, use-case, agent sequence. Stack: React+TS, Laravel 12,
-PostgreSQL, FastAPI+LangGraph, Ollama (qwen3:32b), Docker.
+PostgreSQL, FastAPI+LangGraph, Ollama (qwen3:14b), Docker.
 
 ## Fallbacks
 - If the LLM is slow: mention 20 GB model partially offloaded to CPU; the
-  swap to `qwen3:14b` is one env var (`OLLAMA_MODEL`).
+  swap to `qwen3:32b` is one env var (`OLLAMA_MODEL`).
 - If a chat turn errors: start a new conversation (fresh agent memory).

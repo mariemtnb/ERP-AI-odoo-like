@@ -11,7 +11,7 @@ actions. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 | `frontend` | React + TypeScript + Tailwind (Vite) | 5173 |
 | `backend` | Laravel (PHP 8.4+) + PostgreSQL + JWT | 8000 |
 | `ai-service` | FastAPI + LangGraph + LangChain | 8001 |
-| `ollama` | Ollama (qwen3:32b) | 11434 |
+| `ollama` | Ollama (qwen3:14b) | 11434 |
 | `db` | PostgreSQL 16 + pgvector | 5432 |
 
 > **PHP 8.4 is required**, not 8.3 — `composer.lock` pins Symfony 8.1, which
@@ -22,7 +22,7 @@ actions. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 ```bash
 cp .env.example .env        # then edit secrets
 docker compose up --build
-docker compose exec ollama ollama pull qwen3:32b   # first time only
+docker compose exec ollama ollama pull qwen3:14b   # first time only
 docker compose exec backend php artisan db:seed --class=DemoSeeder --force
 ```
 
