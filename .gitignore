@@ -30,3 +30,6 @@ Thumbs.db
 
 # Ollama / models (never commit weights)
 ollama_data/
+
+# run.sh seed marker
+.seeded
