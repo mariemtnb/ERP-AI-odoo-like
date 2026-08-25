@@ -14,6 +14,8 @@ import InstallmentsPage from "@/features/treasury/InstallmentsPage";
 import InstrumentsPage from "@/features/treasury/InstrumentsPage";
 import LocalizationPage from "@/features/settings/LocalizationPage";
 import ReconciliationPage from "@/features/treasury/ReconciliationPage";
+import OwnerProfitPage from "@/features/owner/OwnerProfitPage";
+import PayrollPage from "@/features/payroll/PayrollPage";
 import InventoryPage from "@/features/inventory/InventoryPage";
 import AssistantPage from "@/features/assistant/AssistantPage";
 import CrmPage from "@/features/crm/CrmPage";
@@ -50,6 +52,8 @@ export default function App() {
                   <Route path="installments" element={<InstallmentsPage />} />
                   <Route path="banking" element={<BankingPage />} />
                   <Route path="reconciliation" element={<ReconciliationPage />} />
+                  <Route path="owner" element={<OwnerProfitPage />} />
+                  <Route path="payroll" element={<PayrollPage />} />
                 </Route>
                 <Route path="products" element={<ProductsPage />} />
                 <Route path="inventory" element={<InventoryPage />} />

@@ -6,14 +6,17 @@ import {
   type ReactNode,
 } from "react";
 
-export type Theme = "dark" | "light";
+export type Theme = "dark" | "light" | "creme";
+
+/** The order the toggle cycles through. */
+export const THEME_ORDER: Theme[] = ["dark", "light", "creme"];
 
 const STORAGE_KEY = "erp-theme";
 
 function readStoredTheme(): Theme | null {
   try {
     const v = localStorage.getItem(STORAGE_KEY);
-    return v === "dark" || v === "light" ? v : null;
+    return v === "dark" || v === "light" || v === "creme" ? v : null;
   } catch {
     return null;
   }
@@ -62,7 +65,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const toggle = useCallback(() => {
     setThemeState((prev) => {
-      const next: Theme = prev === "dark" ? "light" : "dark";
+      // Cycle dark → light → creme → dark.
+      const next = THEME_ORDER[(THEME_ORDER.indexOf(prev) + 1) % THEME_ORDER.length];
       writeTheme(next);
       return next;
     });
