@@ -3,11 +3,11 @@ import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Bell, BookOpen, Boxes, CalendarClock, Contact, FileText, Landmark,
-  LayoutDashboard, LogOut, Moon, PanelLeftClose, PanelLeftOpen, Package,
+  Coffee, LayoutDashboard, LogOut, Moon, PanelLeftClose, PanelLeftOpen, Package,
   ReceiptText, Scale, Search, Settings, ShieldCheck, ShoppingBag,
-  ShoppingCart, Sparkles, Sun, Truck, Users, UserSquare2,
+  ShoppingCart, Sparkles, Sun, TrendingUp, Truck, Users, UserSquare2, Wallet,
 } from "lucide-react";
-import { useTheme } from "@/lib/theme";
+import { useTheme, THEME_ORDER } from "@/lib/theme";
 import { useSession } from "@/lib/session";
 import { CommandPalette } from "@/components/CommandPalette";
 import { BrandMark } from "@/components/BrandMark";
@@ -36,7 +36,9 @@ const NAV: NavItem[] = [
   { to: "/purchases", label: "Purchases", icon: ShoppingBag, feature: "purchasing" },
   { to: "/sales", label: "Sales", icon: ShoppingCart, feature: "sales" },
   { to: "/crm", label: "CRM", icon: Contact, feature: "crm" },
+  { to: "/owner", label: "Profit", icon: TrendingUp, roles: ["admin", "manager"] },
   { to: "/accounting", label: "Accounting", icon: BookOpen, roles: ["admin", "manager"], feature: "accounting" },
+  { to: "/payroll", label: "Payroll", icon: Wallet, roles: ["admin", "manager"], feature: "payroll" },
   // Treasury — cheques, effets, instalments and the bank.
   { to: "/instruments", label: "Cheques & Kembyelet", icon: ReceiptText, roles: ["admin", "manager"], feature: "treasury" },
   { to: "/installments", label: "Installments", icon: CalendarClock, roles: ["admin", "manager"], feature: "treasury" },
@@ -53,6 +55,7 @@ export default function Layout() {
   const { user, logout } = useAuth();
   const { theme, toggle } = useTheme();
   const { feature } = useSession();
+  const nextThemeLabel = THEME_ORDER[(THEME_ORDER.indexOf(theme) + 1) % THEME_ORDER.length];
   const location = useLocation();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
@@ -273,10 +276,10 @@ export default function Layout() {
             <IconButton
               size="md"
               onClick={toggle}
-              aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              aria-label={`Theme: ${theme}. Click to change.`}
+              title={`Theme: ${theme} — click for ${nextThemeLabel}`}
             >
-              {theme === "dark" ? <Moon size={18} /> : <Sun size={18} />}
+              {theme === "dark" ? <Moon size={18} /> : theme === "creme" ? <Coffee size={18} /> : <Sun size={18} />}
             </IconButton>
             <IconButton size="md" onClick={logout} aria-label="Sign out">
               <LogOut size={18} />

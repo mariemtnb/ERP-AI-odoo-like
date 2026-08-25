@@ -72,7 +72,14 @@ class AssistantController extends Controller
                 'content' => $messageText,
             ]);
             $endpoint = '/chat';
-            $payload = ['thread_id' => $thread, 'message' => $messageText];
+            $payload = [
+                'thread_id' => $thread,
+                'message' => $messageText,
+                // Auto mode: the assistant approves its own write actions. Off
+                // by default — the UI opts in per message. Every action still
+                // runs with this user's JWT and is audit-logged.
+                'auto_approve' => $request->boolean('auto_approve'),
+            ];
         } else {
             Message::create([
                 'conversation_id' => $conversation->id,
