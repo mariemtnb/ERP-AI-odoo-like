@@ -14,7 +14,7 @@ class Journal extends Model
 {
     public const TYPES = [
         'sales', 'purchase', 'cash', 'bank', 'cheque',
-        'commercial_paper', 'installment', 'advance', 'misc',
+        'commercial_paper', 'installment', 'advance', 'payroll', 'misc',
     ];
 
     /** Well-known codes the posting services look up. */
@@ -26,6 +26,7 @@ class Journal extends Model
     public const COMMERCIAL_PAPER = 'EF';
     public const INSTALLMENT = 'EH';
     public const ADVANCE = 'AV';
+    public const PAYROLL = 'PA';
     public const MISC = 'OD';
 
     protected $fillable = ['code', 'name', 'name_fr', 'type', 'is_active'];
