@@ -17,6 +17,12 @@ app = FastAPI(title="ERP AI Service")
 class ChatRequest(BaseModel):
     thread_id: str
     message: str
+    # Auto mode: when true, the assistant approves its own write actions and
+    # runs them through without stopping for a confirmation card. Default is
+    # OFF — the safe, ask-first behaviour. Even in auto mode every action still
+    # goes through the ERP API with the user's token and is written to the
+    # audit log, so nothing happens outside the user's own permissions.
+    auto_approve: bool = False
 
 
 class ResumeRequest(BaseModel):
@@ -54,16 +60,29 @@ def _serialize(result: dict, pending) -> dict:
     return {"type": "message", "reply": reply, "tool_calls": tool_calls}
 
 
-def _run(agent, payload, thread_id: str) -> dict:
+def _pending_interrupt(agent, config):
+    """The value of the first pending interrupt, or None."""
+    for task in agent.get_state(config).tasks:
+        if task.interrupts:
+            return task.interrupts[0].value
+    return None
+
+
+def _run(agent, payload, thread_id: str, auto_approve: bool = False) -> dict:
     config = {"configurable": {"thread_id": thread_id}, "recursion_limit": 40}
     result = agent.invoke(payload, config)
     # langgraph 0.2: pending interrupts live on the state snapshot, not the result.
-    pending = None
-    snapshot = agent.get_state(config)
-    for task in snapshot.tasks:
-        if task.interrupts:
-            pending = task.interrupts[0].value
-            break
+    pending = _pending_interrupt(agent, config)
+
+    # Auto mode: keep approving and resuming until the graph has nothing left
+    # to confirm. The bound is a safety net against a tool that loops.
+    if auto_approve:
+        for _ in range(20):
+            if pending is None:
+                break
+            result = agent.invoke(Command(resume={"approved": True}), config)
+            pending = _pending_interrupt(agent, config)
+
     return _serialize(result, pending)
 
 
@@ -72,7 +91,7 @@ def chat(body: ChatRequest, authorization: str | None = Header(default=None)):
     token = _token_from(authorization)
     agent = get_agent(token)
     payload = {"messages": [{"role": "user", "content": body.message}]}
-    return _run(agent, payload, body.thread_id)
+    return _run(agent, payload, body.thread_id, auto_approve=body.auto_approve)
 
 
 @app.post("/resume")
