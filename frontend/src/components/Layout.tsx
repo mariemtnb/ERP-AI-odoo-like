@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Bell, BookOpen, Boxes, CalendarClock, Contact, FileText, Landmark,
+  BookOpen, Boxes, CalendarClock, Contact, FileText, Landmark,
   LayoutDashboard, LogOut, Moon, PanelLeftClose, PanelLeftOpen, Package,
   ReceiptText, Scale, Search, Settings, ShieldCheck, ShoppingBag,
   ShoppingCart, Sparkles, Sun, Truck, Users, UserSquare2,
@@ -10,6 +10,7 @@ import {
 import { useTheme } from "@/lib/theme";
 import { useSession } from "@/lib/session";
 import { CommandPalette } from "@/components/CommandPalette";
+import { NotificationBell } from "@/components/NotificationBell";
 import { BrandMark } from "@/components/BrandMark";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
@@ -255,21 +256,7 @@ export default function Layout() {
             >
               Ask AI
             </Button>
-            <IconButton size="md" aria-label="Notifications" style={{ position: "relative" }}>
-              <Bell size={18} />
-              <span
-                style={{
-                  position: "absolute",
-                  top: 8,
-                  right: 8,
-                  width: 7,
-                  height: 7,
-                  borderRadius: 999,
-                  background: "var(--rose-400)",
-                  border: "2px solid var(--bg-app)",
-                }}
-              />
-            </IconButton>
+            <NotificationBell />
             <IconButton
               size="md"
               onClick={toggle}
