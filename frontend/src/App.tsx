@@ -32,6 +32,7 @@ import RfqPage from "@/features/procurement/RfqPage";
 import HelpdeskPage from "@/features/helpdesk/HelpdeskPage";
 import SubscriptionsPage from "@/features/subscriptions/SubscriptionsPage";
 import MarketingPage from "@/features/marketing/MarketingPage";
+import ShippingPage from "@/features/shipping/ShippingPage";
 import DashboardPage from "@/features/dashboard/DashboardPage";
 import LandingPage from "@/features/landing/LandingPage";
 import DocumentsPage from "@/features/documents/DocumentsPage";
@@ -101,6 +102,7 @@ export default function App() {
                 <Route path="crm" element={<CrmPage />} />
                 <Route path="projects" element={<ProjectsPage />} />
                 <Route path="helpdesk" element={<HelpdeskPage />} />
+                <Route path="shipping" element={<ShippingPage />} />
                 <Route path="assistant" element={<AssistantPage />} />
                 <Route element={<ProtectedRoute roles={["admin"]} />}>
                   <Route path="users" element={<UsersPage />} />

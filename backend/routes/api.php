@@ -181,6 +181,16 @@ Route::prefix('v1')->group(function () {
             Route::post('currencies/{currency}/rates', [\App\Http\Controllers\CurrencyController::class, 'setRate']);
         });
 
+        // --- shipping / delivery orders: everyone reads & creates; managers/admins move ---
+        Route::get('shipments', [\App\Http\Controllers\ShipmentController::class, 'index']);
+        Route::get('shipments/{shipment}', [\App\Http\Controllers\ShipmentController::class, 'show']);
+        Route::post('shipments', [\App\Http\Controllers\ShipmentController::class, 'store']);
+        Route::middleware('role:admin,manager')->group(function () {
+            Route::post('shipments/{shipment}/ship', [\App\Http\Controllers\ShipmentController::class, 'ship']);
+            Route::post('shipments/{shipment}/deliver', [\App\Http\Controllers\ShipmentController::class, 'deliver']);
+            Route::post('shipments/{shipment}/cancel', [\App\Http\Controllers\ShipmentController::class, 'cancel']);
+        });
+
         // --- marketing campaigns (email/SMS, stubbed sender): managers/admins ---
         Route::middleware('role:admin,manager')->group(function () {
             Route::get('campaigns', [\App\Http\Controllers\MarketingController::class, 'index']);

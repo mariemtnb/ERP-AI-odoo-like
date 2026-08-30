@@ -3,7 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   BookOpen, Boxes, Building2, CalendarClock, ClipboardList, Coffee, Coins, Contact, Factory, FileText, FolderKanban, Landmark,
-  LayoutDashboard, LifeBuoy, LogOut, Megaphone, Moon, PanelLeftClose, PanelLeftOpen, Package,
+  LayoutDashboard, LifeBuoy, LogOut, Megaphone, Moon, PackageCheck, PanelLeftClose, PanelLeftOpen, Package,
   ReceiptText, RefreshCw, Repeat, Scale, Search, Settings, ShieldCheck, ShoppingBag,
   ShoppingCart, Sparkles, Store, Sun, TrendingUp, Truck, Undo2, UserCog, Users, UserSquare2, Wallet,
 } from "lucide-react";
@@ -43,6 +43,7 @@ const NAV: NavItem[] = [
   { to: "/subscriptions", label: "Subscriptions", icon: Repeat, roles: ["admin", "manager"], feature: "sales" },
   { to: "/pos", label: "Point of Sale", icon: Store, feature: "sales" },
   { to: "/returns", label: "Returns", icon: Undo2, roles: ["admin", "manager"], feature: "sales" },
+  { to: "/shipping", label: "Shipping", icon: PackageCheck, feature: "sales" },
   { to: "/crm", label: "CRM", icon: Contact, feature: "crm" },
   { to: "/projects", label: "Projects", icon: FolderKanban },
   { to: "/helpdesk", label: "Helpdesk", icon: LifeBuoy },
