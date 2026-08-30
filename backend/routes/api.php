@@ -153,6 +153,14 @@ Route::prefix('v1')->group(function () {
             Route::post('sales/{sale}/credit-notes', [\App\Http\Controllers\CreditNoteController::class, 'store']);
         });
 
+        // --- lot / batch & expiry tracking: everyone reads; managers/admins move ---
+        Route::get('lots', [\App\Http\Controllers\LotController::class, 'index']);
+        Route::get('lots/alerts', [\App\Http\Controllers\LotController::class, 'alerts']);
+        Route::middleware('role:admin,manager')->group(function () {
+            Route::post('lots', [\App\Http\Controllers\LotController::class, 'store']);
+            Route::post('lots/consume', [\App\Http\Controllers\LotController::class, 'consume']);
+        });
+
         // --- accounting: everyone reads; managers/admins write ---
         Route::get('accounting/accounts', [\App\Http\Controllers\AccountingController::class, 'accounts']);
         Route::get('accounting/entries', [\App\Http\Controllers\AccountingController::class, 'entries']);

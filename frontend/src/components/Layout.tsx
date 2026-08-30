@@ -32,6 +32,7 @@ const NAV: NavItem[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/products", label: "Products", icon: Package, feature: "inventory" },
   { to: "/inventory", label: "Inventory", icon: Boxes, feature: "inventory" },
+  { to: "/lots", label: "Lots & Expiry", icon: CalendarClock, roles: ["admin", "manager"], feature: "inventory" },
   { to: "/customers", label: "Customers", icon: UserSquare2, feature: "sales" },
   { to: "/suppliers", label: "Suppliers", icon: Truck, feature: "purchasing" },
   { to: "/purchases", label: "Purchases", icon: ShoppingBag, feature: "purchasing" },
