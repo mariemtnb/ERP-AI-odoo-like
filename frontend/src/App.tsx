@@ -28,6 +28,7 @@ import HrPage from "@/features/hr/HrPage";
 import AssetsPage from "@/features/assets/AssetsPage";
 import ManufacturingPage from "@/features/manufacturing/ManufacturingPage";
 import ProjectsPage from "@/features/projects/ProjectsPage";
+import RfqPage from "@/features/procurement/RfqPage";
 import DashboardPage from "@/features/dashboard/DashboardPage";
 import LandingPage from "@/features/landing/LandingPage";
 import DocumentsPage from "@/features/documents/DocumentsPage";
@@ -68,6 +69,7 @@ export default function App() {
                   <Route path="returns" element={<ReturnsPage />} />
                   <Route path="lots" element={<LotsPage />} />
                   <Route path="reordering" element={<ReorderPage />} />
+                  <Route path="rfqs" element={<RfqPage />} />
                 </Route>
                 <Route path="products" element={<ProductsPage />} />
                 <Route path="inventory" element={<InventoryPage />} />

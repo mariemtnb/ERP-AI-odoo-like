@@ -181,6 +181,16 @@ Route::prefix('v1')->group(function () {
             Route::post('currencies/{currency}/rates', [\App\Http\Controllers\CurrencyController::class, 'setRate']);
         });
 
+        // --- procurement: RFQ & vendor bids. Managers/admins only ---
+        Route::middleware('role:admin,manager')->group(function () {
+            Route::get('rfqs', [\App\Http\Controllers\RfqController::class, 'index']);
+            Route::get('rfqs/{rfq}', [\App\Http\Controllers\RfqController::class, 'show']);
+            Route::get('rfqs/{rfq}/comparison', [\App\Http\Controllers\RfqController::class, 'compare']);
+            Route::post('rfqs', [\App\Http\Controllers\RfqController::class, 'store']);
+            Route::post('rfqs/{rfq}/bids', [\App\Http\Controllers\RfqController::class, 'submitBid']);
+            Route::post('rfqs/{rfq}/award/{bid}', [\App\Http\Controllers\RfqController::class, 'award']);
+        });
+
         // --- projects & timesheets: everyone reads and logs their time; managers manage projects ---
         Route::get('projects', [\App\Http\Controllers\ProjectController::class, 'index']);
         Route::get('projects/{project}', [\App\Http\Controllers\ProjectController::class, 'show']);
