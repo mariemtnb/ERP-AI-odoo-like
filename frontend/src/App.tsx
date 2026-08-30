@@ -33,6 +33,7 @@ import HelpdeskPage from "@/features/helpdesk/HelpdeskPage";
 import SubscriptionsPage from "@/features/subscriptions/SubscriptionsPage";
 import MarketingPage from "@/features/marketing/MarketingPage";
 import ShippingPage from "@/features/shipping/ShippingPage";
+import BiPage from "@/features/bi/BiPage";
 import DashboardPage from "@/features/dashboard/DashboardPage";
 import LandingPage from "@/features/landing/LandingPage";
 import DocumentsPage from "@/features/documents/DocumentsPage";
@@ -61,6 +62,7 @@ export default function App() {
                 <Route index element={<DashboardPage />} />
                 <Route element={<ProtectedRoute roles={["admin", "manager"]} />}>
                   <Route path="reports" element={<ReportsPage />} />
+                  <Route path="report-builder" element={<BiPage />} />
                   <Route path="accounting" element={<AccountingPage />} />
                   <Route path="instruments" element={<InstrumentsPage />} />
                   <Route path="installments" element={<InstallmentsPage />} />

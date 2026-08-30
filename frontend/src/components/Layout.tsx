@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  BookOpen, Boxes, Building2, CalendarClock, ClipboardList, Coffee, Coins, Contact, Factory, FileText, FolderKanban, Landmark,
+  BarChart3, BookOpen, Boxes, Building2, CalendarClock, ClipboardList, Coffee, Coins, Contact, Factory, FileText, FolderKanban, Landmark,
   LayoutDashboard, LifeBuoy, LogOut, Megaphone, Moon, PackageCheck, PanelLeftClose, PanelLeftOpen, Package,
   ReceiptText, RefreshCw, Repeat, Scale, Search, Settings, ShieldCheck, ShoppingBag,
   ShoppingCart, Sparkles, Store, Sun, TrendingUp, Truck, Undo2, UserCog, Users, UserSquare2, Wallet,
@@ -59,6 +59,7 @@ const NAV: NavItem[] = [
   { to: "/banking", label: "Banking", icon: Landmark, roles: ["admin", "manager"], feature: "banking" },
   { to: "/reconciliation", label: "Reconciliation", icon: Scale, roles: ["admin", "manager"], feature: "banking" },
   { to: "/reports", label: "Reports", icon: FileText, roles: ["admin", "manager"], feature: "reports" },
+  { to: "/report-builder", label: "Report Builder", icon: BarChart3, roles: ["admin", "manager"], feature: "reports" },
   { to: "/assistant", label: "AI Assistant", icon: Sparkles, live: true, feature: "ai" },
   { to: "/users", label: "Users", icon: Users, roles: ["admin"] },
   { to: "/settings/localization", label: "Localization", icon: Settings, roles: ["admin"], feature: "localization" },

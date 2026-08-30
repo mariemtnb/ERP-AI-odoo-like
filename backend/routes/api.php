@@ -181,6 +181,15 @@ Route::prefix('v1')->group(function () {
             Route::post('currencies/{currency}/rates', [\App\Http\Controllers\CurrencyController::class, 'setRate']);
         });
 
+        // --- BI / report builder: managers/admins ---
+        Route::middleware('role:admin,manager')->group(function () {
+            Route::post('bi/run', [\App\Http\Controllers\BiController::class, 'run']);
+            Route::get('bi/reports', [\App\Http\Controllers\BiController::class, 'index']);
+            Route::post('bi/reports', [\App\Http\Controllers\BiController::class, 'store']);
+            Route::get('bi/reports/{report}/run', [\App\Http\Controllers\BiController::class, 'runSaved']);
+            Route::delete('bi/reports/{report}', [\App\Http\Controllers\BiController::class, 'destroy']);
+        });
+
         // --- shipping / delivery orders: everyone reads & creates; managers/admins move ---
         Route::get('shipments', [\App\Http\Controllers\ShipmentController::class, 'index']);
         Route::get('shipments/{shipment}', [\App\Http\Controllers\ShipmentController::class, 'show']);
