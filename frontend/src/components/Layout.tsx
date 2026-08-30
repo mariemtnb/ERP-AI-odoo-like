@@ -105,7 +105,16 @@ export default function Layout() {
         animate={{ width: collapsed ? 72 : 264 }}
         transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
         className="flex shrink-0 flex-col overflow-hidden"
-        style={{ background: "var(--bg-panel)", borderRight: "1px solid var(--border-subtle)" }}
+        style={{
+          background: "var(--bg-panel)",
+          borderRight: "1px solid var(--border-subtle)",
+          // Pin the sidebar to the viewport so its nav scrolls internally
+          // instead of the whole column growing past the fold.
+          position: "sticky",
+          top: 0,
+          alignSelf: "flex-start",
+          height: "100dvh",
+        }}
       >
         {/* brand + collapse */}
         <div

@@ -42,7 +42,20 @@ import PartnersPage from "@/features/partners/PartnersPage";
 import ProductsPage from "@/features/products/ProductsPage";
 import UsersPage from "@/features/users/UsersPage";
 
-const queryClient = new QueryClient();
+// Keep results warm across tab switches: the dev backend re-bootstraps Laravel
+// on every request, so refetching all of a page's queries on each navigation is
+// what makes tabs feel slow. Serve cached data instantly, refetch in the
+// background, and don't refetch just because the window regained focus.
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      gcTime: 5 * 60_000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 export default function App() {
   return (
