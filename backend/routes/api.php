@@ -181,6 +181,17 @@ Route::prefix('v1')->group(function () {
             Route::post('currencies/{currency}/rates', [\App\Http\Controllers\CurrencyController::class, 'setRate']);
         });
 
+        // --- helpdesk: support tickets. Anyone reads/creates/replies; managers assign & change status ---
+        Route::get('tickets', [\App\Http\Controllers\HelpdeskController::class, 'index']);
+        Route::get('tickets/{ticket}', [\App\Http\Controllers\HelpdeskController::class, 'show']);
+        Route::post('tickets', [\App\Http\Controllers\HelpdeskController::class, 'store']);
+        Route::post('tickets/{ticket}/reply', [\App\Http\Controllers\HelpdeskController::class, 'reply']);
+        Route::middleware('role:admin,manager')->group(function () {
+            Route::post('tickets/{ticket}/assign', [\App\Http\Controllers\HelpdeskController::class, 'assign']);
+            Route::post('tickets/{ticket}/status/{status}', [\App\Http\Controllers\HelpdeskController::class, 'transition'])
+                ->whereIn('status', ['open', 'in_progress', 'resolved', 'closed']);
+        });
+
         // --- procurement: RFQ & vendor bids. Managers/admins only ---
         Route::middleware('role:admin,manager')->group(function () {
             Route::get('rfqs', [\App\Http\Controllers\RfqController::class, 'index']);

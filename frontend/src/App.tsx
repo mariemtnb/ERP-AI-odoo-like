@@ -29,6 +29,7 @@ import AssetsPage from "@/features/assets/AssetsPage";
 import ManufacturingPage from "@/features/manufacturing/ManufacturingPage";
 import ProjectsPage from "@/features/projects/ProjectsPage";
 import RfqPage from "@/features/procurement/RfqPage";
+import HelpdeskPage from "@/features/helpdesk/HelpdeskPage";
 import DashboardPage from "@/features/dashboard/DashboardPage";
 import LandingPage from "@/features/landing/LandingPage";
 import DocumentsPage from "@/features/documents/DocumentsPage";
@@ -95,6 +96,7 @@ export default function App() {
                 </Route>
                 <Route path="crm" element={<CrmPage />} />
                 <Route path="projects" element={<ProjectsPage />} />
+                <Route path="helpdesk" element={<HelpdeskPage />} />
                 <Route path="assistant" element={<AssistantPage />} />
                 <Route element={<ProtectedRoute roles={["admin"]} />}>
                   <Route path="users" element={<UsersPage />} />
