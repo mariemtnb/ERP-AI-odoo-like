@@ -181,6 +181,16 @@ Route::prefix('v1')->group(function () {
             Route::post('currencies/{currency}/rates', [\App\Http\Controllers\CurrencyController::class, 'setRate']);
         });
 
+        // --- fixed assets & depreciation: everyone reads; managers/admins manage ---
+        Route::get('assets', [\App\Http\Controllers\AssetController::class, 'index']);
+        Route::get('assets/{asset}', [\App\Http\Controllers\AssetController::class, 'show']);
+        Route::get('assets/{asset}/schedule', [\App\Http\Controllers\AssetController::class, 'schedule']);
+        Route::middleware('role:admin,manager')->group(function () {
+            Route::post('assets', [\App\Http\Controllers\AssetController::class, 'store']);
+            Route::post('assets/{asset}/depreciate', [\App\Http\Controllers\AssetController::class, 'depreciate']);
+            Route::post('assets/{asset}/dispose', [\App\Http\Controllers\AssetController::class, 'dispose']);
+        });
+
         // --- HR: attendance, leave, expense claims ---
         Route::prefix('hr')->group(function () {
             $hr = \App\Http\Controllers\HrController::class;

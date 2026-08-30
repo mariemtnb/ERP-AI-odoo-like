@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  BookOpen, Boxes, CalendarClock, Coffee, Coins, Contact, FileText, Landmark,
+  BookOpen, Boxes, Building2, CalendarClock, Coffee, Coins, Contact, FileText, Landmark,
   LayoutDashboard, LogOut, Moon, PanelLeftClose, PanelLeftOpen, Package,
   ReceiptText, RefreshCw, Scale, Search, Settings, ShieldCheck, ShoppingBag,
   ShoppingCart, Sparkles, Store, Sun, TrendingUp, Truck, Undo2, UserCog, Users, UserSquare2, Wallet,
@@ -43,6 +43,7 @@ const NAV: NavItem[] = [
   { to: "/crm", label: "CRM", icon: Contact, feature: "crm" },
   { to: "/owner", label: "Profit", icon: TrendingUp, roles: ["admin", "manager"] },
   { to: "/accounting", label: "Accounting", icon: BookOpen, roles: ["admin", "manager"], feature: "accounting" },
+  { to: "/assets", label: "Fixed Assets", icon: Building2, roles: ["admin", "manager"], feature: "accounting" },
   { to: "/payroll", label: "Payroll", icon: Wallet, roles: ["admin", "manager"], feature: "payroll" },
   { to: "/hr", label: "Human Resources", icon: UserCog, roles: ["admin", "manager"], feature: "payroll" },
   // Treasury — cheques, effets, instalments and the bank.

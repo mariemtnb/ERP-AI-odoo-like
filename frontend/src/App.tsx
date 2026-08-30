@@ -25,6 +25,7 @@ import LotsPage from "@/features/lots/LotsPage";
 import ReorderPage from "@/features/reorder/ReorderPage";
 import CurrencyPage from "@/features/currency/CurrencyPage";
 import HrPage from "@/features/hr/HrPage";
+import AssetsPage from "@/features/assets/AssetsPage";
 import DashboardPage from "@/features/dashboard/DashboardPage";
 import LandingPage from "@/features/landing/LandingPage";
 import DocumentsPage from "@/features/documents/DocumentsPage";
@@ -61,6 +62,7 @@ export default function App() {
                   <Route path="owner" element={<OwnerProfitPage />} />
                   <Route path="payroll" element={<PayrollPage />} />
                   <Route path="hr" element={<HrPage />} />
+                  <Route path="assets" element={<AssetsPage />} />
                   <Route path="returns" element={<ReturnsPage />} />
                   <Route path="lots" element={<LotsPage />} />
                   <Route path="reordering" element={<ReorderPage />} />
