@@ -171,6 +171,16 @@ Route::prefix('v1')->group(function () {
             Route::post('reorder-run', [\App\Http\Controllers\ReorderController::class, 'run']);
         });
 
+        // --- currencies & exchange rates: everyone reads/converts; admins configure ---
+        Route::get('currencies', [\App\Http\Controllers\CurrencyController::class, 'index']);
+        Route::get('currencies/convert', [\App\Http\Controllers\CurrencyController::class, 'convert']);
+        Route::get('currencies/{currency}/rates', [\App\Http\Controllers\CurrencyController::class, 'rates']);
+        Route::middleware('role:admin')->group(function () {
+            Route::post('currencies', [\App\Http\Controllers\CurrencyController::class, 'store']);
+            Route::match(['put', 'patch'], 'currencies/{currency}', [\App\Http\Controllers\CurrencyController::class, 'update']);
+            Route::post('currencies/{currency}/rates', [\App\Http\Controllers\CurrencyController::class, 'setRate']);
+        });
+
         // --- accounting: everyone reads; managers/admins write ---
         Route::get('accounting/accounts', [\App\Http\Controllers\AccountingController::class, 'accounts']);
         Route::get('accounting/entries', [\App\Http\Controllers\AccountingController::class, 'entries']);

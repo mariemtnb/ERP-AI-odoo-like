@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  BookOpen, Boxes, CalendarClock, Coffee, Contact, FileText, Landmark,
+  BookOpen, Boxes, CalendarClock, Coffee, Coins, Contact, FileText, Landmark,
   LayoutDashboard, LogOut, Moon, PanelLeftClose, PanelLeftOpen, Package,
   ReceiptText, RefreshCw, Scale, Search, Settings, ShieldCheck, ShoppingBag,
   ShoppingCart, Sparkles, Store, Sun, TrendingUp, Truck, Undo2, Users, UserSquare2, Wallet,
@@ -53,6 +53,7 @@ const NAV: NavItem[] = [
   { to: "/assistant", label: "AI Assistant", icon: Sparkles, live: true, feature: "ai" },
   { to: "/users", label: "Users", icon: Users, roles: ["admin"] },
   { to: "/settings/localization", label: "Localization", icon: Settings, roles: ["admin"], feature: "localization" },
+  { to: "/settings/currencies", label: "Currencies", icon: Coins, roles: ["admin"] },
   { to: "/settings/administration", label: "Administration", icon: ShieldCheck, roles: ["admin"] },
 ];
 

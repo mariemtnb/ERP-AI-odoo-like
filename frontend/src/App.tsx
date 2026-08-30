@@ -23,6 +23,7 @@ import PosPage from "@/features/pos/PosPage";
 import ReturnsPage from "@/features/returns/ReturnsPage";
 import LotsPage from "@/features/lots/LotsPage";
 import ReorderPage from "@/features/reorder/ReorderPage";
+import CurrencyPage from "@/features/currency/CurrencyPage";
 import DashboardPage from "@/features/dashboard/DashboardPage";
 import LandingPage from "@/features/landing/LandingPage";
 import DocumentsPage from "@/features/documents/DocumentsPage";
@@ -86,6 +87,7 @@ export default function App() {
                 <Route element={<ProtectedRoute roles={["admin"]} />}>
                   <Route path="users" element={<UsersPage />} />
                   <Route path="settings/localization" element={<LocalizationPage />} />
+                  <Route path="settings/currencies" element={<CurrencyPage />} />
                   <Route path="settings/administration" element={<AdministrationPage />} />
                 </Route>
               </Route>
