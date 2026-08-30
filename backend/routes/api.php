@@ -181,6 +181,14 @@ Route::prefix('v1')->group(function () {
             Route::post('currencies/{currency}/rates', [\App\Http\Controllers\CurrencyController::class, 'setRate']);
         });
 
+        // --- marketing campaigns (email/SMS, stubbed sender): managers/admins ---
+        Route::middleware('role:admin,manager')->group(function () {
+            Route::get('campaigns', [\App\Http\Controllers\MarketingController::class, 'index']);
+            Route::get('campaigns/{campaign}', [\App\Http\Controllers\MarketingController::class, 'show']);
+            Route::post('campaigns', [\App\Http\Controllers\MarketingController::class, 'store']);
+            Route::post('campaigns/{campaign}/send', [\App\Http\Controllers\MarketingController::class, 'send']);
+        });
+
         // --- subscriptions / recurring billing: managers/admins ---
         Route::middleware('role:admin,manager')->group(function () {
             Route::get('subscriptions', [\App\Http\Controllers\SubscriptionController::class, 'index']);
