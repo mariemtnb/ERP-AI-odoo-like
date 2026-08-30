@@ -5,7 +5,7 @@ import {
   BookOpen, Boxes, CalendarClock, Coffee, Contact, FileText, Landmark,
   LayoutDashboard, LogOut, Moon, PanelLeftClose, PanelLeftOpen, Package,
   ReceiptText, Scale, Search, Settings, ShieldCheck, ShoppingBag,
-  ShoppingCart, Sparkles, Store, Sun, TrendingUp, Truck, Users, UserSquare2, Wallet,
+  ShoppingCart, Sparkles, Store, Sun, TrendingUp, Truck, Undo2, Users, UserSquare2, Wallet,
 } from "lucide-react";
 import { useTheme, THEME_ORDER } from "@/lib/theme";
 import { useSession } from "@/lib/session";
@@ -37,6 +37,7 @@ const NAV: NavItem[] = [
   { to: "/purchases", label: "Purchases", icon: ShoppingBag, feature: "purchasing" },
   { to: "/sales", label: "Sales", icon: ShoppingCart, feature: "sales" },
   { to: "/pos", label: "Point of Sale", icon: Store, feature: "sales" },
+  { to: "/returns", label: "Returns", icon: Undo2, roles: ["admin", "manager"], feature: "sales" },
   { to: "/crm", label: "CRM", icon: Contact, feature: "crm" },
   { to: "/owner", label: "Profit", icon: TrendingUp, roles: ["admin", "manager"] },
   { to: "/accounting", label: "Accounting", icon: BookOpen, roles: ["admin", "manager"], feature: "accounting" },

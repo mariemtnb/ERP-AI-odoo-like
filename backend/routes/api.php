@@ -145,6 +145,14 @@ Route::prefix('v1')->group(function () {
         Route::post('pos/orders', [\App\Http\Controllers\PosController::class, 'checkout']);
         Route::get('pos/orders/{order}', [\App\Http\Controllers\PosController::class, 'show']);
 
+        // --- sales returns / credit notes: everyone reads; managers/admins issue ---
+        Route::get('credit-notes', [\App\Http\Controllers\CreditNoteController::class, 'index']);
+        Route::get('credit-notes/{creditNote}', [\App\Http\Controllers\CreditNoteController::class, 'show']);
+        Route::get('sales/{sale}/returnable', [\App\Http\Controllers\CreditNoteController::class, 'returnable']);
+        Route::middleware('role:admin,manager')->group(function () {
+            Route::post('sales/{sale}/credit-notes', [\App\Http\Controllers\CreditNoteController::class, 'store']);
+        });
+
         // --- accounting: everyone reads; managers/admins write ---
         Route::get('accounting/accounts', [\App\Http\Controllers\AccountingController::class, 'accounts']);
         Route::get('accounting/entries', [\App\Http\Controllers\AccountingController::class, 'entries']);
