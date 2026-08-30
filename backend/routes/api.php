@@ -181,6 +181,18 @@ Route::prefix('v1')->group(function () {
             Route::post('currencies/{currency}/rates', [\App\Http\Controllers\CurrencyController::class, 'setRate']);
         });
 
+        // --- manufacturing: BOMs & work orders. Everyone reads; managers/admins manage ---
+        Route::get('boms', [\App\Http\Controllers\ManufacturingController::class, 'bomIndex']);
+        Route::get('boms/{bom}', [\App\Http\Controllers\ManufacturingController::class, 'bomShow']);
+        Route::get('work-orders', [\App\Http\Controllers\ManufacturingController::class, 'woIndex']);
+        Route::get('work-orders/{workOrder}', [\App\Http\Controllers\ManufacturingController::class, 'woShow']);
+        Route::middleware('role:admin,manager')->group(function () {
+            Route::post('boms', [\App\Http\Controllers\ManufacturingController::class, 'bomStore']);
+            Route::post('work-orders', [\App\Http\Controllers\ManufacturingController::class, 'woStore']);
+            Route::post('work-orders/{workOrder}/{action}', [\App\Http\Controllers\ManufacturingController::class, 'woAction'])
+                ->whereIn('action', ['start', 'complete', 'cancel']);
+        });
+
         // --- fixed assets & depreciation: everyone reads; managers/admins manage ---
         Route::get('assets', [\App\Http\Controllers\AssetController::class, 'index']);
         Route::get('assets/{asset}', [\App\Http\Controllers\AssetController::class, 'show']);

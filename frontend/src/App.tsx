@@ -26,6 +26,7 @@ import ReorderPage from "@/features/reorder/ReorderPage";
 import CurrencyPage from "@/features/currency/CurrencyPage";
 import HrPage from "@/features/hr/HrPage";
 import AssetsPage from "@/features/assets/AssetsPage";
+import ManufacturingPage from "@/features/manufacturing/ManufacturingPage";
 import DashboardPage from "@/features/dashboard/DashboardPage";
 import LandingPage from "@/features/landing/LandingPage";
 import DocumentsPage from "@/features/documents/DocumentsPage";
@@ -86,6 +87,9 @@ export default function App() {
                   element={<DocumentsPage kind="sales" title="Sales" />}
                 />
                 <Route path="pos" element={<PosPage />} />
+                <Route element={<ProtectedRoute roles={["admin", "manager"]} />}>
+                  <Route path="manufacturing" element={<ManufacturingPage />} />
+                </Route>
                 <Route path="crm" element={<CrmPage />} />
                 <Route path="assistant" element={<AssistantPage />} />
                 <Route element={<ProtectedRoute roles={["admin"]} />}>

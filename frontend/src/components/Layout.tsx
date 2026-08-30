@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  BookOpen, Boxes, Building2, CalendarClock, Coffee, Coins, Contact, FileText, Landmark,
+  BookOpen, Boxes, Building2, CalendarClock, Coffee, Coins, Contact, Factory, FileText, Landmark,
   LayoutDashboard, LogOut, Moon, PanelLeftClose, PanelLeftOpen, Package,
   ReceiptText, RefreshCw, Scale, Search, Settings, ShieldCheck, ShoppingBag,
   ShoppingCart, Sparkles, Store, Sun, TrendingUp, Truck, Undo2, UserCog, Users, UserSquare2, Wallet,
@@ -33,6 +33,7 @@ const NAV: NavItem[] = [
   { to: "/products", label: "Products", icon: Package, feature: "inventory" },
   { to: "/inventory", label: "Inventory", icon: Boxes, feature: "inventory" },
   { to: "/lots", label: "Lots & Expiry", icon: CalendarClock, roles: ["admin", "manager"], feature: "inventory" },
+  { to: "/manufacturing", label: "Manufacturing", icon: Factory, roles: ["admin", "manager"], feature: "inventory" },
   { to: "/customers", label: "Customers", icon: UserSquare2, feature: "sales" },
   { to: "/suppliers", label: "Suppliers", icon: Truck, feature: "purchasing" },
   { to: "/purchases", label: "Purchases", icon: ShoppingBag, feature: "purchasing" },
