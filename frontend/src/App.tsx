@@ -22,6 +22,7 @@ import CrmPage from "@/features/crm/CrmPage";
 import PosPage from "@/features/pos/PosPage";
 import ReturnsPage from "@/features/returns/ReturnsPage";
 import LotsPage from "@/features/lots/LotsPage";
+import ReorderPage from "@/features/reorder/ReorderPage";
 import DashboardPage from "@/features/dashboard/DashboardPage";
 import LandingPage from "@/features/landing/LandingPage";
 import DocumentsPage from "@/features/documents/DocumentsPage";
@@ -59,6 +60,7 @@ export default function App() {
                   <Route path="payroll" element={<PayrollPage />} />
                   <Route path="returns" element={<ReturnsPage />} />
                   <Route path="lots" element={<LotsPage />} />
+                  <Route path="reordering" element={<ReorderPage />} />
                 </Route>
                 <Route path="products" element={<ProductsPage />} />
                 <Route path="inventory" element={<InventoryPage />} />

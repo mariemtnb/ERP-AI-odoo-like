@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   BookOpen, Boxes, CalendarClock, Coffee, Contact, FileText, Landmark,
   LayoutDashboard, LogOut, Moon, PanelLeftClose, PanelLeftOpen, Package,
-  ReceiptText, Scale, Search, Settings, ShieldCheck, ShoppingBag,
+  ReceiptText, RefreshCw, Scale, Search, Settings, ShieldCheck, ShoppingBag,
   ShoppingCart, Sparkles, Store, Sun, TrendingUp, Truck, Undo2, Users, UserSquare2, Wallet,
 } from "lucide-react";
 import { useTheme, THEME_ORDER } from "@/lib/theme";
@@ -36,6 +36,7 @@ const NAV: NavItem[] = [
   { to: "/customers", label: "Customers", icon: UserSquare2, feature: "sales" },
   { to: "/suppliers", label: "Suppliers", icon: Truck, feature: "purchasing" },
   { to: "/purchases", label: "Purchases", icon: ShoppingBag, feature: "purchasing" },
+  { to: "/reordering", label: "Reordering", icon: RefreshCw, roles: ["admin", "manager"], feature: "purchasing" },
   { to: "/sales", label: "Sales", icon: ShoppingCart, feature: "sales" },
   { to: "/pos", label: "Point of Sale", icon: Store, feature: "sales" },
   { to: "/returns", label: "Returns", icon: Undo2, roles: ["admin", "manager"], feature: "sales" },

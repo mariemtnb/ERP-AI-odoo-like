@@ -161,6 +161,16 @@ Route::prefix('v1')->group(function () {
             Route::post('lots/consume', [\App\Http\Controllers\LotController::class, 'consume']);
         });
 
+        // --- reordering rules / auto-replenishment: managers/admins ---
+        Route::middleware('role:admin,manager')->group(function () {
+            Route::get('reorder-rules', [\App\Http\Controllers\ReorderController::class, 'index']);
+            Route::post('reorder-rules', [\App\Http\Controllers\ReorderController::class, 'store']);
+            Route::match(['put', 'patch'], 'reorder-rules/{reorderRule}', [\App\Http\Controllers\ReorderController::class, 'update']);
+            Route::delete('reorder-rules/{reorderRule}', [\App\Http\Controllers\ReorderController::class, 'destroy']);
+            Route::get('reorder-suggestions', [\App\Http\Controllers\ReorderController::class, 'suggestions']);
+            Route::post('reorder-run', [\App\Http\Controllers\ReorderController::class, 'run']);
+        });
+
         // --- accounting: everyone reads; managers/admins write ---
         Route::get('accounting/accounts', [\App\Http\Controllers\AccountingController::class, 'accounts']);
         Route::get('accounting/entries', [\App\Http\Controllers\AccountingController::class, 'entries']);
