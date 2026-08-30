@@ -5,7 +5,7 @@ import {
   BookOpen, Boxes, CalendarClock, Coffee, Coins, Contact, FileText, Landmark,
   LayoutDashboard, LogOut, Moon, PanelLeftClose, PanelLeftOpen, Package,
   ReceiptText, RefreshCw, Scale, Search, Settings, ShieldCheck, ShoppingBag,
-  ShoppingCart, Sparkles, Store, Sun, TrendingUp, Truck, Undo2, Users, UserSquare2, Wallet,
+  ShoppingCart, Sparkles, Store, Sun, TrendingUp, Truck, Undo2, UserCog, Users, UserSquare2, Wallet,
 } from "lucide-react";
 import { useTheme, THEME_ORDER } from "@/lib/theme";
 import { useSession } from "@/lib/session";
@@ -44,6 +44,7 @@ const NAV: NavItem[] = [
   { to: "/owner", label: "Profit", icon: TrendingUp, roles: ["admin", "manager"] },
   { to: "/accounting", label: "Accounting", icon: BookOpen, roles: ["admin", "manager"], feature: "accounting" },
   { to: "/payroll", label: "Payroll", icon: Wallet, roles: ["admin", "manager"], feature: "payroll" },
+  { to: "/hr", label: "Human Resources", icon: UserCog, roles: ["admin", "manager"], feature: "payroll" },
   // Treasury — cheques, effets, instalments and the bank.
   { to: "/instruments", label: "Cheques & Kembyelet", icon: ReceiptText, roles: ["admin", "manager"], feature: "treasury" },
   { to: "/installments", label: "Installments", icon: CalendarClock, roles: ["admin", "manager"], feature: "treasury" },

@@ -181,6 +181,25 @@ Route::prefix('v1')->group(function () {
             Route::post('currencies/{currency}/rates', [\App\Http\Controllers\CurrencyController::class, 'setRate']);
         });
 
+        // --- HR: attendance, leave, expense claims ---
+        Route::prefix('hr')->group(function () {
+            $hr = \App\Http\Controllers\HrController::class;
+            // attendance & self-service creation: any authenticated employee
+            Route::get('attendance', [$hr, 'attendance']);
+            Route::post('attendance/clock-in', [$hr, 'clockIn']);
+            Route::post('attendance/clock-out', [$hr, 'clockOut']);
+            Route::get('leave', [$hr, 'leaveIndex']);
+            Route::post('leave', [$hr, 'requestLeave']);
+            Route::get('leave/balance', [$hr, 'leaveBalance']);
+            Route::get('expenses', [$hr, 'expenseIndex']);
+            Route::post('expenses', [$hr, 'submitClaim']);
+            // approvals: managers/admins only
+            Route::middleware('role:admin,manager')->group(function () use ($hr) {
+                Route::post('leave/{leaveRequest}/{decision}', [$hr, 'decideLeave'])->whereIn('decision', ['approve', 'reject']);
+                Route::post('expenses/{expenseClaim}/{decision}', [$hr, 'decideClaim'])->whereIn('decision', ['approve', 'reject', 'reimburse']);
+            });
+        });
+
         // --- accounting: everyone reads; managers/admins write ---
         Route::get('accounting/accounts', [\App\Http\Controllers\AccountingController::class, 'accounts']);
         Route::get('accounting/entries', [\App\Http\Controllers\AccountingController::class, 'entries']);
