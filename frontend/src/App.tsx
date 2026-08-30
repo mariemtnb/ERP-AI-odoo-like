@@ -30,6 +30,7 @@ import ManufacturingPage from "@/features/manufacturing/ManufacturingPage";
 import ProjectsPage from "@/features/projects/ProjectsPage";
 import RfqPage from "@/features/procurement/RfqPage";
 import HelpdeskPage from "@/features/helpdesk/HelpdeskPage";
+import SubscriptionsPage from "@/features/subscriptions/SubscriptionsPage";
 import DashboardPage from "@/features/dashboard/DashboardPage";
 import LandingPage from "@/features/landing/LandingPage";
 import DocumentsPage from "@/features/documents/DocumentsPage";
@@ -64,6 +65,7 @@ export default function App() {
                   <Route path="banking" element={<BankingPage />} />
                   <Route path="reconciliation" element={<ReconciliationPage />} />
                   <Route path="owner" element={<OwnerProfitPage />} />
+                  <Route path="subscriptions" element={<SubscriptionsPage />} />
                   <Route path="payroll" element={<PayrollPage />} />
                   <Route path="hr" element={<HrPage />} />
                   <Route path="assets" element={<AssetsPage />} />

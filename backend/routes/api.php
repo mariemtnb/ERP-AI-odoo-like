@@ -181,6 +181,16 @@ Route::prefix('v1')->group(function () {
             Route::post('currencies/{currency}/rates', [\App\Http\Controllers\CurrencyController::class, 'setRate']);
         });
 
+        // --- subscriptions / recurring billing: managers/admins ---
+        Route::middleware('role:admin,manager')->group(function () {
+            Route::get('subscriptions', [\App\Http\Controllers\SubscriptionController::class, 'index']);
+            Route::get('subscriptions/{subscription}', [\App\Http\Controllers\SubscriptionController::class, 'show']);
+            Route::post('subscriptions', [\App\Http\Controllers\SubscriptionController::class, 'store']);
+            Route::post('subscriptions/run-billing', [\App\Http\Controllers\SubscriptionController::class, 'runBilling']);
+            Route::post('subscriptions/{subscription}/status/{status}', [\App\Http\Controllers\SubscriptionController::class, 'setStatus'])
+                ->whereIn('status', ['active', 'paused', 'cancelled']);
+        });
+
         // --- helpdesk: support tickets. Anyone reads/creates/replies; managers assign & change status ---
         Route::get('tickets', [\App\Http\Controllers\HelpdeskController::class, 'index']);
         Route::get('tickets/{ticket}', [\App\Http\Controllers\HelpdeskController::class, 'show']);
