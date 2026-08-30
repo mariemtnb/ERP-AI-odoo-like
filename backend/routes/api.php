@@ -137,6 +137,14 @@ Route::prefix('v1')->group(function () {
         Route::post('sales/{sale}/cancel', [SaleController::class, 'cancel']);
         Route::match(['get', 'post'], 'sales/{sale}/invoice', [SaleController::class, 'invoice']);
 
+        // --- point of sale: cashiers (any authenticated) run the till ---
+        Route::get('pos/session', [\App\Http\Controllers\PosController::class, 'session']);
+        Route::post('pos/session/open', [\App\Http\Controllers\PosController::class, 'open']);
+        Route::post('pos/session/{session}/close', [\App\Http\Controllers\PosController::class, 'close']);
+        Route::get('pos/orders', [\App\Http\Controllers\PosController::class, 'index']);
+        Route::post('pos/orders', [\App\Http\Controllers\PosController::class, 'checkout']);
+        Route::get('pos/orders/{order}', [\App\Http\Controllers\PosController::class, 'show']);
+
         // --- accounting: everyone reads; managers/admins write ---
         Route::get('accounting/accounts', [\App\Http\Controllers\AccountingController::class, 'accounts']);
         Route::get('accounting/entries', [\App\Http\Controllers\AccountingController::class, 'entries']);

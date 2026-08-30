@@ -19,6 +19,7 @@ import PayrollPage from "@/features/payroll/PayrollPage";
 import InventoryPage from "@/features/inventory/InventoryPage";
 import AssistantPage from "@/features/assistant/AssistantPage";
 import CrmPage from "@/features/crm/CrmPage";
+import PosPage from "@/features/pos/PosPage";
 import DashboardPage from "@/features/dashboard/DashboardPage";
 import LandingPage from "@/features/landing/LandingPage";
 import DocumentsPage from "@/features/documents/DocumentsPage";
@@ -73,6 +74,7 @@ export default function App() {
                   path="sales"
                   element={<DocumentsPage kind="sales" title="Sales" />}
                 />
+                <Route path="pos" element={<PosPage />} />
                 <Route path="crm" element={<CrmPage />} />
                 <Route path="assistant" element={<AssistantPage />} />
                 <Route element={<ProtectedRoute roles={["admin"]} />}>
