@@ -181,6 +181,18 @@ Route::prefix('v1')->group(function () {
             Route::post('currencies/{currency}/rates', [\App\Http\Controllers\CurrencyController::class, 'setRate']);
         });
 
+        // --- projects & timesheets: everyone reads and logs their time; managers manage projects ---
+        Route::get('projects', [\App\Http\Controllers\ProjectController::class, 'index']);
+        Route::get('projects/{project}', [\App\Http\Controllers\ProjectController::class, 'show']);
+        Route::get('projects/{project}/summary', [\App\Http\Controllers\ProjectController::class, 'summary']);
+        Route::get('projects/{project}/timesheets', [\App\Http\Controllers\ProjectController::class, 'timesheets']);
+        Route::post('projects/{project}/timesheets', [\App\Http\Controllers\ProjectController::class, 'logTime']);
+        Route::middleware('role:admin,manager')->group(function () {
+            Route::post('projects', [\App\Http\Controllers\ProjectController::class, 'store']);
+            Route::post('projects/{project}/close', [\App\Http\Controllers\ProjectController::class, 'close']);
+            Route::post('projects/{project}/tasks', [\App\Http\Controllers\ProjectController::class, 'addTask']);
+        });
+
         // --- manufacturing: BOMs & work orders. Everyone reads; managers/admins manage ---
         Route::get('boms', [\App\Http\Controllers\ManufacturingController::class, 'bomIndex']);
         Route::get('boms/{bom}', [\App\Http\Controllers\ManufacturingController::class, 'bomShow']);
