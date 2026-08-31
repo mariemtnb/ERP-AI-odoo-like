@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { describeAction, detectLang, t } from "./approval";
 
 let nextLocalId = -1;
 
@@ -57,6 +58,11 @@ export default function AssistantPage() {
   }, [messages, busy]);
 
   const pending = messages.at(-1)?.pending_action ?? null;
+  // Speak the confirmation in the language the user actually wrote in.
+  const lastUserText = [...messages]
+    .reverse()
+    .find((m) => m.role === "user" && m.content && !/^[✔✘]/.test(m.content))?.content;
+  const lang = detectLang(lastUserText);
 
   function push(msg: ChatMessage) {
     setMessages((ms) => [...ms, msg]);
@@ -172,21 +178,40 @@ export default function AssistantPage() {
             className="ml-11 max-w-lg rounded-xl bg-surface p-5 shadow-2
                        ring-1 ring-inset ring-warning/30"
           >
-            <p className="flex items-center gap-2 text-sm font-semibold text-warning">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-warning" />
-              Approval needed · {pending.action.replaceAll("_", " ")}
-            </p>
-            <pre className="mt-3 overflow-x-auto rounded-lg bg-surface-2 p-3 text-xs leading-relaxed text-text-2">
-              {JSON.stringify(pending.details, null, 2)}
-            </pre>
-            <div className="mt-4 flex gap-2">
-              <Button size="sm" onClick={() => answer(true)}>
-                <Check className="h-4 w-4" /> Approve
-              </Button>
-              <Button size="sm" variant="destructive" onClick={() => answer(false)}>
-                <X className="h-4 w-4" /> Reject
-              </Button>
-            </div>
+            {(() => {
+              const f = describeAction(pending.action, pending.details, lang);
+              const rtl = lang === "ar";
+              return (
+                <div dir={rtl ? "rtl" : "ltr"} style={{ textAlign: rtl ? "right" : "left" }}>
+                  <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-warning">
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-warning" />
+                    {t.approvalNeeded[lang]}
+                  </p>
+                  <p className="mt-2 text-base font-semibold text-text-1">{f.title}</p>
+                  <p className="mt-0.5 text-sm text-text-3">{t.question[lang]}</p>
+                  {f.rows.length > 0 && (
+                    <div className="mt-3 divide-y divide-border rounded-lg bg-surface-2 px-3">
+                      {f.rows.map((r, i) => (
+                        <div key={i} className="flex justify-between gap-4 py-2 text-sm">
+                          <span className="text-text-3">{r.label}</span>
+                          <span className="font-medium text-text-1" style={{ direction: "ltr", textAlign: rtl ? "left" : "right" }}>
+                            {r.value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="mt-4 flex gap-2" style={{ flexDirection: rtl ? "row-reverse" : "row" }}>
+                    <Button size="sm" onClick={() => answer(true)}>
+                      <Check className="h-4 w-4" /> {t.approve[lang]}
+                    </Button>
+                    <Button size="sm" variant="destructive" onClick={() => answer(false)}>
+                      <X className="h-4 w-4" /> {t.reject[lang]}
+                    </Button>
+                  </div>
+                </div>
+              );
+            })()}
           </motion.div>
         )}
         {busy && (

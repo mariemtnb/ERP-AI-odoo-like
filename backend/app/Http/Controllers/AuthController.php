@@ -15,12 +15,15 @@ use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
  */
 class AuthController extends Controller
 {
-    private const ACCESS_TTL = 15;            // minutes
+    private const ACCESS_TTL = 15;            // minutes — short by default; JWT_TTL can raise it in dev
     private const REFRESH_TTL = 60 * 24 * 7;  // 7 days
 
     private function issuePair(User $user): array
     {
-        $access = auth('api')->setTTL(self::ACCESS_TTL)->login($user);
+        // Env-configurable so a dev session does not expire mid-use (which
+        // blanked pages until a refresh); production leaves it unset -> 15 min.
+        $accessTtl = (int) env('JWT_TTL', self::ACCESS_TTL);
+        $access = auth('api')->setTTL($accessTtl)->login($user);
         $refresh = auth('api')->claims(['typ' => 'refresh'])
             ->setTTL(self::REFRESH_TTL)->login($user);
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   BarChart3, BookOpen, Boxes, Building2, CalendarClock, ClipboardList, Coffee, Coins, Contact, Factory, FileText, FolderKanban, Landmark,
   LayoutDashboard, LifeBuoy, LogOut, Megaphone, Moon, PackageCheck, PanelLeftClose, PanelLeftOpen, Package,
@@ -12,6 +12,8 @@ import { useSession } from "@/lib/session";
 import { CommandPalette } from "@/components/CommandPalette";
 import { NotificationBell } from "@/components/NotificationBell";
 import { BrandMark } from "@/components/BrandMark";
+import AppBackground from "@/components/AppBackground";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { useAuth } from "@/features/auth/AuthContext";
@@ -152,7 +154,8 @@ export default function Layout() {
     [user?.first_name, user?.last_name].filter(Boolean).join(" ") || user?.email;
 
   return (
-    <div className="flex min-h-dvh" style={{ background: "var(--bg-app)" }}>
+    <div className="flex min-h-dvh" style={{ background: "transparent", position: "relative", zIndex: 1 }}>
+      <AppBackground />
       {/* ───────────── sidebar ───────────── */}
       <motion.aside
         animate={{ width: collapsed ? 72 : 264 }}
@@ -366,20 +369,20 @@ export default function Layout() {
           className="w-full flex-1"
           style={{ padding: "36px 40px", maxWidth: "var(--content-max)", margin: "0 auto" }}
         >
-          {/* "wait" (not popLayout): the outgoing page must finish exiting
-              before the next mounts, otherwise a stale invisible copy is
-              left behind in the DOM. */}
-          <AnimatePresence mode="wait" initial={false}>
+          {/* Keyed remount with a fade-in only — no exit animation. An
+              AnimatePresence "wait" here made each navigation block on the
+              previous page's exit, so rapid navigation could leave a page
+              unrendered until a manual refresh. */}
+          <ErrorBoundary resetKey={location.pathname}>
             <motion.div
               key={location.pathname}
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
             >
               <Outlet />
             </motion.div>
-          </AnimatePresence>
+          </ErrorBoundary>
         </main>
       </div>
 

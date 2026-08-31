@@ -324,25 +324,25 @@ def build_tools(token: str) -> list:
     # ---------- write tools (require user confirmation) ----------
 
     @tool
-    def create_customer(name: str, email: str = "", phone: str = "", address: str = "") -> dict:
-        """Create a new customer."""
-        payload = {"name": name, "email": email, "phone": phone, "address": address}
+    def create_customer(name: str, email: str = "", phone: str | int = "", address: str = "") -> dict:
+        """Create a new customer. phone may be given as digits."""
+        payload = {"name": name, "email": email, "phone": str(phone), "address": address}
         _confirm("create_customer", payload)
         return _fmt(http.post("/customers/", json=payload))
 
     @tool
-    def update_customer(customer_id: int, name: str = "", email: str = "", phone: str = "") -> dict:
+    def update_customer(customer_id: int, name: str = "", email: str = "", phone: str | int = "") -> dict:
         """Update an existing customer's contact details. Only pass the
-        fields to change."""
+        fields to change. phone may be given as digits."""
         payload = {k: v for k, v in
-                   {"name": name, "email": email, "phone": phone}.items() if v}
+                   {"name": name, "email": email, "phone": str(phone) if phone != "" else ""}.items() if v}
         _confirm("update_customer", {"customer_id": customer_id, **payload})
         return _fmt(http.patch(f"/customers/{customer_id}/", json=payload))
 
     @tool
-    def create_supplier(name: str, email: str = "", phone: str = "", address: str = "") -> dict:
-        """Create a new supplier."""
-        payload = {"name": name, "email": email, "phone": phone, "address": address}
+    def create_supplier(name: str, email: str = "", phone: str | int = "", address: str = "") -> dict:
+        """Create a new supplier. phone may be given as digits."""
+        payload = {"name": name, "email": email, "phone": str(phone), "address": address}
         _confirm("create_supplier", payload)
         return _fmt(http.post("/suppliers/", json=payload))
 
@@ -402,9 +402,12 @@ def build_tools(token: str) -> list:
         customer_id: int,
         lines: Annotated[list[dict], "list of {product: id, quantity: number, unit_price: number}"],
         sale_date: str = "",
+        confirm: Annotated[bool, "confirm the sale immediately (moves stock)"] = False,
     ) -> dict:
-        """Create a DRAFT sale for a customer. Use confirm_sale afterwards to
-        confirm it and move stock."""
+        """Create a sale for a customer. Leave confirm=False for a draft; set
+        confirm=True to also confirm it and move stock in one step (preferred
+        when the user says the sale actually happened). When confirm=True you do
+        NOT need to call confirm_sale afterwards — never guess a sale id."""
         from datetime import date
 
         payload = {
@@ -417,7 +420,13 @@ def build_tools(token: str) -> list:
             ],
         }
         _confirm("create_sale", payload)
-        return _fmt(http.post("/sales/", json=payload))
+        sale = _fmt(http.post("/sales/", json=payload))
+        # Confirm in the same step using the real id, so the model never has to
+        # invent one for a separate confirm_sale call.
+        if confirm and isinstance(sale, dict) and sale.get("id"):
+            confirmed = _fmt(http.post(f"/sales/{sale['id']}/confirm/"))
+            return confirmed if isinstance(confirmed, dict) else sale
+        return sale
 
     @tool
     def confirm_sale(sale_id: int) -> dict:
