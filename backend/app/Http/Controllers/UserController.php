@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Role;
 use App\Models\User;
 use App\Support\DrfPagination;
 use Illuminate\Http\Request;
@@ -47,6 +48,17 @@ class UserController extends Controller
             && ! $request->user()->isSuperAdmin();
     }
 
+    /** Built-in roles plus every custom role key — what may be assigned. */
+    private function assignableRoles(): array
+    {
+        return array_values(array_unique(array_merge(
+            User::ROLES,
+            Role::where('is_system', false)
+                ->whereNotIn('key', Role::SYSTEM_ROLES)
+                ->pluck('key')->all()
+        )));
+    }
+
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -54,7 +66,7 @@ class UserController extends Controller
             'password' => ['required', 'string', 'min:8'],
             'first_name' => ['sometimes', 'string', 'max:150'],
             'last_name' => ['sometimes', 'string', 'max:150'],
-            'role' => ['sometimes', Rule::in(User::ROLES)],
+            'role' => ['sometimes', Rule::in($this->assignableRoles())],
             'is_active' => ['sometimes', 'boolean'],
         ]);
 
@@ -73,7 +85,7 @@ class UserController extends Controller
             'email' => ['sometimes', 'email', Rule::unique('users', 'email')->ignore($user->id)],
             'first_name' => ['sometimes', 'string', 'max:150'],
             'last_name' => ['sometimes', 'string', 'max:150'],
-            'role' => ['sometimes', Rule::in(User::ROLES)],
+            'role' => ['sometimes', Rule::in($this->assignableRoles())],
             'is_active' => ['sometimes', 'boolean'],
         ]);
 

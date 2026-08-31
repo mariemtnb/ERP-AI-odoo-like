@@ -489,9 +489,15 @@ Route::prefix('v1')->group(function () {
         | in order to render the correct UI.
         */
         Route::get('me/context', function (Request $request) {
+            // A custom role narrows what the holder may see to its module
+            // allowlist; built-in roles resolve to null (no restriction).
+            $role = \App\Models\Role::where('key', $request->user()->role)->first();
+            $modules = $role?->moduleAllowlist();
+
             return response()->json([
                 'permissions' => \App\Services\PermissionService::keysFor($request->user()),
                 'features' => \App\Models\FeatureFlag::map(),
+                'modules' => $modules,   // null = unrestricted, else allowlist
                 'company' => \App\Models\Company::current()?->toApi(),
             ]);
         });
@@ -547,6 +553,19 @@ Route::prefix('v1')->group(function () {
             Route::match(['put', 'patch'], 'users/{user}', [UserController::class, 'update']);
             Route::delete('users/{user}', [UserController::class, 'destroy']);
             Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword']);
+        });
+
+        // --- custom roles & their module access ---
+        // Admins may read the list (the users screen assigns from it); only a
+        // super admin may create, edit or delete a custom role.
+        Route::middleware('role:admin')->group(function () {
+            Route::get('roles', [\App\Http\Controllers\RoleController::class, 'index']);
+            Route::get('roles/modules', [\App\Http\Controllers\RoleController::class, 'modules']);
+        });
+        Route::middleware('role:super_admin')->group(function () {
+            Route::post('roles', [\App\Http\Controllers\RoleController::class, 'store']);
+            Route::match(['put', 'patch'], 'roles/{role}', [\App\Http\Controllers\RoleController::class, 'update']);
+            Route::delete('roles/{role}', [\App\Http\Controllers\RoleController::class, 'destroy']);
         });
     });
 });

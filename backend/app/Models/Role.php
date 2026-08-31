@@ -21,13 +21,26 @@ class Role extends Model
     public const EMPLOYEE = 'employee';
     public const SYSTEM_ROLES = [self::EMPLOYEE, self::MANAGER, self::ADMIN];
 
-    protected $fillable = ['key', 'name', 'description', 'parent_id', 'is_system', 'level'];
+    protected $fillable = ['key', 'name', 'description', 'parent_id', 'is_system', 'level', 'modules'];
 
     protected $attributes = ['description' => '', 'is_system' => false, 'level' => 0];
 
     protected function casts(): array
     {
-        return ['is_system' => 'boolean'];
+        return ['is_system' => 'boolean', 'modules' => 'array'];
+    }
+
+    /**
+     * The module allowlist this role grants, or null when unrestricted.
+     * System roles are always unrestricted — their visibility is code-driven.
+     */
+    public function moduleAllowlist(): ?array
+    {
+        if ($this->is_system || in_array($this->key, self::SYSTEM_ROLES, true)) {
+            return null;
+        }
+
+        return $this->modules;
     }
 
     public function parent(): BelongsTo
@@ -83,6 +96,7 @@ class Role extends Model
             'parent_key' => $this->parent?->key,
             'is_system' => $this->is_system,
             'level' => $this->level,
+            'modules' => $this->modules,
             'user_count' => $this->users_count ?? null,
         ];
 

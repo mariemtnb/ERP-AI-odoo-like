@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useTheme, THEME_ORDER } from "@/lib/theme";
 import { useSession } from "@/lib/session";
+import { pathAllowed } from "@/lib/modules";
 import { CommandPalette } from "@/components/CommandPalette";
 import { NotificationBell } from "@/components/NotificationBell";
 import { BrandMark } from "@/components/BrandMark";
@@ -111,6 +112,7 @@ const NAV_SECTIONS: NavSection[] = [
     title: "Admin",
     items: [
       { to: "/users", label: "Users", icon: Users, roles: ["admin"] },
+      { to: "/settings/roles", label: "Roles & Access", icon: ShieldCheck, roles: ["super_admin"] },
       { to: "/settings/localization", label: "Localization", icon: Settings, roles: ["admin"], feature: "localization" },
       { to: "/settings/currencies", label: "Currencies", icon: Coins, roles: ["admin"], feature: "currencies" },
       { to: "/settings/administration", label: "Administration", icon: ShieldCheck, roles: ["admin"] },
@@ -121,7 +123,7 @@ const NAV_SECTIONS: NavSection[] = [
 export default function Layout() {
   const { user, logout } = useAuth();
   const { theme, toggle } = useTheme();
-  const { feature } = useSession();
+  const { feature, modules, restricted } = useSession();
   const nextThemeLabel = THEME_ORDER[(THEME_ORDER.indexOf(theme) + 1) % THEME_ORDER.length];
   const location = useLocation();
   const navigate = useNavigate();
@@ -139,13 +141,21 @@ export default function Layout() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // Role gates the entry; the feature flag hides the module; empty sections drop out.
+  // Two visibility regimes:
+  //  • A custom (restricted) role is gated purely by its module allowlist —
+  //    the role name means nothing to the built-in `roles` arrays, so those
+  //    are bypassed and the allowlist decides.
+  //  • A built-in role keeps the original role + feature-flag gating.
+  // In both cases a disabled feature flag still hides the entry.
   const isSuper = user!.role === "super_admin";
+  const canSee = (i: NavItem) => {
+    if (i.feature && !feature(i.feature)) return false;
+    if (restricted) return pathAllowed(i.to, modules);
+    return isSuper || !i.roles || i.roles.includes(user!.role);
+  };
   const visibleSections = NAV_SECTIONS.map((s) => ({
     title: s.title,
-    items: s.items.filter(
-      (i) => (isSuper || !i.roles || i.roles.includes(user!.role)) && (!i.feature || feature(i.feature))
-    ),
+    items: s.items.filter(canSee),
   })).filter((s) => s.items.length > 0);
   const initials =
     ((user?.first_name?.[0] ?? "") + (user?.last_name?.[0] ?? "")).toUpperCase() ||

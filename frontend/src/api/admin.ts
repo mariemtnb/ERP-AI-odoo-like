@@ -6,6 +6,8 @@ import type { Paginated } from "@/types";
 export interface MeContext {
   permissions: string[];
   features: Record<string, boolean>;
+  /** Module allowlist for a custom role, or null when unrestricted. */
+  modules: string[] | null;
   company: Company | null;
 }
 

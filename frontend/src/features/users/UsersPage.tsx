@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/features/auth/AuthContext";
 import * as usersApi from "@/api/users";
+import * as rolesApi from "@/api/roles";
 import type { User } from "@/types";
 
-const ROLE_LABEL: Record<string, string> = {
+const SYSTEM_LABEL: Record<string, string> = {
   super_admin: "Super admin", admin: "Admin", manager: "Manager", employee: "Employee",
 };
 
@@ -17,6 +18,11 @@ export default function UsersPage() {
   const isSuper = user?.role === "super_admin";
   const qc = useQueryClient();
   const usersQ = useQuery({ queryKey: ["users"], queryFn: () => usersApi.listUsers() });
+  // Custom roles a user can be assigned to, alongside the built-ins.
+  const rolesQ = useQuery({ queryKey: ["roles"], queryFn: () => rolesApi.listRoles() });
+  const customRoles = (rolesQ.data ?? []).filter((r) => !r.is_system);
+  const roleLabel = (key: string) =>
+    SYSTEM_LABEL[key] ?? customRoles.find((r) => r.key === key)?.name ?? key;
   const [editing, setEditing] = useState<User | "new" | null>(null);
   const refresh = () => qc.invalidateQueries({ queryKey: ["users"] });
 
@@ -36,6 +42,7 @@ export default function UsersPage() {
         <UserDialog
           user={editing === "new" ? null : editing}
           isSuper={isSuper}
+          customRoles={customRoles}
           onClose={() => setEditing(null)}
           onSaved={() => { setEditing(null); refresh(); }}
         />
@@ -51,7 +58,7 @@ export default function UsersPage() {
               <tr key={u.id} style={{ borderTop: "1px solid var(--border)" }}>
                 <Td>{u.email}{u.id === user?.id && <span style={{ color: "var(--text-muted)" }}> · you</span>}</Td>
                 <Td>{[u.first_name, u.last_name].filter(Boolean).join(" ") || "—"}</Td>
-                <Td><Badge tone={u.role}>{ROLE_LABEL[u.role] ?? u.role}</Badge></Td>
+                <Td><Badge tone={u.role}>{roleLabel(u.role)}</Badge></Td>
                 <Td><Badge tone={u.is_active ? "green" : "red"}>{u.is_active ? "active" : "inactive"}</Badge></Td>
                 <Td right>
                   <span style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
@@ -72,7 +79,7 @@ export default function UsersPage() {
   );
 }
 
-function UserDialog({ user, isSuper, onClose, onSaved }: { user: User | null; isSuper: boolean; onClose: () => void; onSaved: () => void }) {
+function UserDialog({ user, isSuper, customRoles, onClose, onSaved }: { user: User | null; isSuper: boolean; customRoles: rolesApi.ManagedRole[]; onClose: () => void; onSaved: () => void }) {
   const editing = !!user;
   const [email, setEmail] = useState(user?.email ?? "");
   const [first, setFirst] = useState(user?.first_name ?? "");
@@ -82,7 +89,13 @@ function UserDialog({ user, isSuper, onClose, onSaved }: { user: User | null; is
   const [resetPw, setResetPw] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const roleOptions = ["employee", "manager", ...(isSuper ? ["admin", "super_admin"] : [])];
+  // Built-in roles (admin tiers only for a super admin) plus every custom role.
+  const roleOptions: { value: string; label: string }[] = [
+    { value: "employee", label: "Employee" },
+    { value: "manager", label: "Manager" },
+    ...(isSuper ? [{ value: "admin", label: "Admin" }, { value: "super_admin", label: "Super admin" }] : []),
+    ...customRoles.map((r) => ({ value: r.key, label: r.name })),
+  ];
 
   const save = useMutation({
     mutationFn: () => {
@@ -115,7 +128,7 @@ function UserDialog({ user, isSuper, onClose, onSaved }: { user: User | null; is
         </div>
         <Field label="Role">
           <select value={role} onChange={(e) => setRole(e.target.value)} style={selectStyle}>
-            {roleOptions.map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
+            {roleOptions.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
           </select>
           {!isSuper && <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Only a super admin can assign admin roles.</span>}
         </Field>
