@@ -41,7 +41,7 @@ export default function UsersPage() {
         />
       )}
 
-      <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
+      <div style={{ background: "var(--surface-card)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
           <thead><tr style={{ background: "var(--surface-hover)", color: "var(--text-muted)", textAlign: "left" }}>
             <Th>Email</Th><Th>Name</Th><Th>Role</Th><Th>Status</Th><Th></Th>
@@ -103,8 +103,8 @@ function UserDialog({ user, isSuper, onClose, onSaved }: { user: User | null; is
   const ok = email.trim() && (editing || password.length >= 8);
 
   return (
-    <div role="dialog" style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.45)", display: "grid", placeItems: "center", zIndex: 60 }} onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: 460, maxWidth: "92vw", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: 22 }}>
+    <div role="dialog" style={{ position: "fixed", inset: 0, background: "rgba(3,7,12,.72)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", display: "grid", placeItems: "center", zIndex: 60 }} onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: 460, maxWidth: "92vw", background: "var(--surface-card)", border: "1px solid var(--border)", borderRadius: 16, padding: 22, boxShadow: "0 24px 60px -12px rgba(0,0,0,.7)" }}>
         <h3 style={{ margin: "0 0 14px", color: "var(--text-strong)", font: "600 18px var(--font-sans)" }}>
           {editing ? "Edit user" : "New user"}
         </h3>
