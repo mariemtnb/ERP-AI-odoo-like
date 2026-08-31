@@ -27,44 +27,93 @@ type NavItem = {
   feature?: string;
 };
 
-/* Flat nav list, order and icons per the prototype sidebar. */
-const NAV: NavItem[] = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/products", label: "Products", icon: Package, feature: "inventory" },
-  { to: "/inventory", label: "Inventory", icon: Boxes, feature: "inventory" },
-  { to: "/lots", label: "Lots & Expiry", icon: CalendarClock, roles: ["admin", "manager"], feature: "inventory" },
-  { to: "/manufacturing", label: "Manufacturing", icon: Factory, roles: ["admin", "manager"], feature: "inventory" },
-  { to: "/customers", label: "Customers", icon: UserSquare2, feature: "sales" },
-  { to: "/suppliers", label: "Suppliers", icon: Truck, feature: "purchasing" },
-  { to: "/purchases", label: "Purchases", icon: ShoppingBag, feature: "purchasing" },
-  { to: "/reordering", label: "Reordering", icon: RefreshCw, roles: ["admin", "manager"], feature: "purchasing" },
-  { to: "/rfqs", label: "RFQs", icon: ClipboardList, roles: ["admin", "manager"], feature: "purchasing" },
-  { to: "/sales", label: "Sales", icon: ShoppingCart, feature: "sales" },
-  { to: "/subscriptions", label: "Subscriptions", icon: Repeat, roles: ["admin", "manager"], feature: "sales" },
-  { to: "/pos", label: "Point of Sale", icon: Store, feature: "sales" },
-  { to: "/returns", label: "Returns", icon: Undo2, roles: ["admin", "manager"], feature: "sales" },
-  { to: "/shipping", label: "Shipping", icon: PackageCheck, feature: "sales" },
-  { to: "/crm", label: "CRM", icon: Contact, feature: "crm" },
-  { to: "/projects", label: "Projects", icon: FolderKanban },
-  { to: "/helpdesk", label: "Helpdesk", icon: LifeBuoy },
-  { to: "/marketing", label: "Marketing", icon: Megaphone, roles: ["admin", "manager"] },
-  { to: "/owner", label: "Profit", icon: TrendingUp, roles: ["admin", "manager"] },
-  { to: "/accounting", label: "Accounting", icon: BookOpen, roles: ["admin", "manager"], feature: "accounting" },
-  { to: "/assets", label: "Fixed Assets", icon: Building2, roles: ["admin", "manager"], feature: "accounting" },
-  { to: "/payroll", label: "Payroll", icon: Wallet, roles: ["admin", "manager"], feature: "payroll" },
-  { to: "/hr", label: "Human Resources", icon: UserCog, roles: ["admin", "manager"], feature: "payroll" },
-  // Treasury — cheques, effets, instalments and the bank.
-  { to: "/instruments", label: "Cheques & Kembyelet", icon: ReceiptText, roles: ["admin", "manager"], feature: "treasury" },
-  { to: "/installments", label: "Installments", icon: CalendarClock, roles: ["admin", "manager"], feature: "treasury" },
-  { to: "/banking", label: "Banking", icon: Landmark, roles: ["admin", "manager"], feature: "banking" },
-  { to: "/reconciliation", label: "Reconciliation", icon: Scale, roles: ["admin", "manager"], feature: "banking" },
-  { to: "/reports", label: "Reports", icon: FileText, roles: ["admin", "manager"], feature: "reports" },
-  { to: "/report-builder", label: "Report Builder", icon: BarChart3, roles: ["admin", "manager"], feature: "reports" },
-  { to: "/assistant", label: "AI Assistant", icon: Sparkles, live: true, feature: "ai" },
-  { to: "/users", label: "Users", icon: Users, roles: ["admin"] },
-  { to: "/settings/localization", label: "Localization", icon: Settings, roles: ["admin"], feature: "localization" },
-  { to: "/settings/currencies", label: "Currencies", icon: Coins, roles: ["admin"] },
-  { to: "/settings/administration", label: "Administration", icon: ShieldCheck, roles: ["admin"] },
+type NavSection = { title: string; items: NavItem[] };
+
+/* Grouped nav: sections keep the (now 30+) modules navigable. */
+const NAV_SECTIONS: NavSection[] = [
+  {
+    title: "Overview",
+    items: [{ to: "/", label: "Dashboard", icon: LayoutDashboard }],
+  },
+  {
+    title: "Catalog & Stock",
+    items: [
+      { to: "/products", label: "Products", icon: Package, feature: "inventory" },
+      { to: "/inventory", label: "Inventory", icon: Boxes, feature: "inventory" },
+      { to: "/lots", label: "Lots & Expiry", icon: CalendarClock, roles: ["admin", "manager"], feature: "inventory" },
+      { to: "/manufacturing", label: "Manufacturing", icon: Factory, roles: ["admin", "manager"], feature: "inventory" },
+    ],
+  },
+  {
+    title: "Purchasing",
+    items: [
+      { to: "/suppliers", label: "Suppliers", icon: Truck, feature: "purchasing" },
+      { to: "/purchases", label: "Purchases", icon: ShoppingBag, feature: "purchasing" },
+      { to: "/reordering", label: "Reordering", icon: RefreshCw, roles: ["admin", "manager"], feature: "purchasing" },
+      { to: "/rfqs", label: "RFQs", icon: ClipboardList, roles: ["admin", "manager"], feature: "purchasing" },
+    ],
+  },
+  {
+    title: "Sales",
+    items: [
+      { to: "/customers", label: "Customers", icon: UserSquare2, feature: "sales" },
+      { to: "/sales", label: "Sales", icon: ShoppingCart, feature: "sales" },
+      { to: "/pos", label: "Point of Sale", icon: Store, feature: "sales" },
+      { to: "/subscriptions", label: "Subscriptions", icon: Repeat, roles: ["admin", "manager"], feature: "sales" },
+      { to: "/returns", label: "Returns", icon: Undo2, roles: ["admin", "manager"], feature: "sales" },
+      { to: "/shipping", label: "Shipping", icon: PackageCheck, feature: "sales" },
+      { to: "/marketing", label: "Marketing", icon: Megaphone, roles: ["admin", "manager"] },
+      { to: "/crm", label: "CRM", icon: Contact, feature: "crm" },
+    ],
+  },
+  {
+    title: "Services",
+    items: [
+      { to: "/projects", label: "Projects", icon: FolderKanban },
+      { to: "/helpdesk", label: "Helpdesk", icon: LifeBuoy },
+    ],
+  },
+  {
+    title: "Finance",
+    items: [
+      { to: "/owner", label: "Profit", icon: TrendingUp, roles: ["admin", "manager"] },
+      { to: "/accounting", label: "Accounting", icon: BookOpen, roles: ["admin", "manager"], feature: "accounting" },
+      { to: "/assets", label: "Fixed Assets", icon: Building2, roles: ["admin", "manager"], feature: "accounting" },
+    ],
+  },
+  {
+    title: "People",
+    items: [
+      { to: "/payroll", label: "Payroll", icon: Wallet, roles: ["admin", "manager"], feature: "payroll" },
+      { to: "/hr", label: "Human Resources", icon: UserCog, roles: ["admin", "manager"], feature: "payroll" },
+    ],
+  },
+  {
+    title: "Treasury",
+    items: [
+      { to: "/instruments", label: "Cheques & Kembyelet", icon: ReceiptText, roles: ["admin", "manager"], feature: "treasury" },
+      { to: "/installments", label: "Installments", icon: CalendarClock, roles: ["admin", "manager"], feature: "treasury" },
+      { to: "/banking", label: "Banking", icon: Landmark, roles: ["admin", "manager"], feature: "banking" },
+      { to: "/reconciliation", label: "Reconciliation", icon: Scale, roles: ["admin", "manager"], feature: "banking" },
+    ],
+  },
+  {
+    title: "Insights",
+    items: [
+      { to: "/reports", label: "Reports", icon: FileText, roles: ["admin", "manager"], feature: "reports" },
+      { to: "/report-builder", label: "Report Builder", icon: BarChart3, roles: ["admin", "manager"], feature: "reports" },
+      { to: "/assistant", label: "AI Assistant", icon: Sparkles, live: true, feature: "ai" },
+    ],
+  },
+  {
+    title: "Admin",
+    items: [
+      { to: "/users", label: "Users", icon: Users, roles: ["admin"] },
+      { to: "/settings/localization", label: "Localization", icon: Settings, roles: ["admin"], feature: "localization" },
+      { to: "/settings/currencies", label: "Currencies", icon: Coins, roles: ["admin"] },
+      { to: "/settings/administration", label: "Administration", icon: ShieldCheck, roles: ["admin"] },
+    ],
+  },
 ];
 
 export default function Layout() {
@@ -89,9 +138,13 @@ export default function Layout() {
   }, []);
 
   // Role gates the entry; the feature flag hides the whole module.
-  const items = NAV.filter(
-    (i) => (!i.roles || i.roles.includes(user!.role)) && (!i.feature || feature(i.feature))
-  );
+  // Role gates the entry; the feature flag hides the module; empty sections drop out.
+  const visibleSections = NAV_SECTIONS.map((s) => ({
+    title: s.title,
+    items: s.items.filter(
+      (i) => (!i.roles || i.roles.includes(user!.role)) && (!i.feature || feature(i.feature))
+    ),
+  })).filter((s) => s.items.length > 0);
   const initials =
     ((user?.first_name?.[0] ?? "") + (user?.last_name?.[0] ?? "")).toUpperCase() ||
     (user?.email?.[0] ?? "?").toUpperCase();
@@ -146,45 +199,55 @@ export default function Layout() {
 
         {/* nav */}
         <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto" style={{ padding: "12px" }}>
-          {!collapsed && <div className="eyebrow" style={{ padding: "10px 10px 6px" }}>Workspace</div>}
-          {items.map(({ to, label, icon: Icon, live }) => (
-            <NavLink key={to} to={to} end={to === "/"} title={label}>
-              {({ isActive }) => (
-                <span
-                  className="relative flex items-center gap-3 rounded-[10px] transition-colors duration-120"
-                  style={{
-                    justifyContent: collapsed ? "center" : "flex-start",
-                    padding: collapsed ? "10px 0" : "9px 10px",
-                    background: isActive ? "var(--surface-hover)" : "transparent",
-                    color: isActive ? "var(--text-strong)" : "var(--text-muted)",
-                    font: "500 14px/1 var(--font-sans)",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive)
-                      e.currentTarget.style.background =
-                        "color-mix(in oklab, var(--surface-hover) 55%, transparent)";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) e.currentTarget.style.background = "transparent";
-                  }}
-                >
-                  {isActive && !collapsed && (
-                    <span
-                      className="absolute rounded-full"
-                      style={{ left: 0, top: 8, bottom: 8, width: 3, background: "var(--emerald-400)" }}
-                    />
-                  )}
-                  <Icon size={18} color={isActive ? "var(--emerald-400)" : undefined} strokeWidth={1.75} />
-                  {!collapsed && <span>{label}</span>}
-                  {!collapsed && live && (
-                    <span
-                      className="ml-auto rounded-full"
-                      style={{ width: 6, height: 6, background: "var(--emerald-400)" }}
-                    />
-                  )}
-                </span>
+          {visibleSections.map((section, si) => (
+            <div key={section.title} className="flex flex-col gap-0.5">
+              {!collapsed ? (
+                <div className="eyebrow" style={{ padding: si === 0 ? "6px 10px 4px" : "14px 10px 4px" }}>
+                  {section.title}
+                </div>
+              ) : (
+                si > 0 && <div style={{ height: 1, margin: "8px", background: "var(--border-subtle)" }} />
               )}
-            </NavLink>
+              {section.items.map(({ to, label, icon: Icon, live }) => (
+                <NavLink key={to} to={to} end={to === "/"} title={label}>
+                  {({ isActive }) => (
+                    <span
+                      className="relative flex items-center gap-3 rounded-[10px] transition-colors duration-120"
+                      style={{
+                        justifyContent: collapsed ? "center" : "flex-start",
+                        padding: collapsed ? "10px 0" : "9px 10px",
+                        background: isActive ? "var(--surface-hover)" : "transparent",
+                        color: isActive ? "var(--text-strong)" : "var(--text-muted)",
+                        font: "500 14px/1 var(--font-sans)",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isActive)
+                          e.currentTarget.style.background =
+                            "color-mix(in oklab, var(--surface-hover) 55%, transparent)";
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActive) e.currentTarget.style.background = "transparent";
+                      }}
+                    >
+                      {isActive && !collapsed && (
+                        <span
+                          className="absolute rounded-full"
+                          style={{ left: 0, top: 8, bottom: 8, width: 3, background: "var(--emerald-400)" }}
+                        />
+                      )}
+                      <Icon size={18} color={isActive ? "var(--emerald-400)" : undefined} strokeWidth={1.75} />
+                      {!collapsed && <span>{label}</span>}
+                      {!collapsed && live && (
+                        <span
+                          className="ml-auto rounded-full"
+                          style={{ width: 6, height: 6, background: "var(--emerald-400)" }}
+                        />
+                      )}
+                    </span>
+                  )}
+                </NavLink>
+              ))}
+            </div>
           ))}
         </nav>
 
