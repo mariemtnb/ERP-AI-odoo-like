@@ -274,9 +274,13 @@ class AdministrationTest extends TestCase
     {
         $this->assertTrue(FeatureFlag::enabled('accounting'));
         $this->assertTrue(FeatureFlag::enabled('treasury'));
-        // Modules that do not exist yet ship off.
-        $this->assertFalse(FeatureFlag::enabled('pos'));
-        $this->assertFalse(FeatureFlag::enabled('hr'));
+        // pos / hr / manufacturing are now implemented modules, enabled by the
+        // register_new_module_flags migration.
+        $this->assertTrue(FeatureFlag::enabled('pos'));
+        $this->assertTrue(FeatureFlag::enabled('hr'));
+        $this->assertTrue(FeatureFlag::enabled('manufacturing'));
+        // Public self-registration still ships OFF for security.
+        $this->assertFalse(FeatureFlag::enabled('self_registration'));
     }
 
     public function test_an_unknown_flag_defaults_to_enabled(): void

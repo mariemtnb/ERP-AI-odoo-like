@@ -32,3 +32,38 @@ export async function logout() {
     tokens.clear();
   }
 }
+
+export async function updateProfile(input: {
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  current_password?: string;
+}): Promise<User> {
+  const { data } = await api.patch<User>("/auth/profile/", input);
+  return data;
+}
+
+export async function changePassword(current_password: string, new_password: string) {
+  const { data } = await api.post<{ detail: string }>("/auth/change-password/", {
+    current_password,
+    new_password,
+  });
+  return data;
+}
+
+export async function forgotPassword(email: string) {
+  const { data } = await api.post<{ detail: string; dev_token: string | null }>(
+    "/auth/forgot-password/",
+    { email }
+  );
+  return data;
+}
+
+export async function resetPassword(email: string, token: string, new_password: string) {
+  const { data } = await api.post<{ detail: string }>("/auth/reset-password/", {
+    email,
+    token,
+    new_password,
+  });
+  return data;
+}

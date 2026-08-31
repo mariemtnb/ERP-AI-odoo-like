@@ -6,6 +6,9 @@ import { SessionProvider } from "@/lib/session";
 import { AuthProvider } from "@/features/auth/AuthContext";
 import LoginPage from "@/features/auth/LoginPage";
 import SignupPage from "@/features/auth/SignupPage";
+import ForgotPasswordPage from "@/features/auth/ForgotPasswordPage";
+import ResetPasswordPage from "@/features/auth/ResetPasswordPage";
+import ProfilePage from "@/features/settings/ProfilePage";
 import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
 import AccountingPage from "@/features/accounting/AccountingPage";
 import AdministrationPage from "@/features/admin/AdministrationPage";
@@ -70,9 +73,12 @@ export default function App() {
             <Route path="/welcome" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route element={<ProtectedRoute />}>
               <Route element={<Layout />}>
                 <Route index element={<DashboardPage />} />
+                <Route path="settings/profile" element={<ProfilePage />} />
                 <Route element={<ProtectedRoute roles={["admin", "manager"]} />}>
                   <Route path="reports" element={<ReportsPage />} />
                   <Route path="report-builder" element={<BiPage />} />

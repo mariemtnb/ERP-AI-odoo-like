@@ -5,7 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\FeatureFlag;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
@@ -145,5 +150,105 @@ class AuthController extends Controller
         $user->update(['password' => $data['new_password']]);
 
         return response()->json(['detail' => 'Password updated.']);
+    }
+
+    /**
+     * Self-service profile edit. Name is free to change; changing the email
+     * requires the current password (it is a login credential). Role and
+     * active-state are deliberately NOT editable here — only an admin can
+     * change those, via the Users module.
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+        $data = $request->validate([
+            'first_name' => ['sometimes', 'string', 'max:150'],
+            'last_name' => ['sometimes', 'nullable', 'string', 'max:150'],
+            'email' => ['sometimes', 'email', Rule::unique('users', 'email')->ignore($user->id)],
+            'current_password' => ['sometimes', 'string'],
+        ]);
+
+        $changes = [];
+        foreach (['first_name', 'last_name'] as $f) {
+            if (array_key_exists($f, $data)) {
+                $changes[$f] = $data[$f] ?? '';
+            }
+        }
+
+        if (array_key_exists('email', $data) && $data['email'] !== $user->email) {
+            if (! Hash::check($data['current_password'] ?? '', $user->password)) {
+                return response()->json(
+                    ['current_password' => ['Enter your current password to change your email.']],
+                    400
+                );
+            }
+            $changes['email'] = $data['email'];
+        }
+
+        if ($changes) {
+            $user->update($changes);
+        }
+
+        return response()->json($user->fresh()->toApi());
+    }
+
+    /**
+     * Request a password reset. Always returns the same response whether or not
+     * the email exists, so the endpoint cannot be used to enumerate accounts.
+     *
+     * No mail provider is wired up, so the token is logged (and, in local dev
+     * only, returned) rather than emailed. Send it by mail to go to production.
+     */
+    public function forgotPassword(Request $request)
+    {
+        $data = $request->validate(['email' => ['required', 'email']]);
+
+        $devToken = null;
+        $user = User::where('email', $data['email'])->first();
+        if ($user && $user->is_active) {
+            $token = Str::random(64);
+            DB::table('password_reset_tokens')->updateOrInsert(
+                ['email' => $user->email],
+                ['token' => Hash::make($token), 'created_at' => now()]
+            );
+            Log::info('password reset requested (no mailer wired)', ['email' => $user->email, 'token' => $token]);
+            if (app()->environment('local')) {
+                $devToken = $token; // dev convenience since email isn't sent
+            }
+        }
+
+        return response()->json([
+            'detail' => 'If an account exists for that email, a reset link has been sent.',
+            'dev_token' => $devToken,
+        ]);
+    }
+
+    /** Complete a password reset with the emailed token. Tokens expire in 1h. */
+    public function resetPassword(Request $request)
+    {
+        $data = $request->validate([
+            'email' => ['required', 'email'],
+            'token' => ['required', 'string'],
+            'new_password' => ['required', 'string', 'min:8'],
+        ]);
+
+        $row = DB::table('password_reset_tokens')->where('email', $data['email'])->first();
+        if (! $row || ! Hash::check($data['token'], $row->token)) {
+            return response()->json(['detail' => 'This reset link is invalid.'], 400);
+        }
+        if (Carbon::parse($row->created_at)->addHour()->isPast()) {
+            DB::table('password_reset_tokens')->where('email', $data['email'])->delete();
+
+            return response()->json(['detail' => 'This reset link has expired. Request a new one.'], 400);
+        }
+
+        $user = User::where('email', $data['email'])->first();
+        if (! $user) {
+            return response()->json(['detail' => 'This reset link is invalid.'], 400);
+        }
+        $user->update(['password' => $data['new_password']]);
+        DB::table('password_reset_tokens')->where('email', $data['email'])->delete();
+
+        return response()->json(['detail' => 'Your password has been reset. You can now sign in.']);
     }
 }

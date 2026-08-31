@@ -42,6 +42,10 @@ Route::prefix('v1')->group(function () {
     // tight loop, and the endpoint is an oracle for guessing valid tokens.
     Route::post('auth/refresh', [AuthController::class, 'refresh'])->middleware('throttle:30,1');
     Route::post('auth/logout', [AuthController::class, 'logout'])->middleware('throttle:30,1');
+    // Public password-reset flow. Tight throttle: these are unauthenticated and
+    // a target for abuse (enumeration, token guessing).
+    Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:5,1');
+    Route::post('auth/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:10,1');
 
     /*
     | `active` runs on every authenticated request: deactivating an account has
@@ -50,6 +54,9 @@ Route::prefix('v1')->group(function () {
     */
     Route::middleware(['auth:api', 'active', 'throttle:api'])->group(function () {
         Route::get('auth/me', [AuthController::class, 'me']);
+        // Self-service profile edit (name, email). Role/active stay admin-only.
+        Route::match(['put', 'patch'], 'auth/profile', [AuthController::class, 'updateProfile'])
+            ->middleware('throttle:20,1');
         // Brute-forcing current_password was previously unbounded.
         Route::post('auth/change-password', [AuthController::class, 'changePassword'])
             ->middleware('throttle:10,1');

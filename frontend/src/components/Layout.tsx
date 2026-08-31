@@ -42,8 +42,8 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { to: "/products", label: "Products", icon: Package, feature: "inventory" },
       { to: "/inventory", label: "Inventory", icon: Boxes, feature: "inventory" },
-      { to: "/lots", label: "Lots & Expiry", icon: CalendarClock, roles: ["admin", "manager"], feature: "inventory" },
-      { to: "/manufacturing", label: "Manufacturing", icon: Factory, roles: ["admin", "manager"], feature: "inventory" },
+      { to: "/lots", label: "Lots & Expiry", icon: CalendarClock, roles: ["admin", "manager"], feature: "lots" },
+      { to: "/manufacturing", label: "Manufacturing", icon: Factory, roles: ["admin", "manager"], feature: "manufacturing" },
     ],
   },
   {
@@ -51,8 +51,8 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { to: "/suppliers", label: "Suppliers", icon: Truck, feature: "purchasing" },
       { to: "/purchases", label: "Purchases", icon: ShoppingBag, feature: "purchasing" },
-      { to: "/reordering", label: "Reordering", icon: RefreshCw, roles: ["admin", "manager"], feature: "purchasing" },
-      { to: "/rfqs", label: "RFQs", icon: ClipboardList, roles: ["admin", "manager"], feature: "purchasing" },
+      { to: "/reordering", label: "Reordering", icon: RefreshCw, roles: ["admin", "manager"], feature: "reordering" },
+      { to: "/rfqs", label: "RFQs", icon: ClipboardList, roles: ["admin", "manager"], feature: "rfq" },
     ],
   },
   {
@@ -60,19 +60,19 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { to: "/customers", label: "Customers", icon: UserSquare2, feature: "sales" },
       { to: "/sales", label: "Sales", icon: ShoppingCart, feature: "sales" },
-      { to: "/pos", label: "Point of Sale", icon: Store, feature: "sales" },
-      { to: "/subscriptions", label: "Subscriptions", icon: Repeat, roles: ["admin", "manager"], feature: "sales" },
-      { to: "/returns", label: "Returns", icon: Undo2, roles: ["admin", "manager"], feature: "sales" },
-      { to: "/shipping", label: "Shipping", icon: PackageCheck, feature: "sales" },
-      { to: "/marketing", label: "Marketing", icon: Megaphone, roles: ["admin", "manager"] },
+      { to: "/pos", label: "Point of Sale", icon: Store, feature: "pos" },
+      { to: "/subscriptions", label: "Subscriptions", icon: Repeat, roles: ["admin", "manager"], feature: "subscriptions" },
+      { to: "/returns", label: "Returns", icon: Undo2, roles: ["admin", "manager"], feature: "returns" },
+      { to: "/shipping", label: "Shipping", icon: PackageCheck, feature: "shipping" },
+      { to: "/marketing", label: "Marketing", icon: Megaphone, roles: ["admin", "manager"], feature: "marketing" },
       { to: "/crm", label: "CRM", icon: Contact, feature: "crm" },
     ],
   },
   {
     title: "Services",
     items: [
-      { to: "/projects", label: "Projects", icon: FolderKanban },
-      { to: "/helpdesk", label: "Helpdesk", icon: LifeBuoy },
+      { to: "/projects", label: "Projects", icon: FolderKanban, feature: "projects" },
+      { to: "/helpdesk", label: "Helpdesk", icon: LifeBuoy, feature: "helpdesk" },
     ],
   },
   {
@@ -80,14 +80,14 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { to: "/owner", label: "Profit", icon: TrendingUp, roles: ["admin", "manager"] },
       { to: "/accounting", label: "Accounting", icon: BookOpen, roles: ["admin", "manager"], feature: "accounting" },
-      { to: "/assets", label: "Fixed Assets", icon: Building2, roles: ["admin", "manager"], feature: "accounting" },
+      { to: "/assets", label: "Fixed Assets", icon: Building2, roles: ["admin", "manager"], feature: "assets" },
     ],
   },
   {
     title: "People",
     items: [
       { to: "/payroll", label: "Payroll", icon: Wallet, roles: ["admin", "manager"], feature: "payroll" },
-      { to: "/hr", label: "Human Resources", icon: UserCog, roles: ["admin", "manager"], feature: "payroll" },
+      { to: "/hr", label: "Human Resources", icon: UserCog, roles: ["admin", "manager"], feature: "hr" },
     ],
   },
   {
@@ -103,7 +103,7 @@ const NAV_SECTIONS: NavSection[] = [
     title: "Insights",
     items: [
       { to: "/reports", label: "Reports", icon: FileText, roles: ["admin", "manager"], feature: "reports" },
-      { to: "/report-builder", label: "Report Builder", icon: BarChart3, roles: ["admin", "manager"], feature: "reports" },
+      { to: "/report-builder", label: "Report Builder", icon: BarChart3, roles: ["admin", "manager"], feature: "bi" },
       { to: "/assistant", label: "AI Assistant", icon: Sparkles, live: true, feature: "ai" },
     ],
   },
@@ -112,7 +112,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { to: "/users", label: "Users", icon: Users, roles: ["admin"] },
       { to: "/settings/localization", label: "Localization", icon: Settings, roles: ["admin"], feature: "localization" },
-      { to: "/settings/currencies", label: "Currencies", icon: Coins, roles: ["admin"] },
+      { to: "/settings/currencies", label: "Currencies", icon: Coins, roles: ["admin"], feature: "currencies" },
       { to: "/settings/administration", label: "Administration", icon: ShieldCheck, roles: ["admin"] },
     ],
   },
@@ -139,7 +139,6 @@ export default function Layout() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // Role gates the entry; the feature flag hides the whole module.
   // Role gates the entry; the feature flag hides the module; empty sections drop out.
   const visibleSections = NAV_SECTIONS.map((s) => ({
     title: s.title,
@@ -254,11 +253,17 @@ export default function Layout() {
           ))}
         </nav>
 
-        {/* user chip */}
+        {/* user chip → my account */}
         <div style={{ padding: 12, borderTop: "1px solid var(--border-subtle)" }}>
-          <div
-            className="flex items-center gap-2.5"
-            style={{ padding: collapsed ? 0 : "6px 8px", justifyContent: collapsed ? "center" : "flex-start" }}
+          <NavLink
+            to="/settings/profile"
+            title="My account"
+            className="flex items-center gap-2.5 rounded-[10px]"
+            style={({ isActive }) => ({
+              padding: collapsed ? "6px 0" : "6px 8px",
+              justifyContent: collapsed ? "center" : "flex-start",
+              background: isActive ? "var(--surface-hover)" : "transparent",
+            })}
           >
             <div
               className="grid shrink-0 place-items-center rounded-full font-semibold"
@@ -293,7 +298,7 @@ export default function Layout() {
                 </div>
               </div>
             )}
-          </div>
+          </NavLink>
         </div>
       </motion.aside>
 
