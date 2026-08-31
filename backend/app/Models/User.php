@@ -15,9 +15,13 @@ class User extends Authenticatable implements JWTSubject
     // AuditService before anything is written.
     use Auditable, HasFactory, Notifiable;
 
+    public const ROLE_SUPER_ADMIN = 'super_admin';
     public const ROLE_ADMIN = 'admin';
     public const ROLE_MANAGER = 'manager';
     public const ROLE_EMPLOYEE = 'employee';
+
+    /** Assignable roles, most privileged first. */
+    public const ROLES = [self::ROLE_SUPER_ADMIN, self::ROLE_ADMIN, self::ROLE_MANAGER, self::ROLE_EMPLOYEE];
 
     protected $fillable = [
         'email', 'password', 'first_name', 'last_name', 'role', 'is_active',
@@ -48,14 +52,20 @@ class User extends Authenticatable implements JWTSubject
         return ['role' => $this->role];
     }
 
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === self::ROLE_SUPER_ADMIN;
+    }
+
+    /** Super admin is a strict superset of admin, so it passes every admin gate. */
     public function isAdmin(): bool
     {
-        return $this->role === self::ROLE_ADMIN;
+        return in_array($this->role, [self::ROLE_SUPER_ADMIN, self::ROLE_ADMIN], true);
     }
 
     public function isManagerial(): bool
     {
-        return in_array($this->role, [self::ROLE_ADMIN, self::ROLE_MANAGER], true);
+        return in_array($this->role, [self::ROLE_SUPER_ADMIN, self::ROLE_ADMIN, self::ROLE_MANAGER], true);
     }
 
     /** DRF-compatible user payload (matches the old Django API). */

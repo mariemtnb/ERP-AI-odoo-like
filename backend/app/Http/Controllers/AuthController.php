@@ -9,6 +9,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
@@ -73,6 +74,11 @@ class AuthController extends Controller
         return response()->json($this->issuePair($user), 201);
     }
 
+    /** Lock the account+IP after this many failed attempts, for LOCKOUT_SECONDS. */
+    private const MAX_ATTEMPTS = 5;
+
+    private const LOCKOUT_SECONDS = 900; // 15 minutes
+
     public function login(Request $request)
     {
         $data = $request->validate([
@@ -80,14 +86,29 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
+        // Account lockout: too many failures for this email+IP → refuse for a
+        // while, independent of the per-minute throttle. Blunts password
+        // guessing without needing a captcha.
+        $key = 'login:'.Str::lower($data['email']).'|'.$request->ip();
+        if (RateLimiter::tooManyAttempts($key, self::MAX_ATTEMPTS)) {
+            $minutes = (int) ceil(RateLimiter::availableIn($key) / 60);
+
+            return response()->json([
+                'detail' => "Too many failed attempts. Try again in {$minutes} minute(s), or reset your password.",
+            ], 429);
+        }
+
         $user = User::where('email', $data['email'])->first();
         if (! $user || ! Hash::check($data['password'], $user->password) || ! $user->is_active) {
+            RateLimiter::hit($key, self::LOCKOUT_SECONDS);
+
             return response()->json(
                 ['detail' => 'No active account found with the given credentials'],
                 401
             );
         }
 
+        RateLimiter::clear($key); // successful login resets the counter
         return response()->json($this->issuePair($user));
     }
 

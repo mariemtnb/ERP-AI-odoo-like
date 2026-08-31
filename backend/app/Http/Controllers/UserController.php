@@ -37,6 +37,16 @@ class UserController extends Controller
         return response()->json($user->toApi());
     }
 
+    /** Only a super admin may grant the admin or super_admin role. */
+    private const PRIVILEGED_ROLES = [User::ROLE_SUPER_ADMIN, User::ROLE_ADMIN];
+
+    private function deniesRole(Request $request, ?string $role): bool
+    {
+        return $role !== null
+            && in_array($role, self::PRIVILEGED_ROLES, true)
+            && ! $request->user()->isSuperAdmin();
+    }
+
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -44,9 +54,13 @@ class UserController extends Controller
             'password' => ['required', 'string', 'min:8'],
             'first_name' => ['sometimes', 'string', 'max:150'],
             'last_name' => ['sometimes', 'string', 'max:150'],
-            'role' => ['sometimes', Rule::in(['admin', 'manager', 'employee'])],
+            'role' => ['sometimes', Rule::in(User::ROLES)],
             'is_active' => ['sometimes', 'boolean'],
         ]);
+
+        if ($this->deniesRole($request, $data['role'] ?? null)) {
+            return response()->json(['detail' => 'Only a super admin can grant admin roles.'], 403);
+        }
 
         $user = User::create($data);
 
@@ -59,9 +73,17 @@ class UserController extends Controller
             'email' => ['sometimes', 'email', Rule::unique('users', 'email')->ignore($user->id)],
             'first_name' => ['sometimes', 'string', 'max:150'],
             'last_name' => ['sometimes', 'string', 'max:150'],
-            'role' => ['sometimes', Rule::in(['admin', 'manager', 'employee'])],
+            'role' => ['sometimes', Rule::in(User::ROLES)],
             'is_active' => ['sometimes', 'boolean'],
         ]);
+
+        // A non-super-admin can neither grant a privileged role nor edit an
+        // account that already holds one (so an admin cannot demote/hijack a
+        // super admin or a peer admin).
+        if ($this->deniesRole($request, $data['role'] ?? null)
+            || (in_array($user->role, self::PRIVILEGED_ROLES, true) && ! $request->user()->isSuperAdmin())) {
+            return response()->json(['detail' => 'Only a super admin can manage admin accounts.'], 403);
+        }
 
         $user->update($data);
 

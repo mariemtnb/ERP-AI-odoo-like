@@ -13,6 +13,7 @@ const TONES: Record<string, { bg: string; fg: string }> = {
   // legacy aliases
   green: { bg: "var(--emerald-glow)", fg: "var(--emerald-400)" },
   red: { bg: "var(--rose-glow)", fg: "var(--rose-400)" },
+  super_admin: { bg: "var(--emerald-glow)", fg: "var(--emerald-400)" },
   admin: { bg: "var(--violet-glow)", fg: "var(--violet-400)" },
   manager: { bg: "var(--sky-glow)", fg: "var(--sky-400)" },
   employee: { bg: "var(--surface-hover)", fg: "var(--text-body)" },

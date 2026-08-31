@@ -26,6 +26,11 @@ class EnsureRole
             return $this->deny();
         }
 
+        // 0. Super admin is a superset of every role — it passes any gate.
+        if ($user->role === \App\Models\User::ROLE_SUPER_ADMIN) {
+            return $next($request);
+        }
+
         // 1. Original behaviour, untouched.
         if (in_array($user->role, $roles, true)) {
             return $next($request);

@@ -1,51 +1,161 @@
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/api/client";
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { PageHead } from "@/components/ui/page-head";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { TableSkeleton } from "@/components/ui/skeleton";
-import { Table, TBody, Td, Th, THead } from "@/components/ui/table";
-import type { Paginated, User } from "@/types";
+import { useAuth } from "@/features/auth/AuthContext";
+import * as usersApi from "@/api/users";
+import type { User } from "@/types";
+
+const ROLE_LABEL: Record<string, string> = {
+  super_admin: "Super admin", admin: "Admin", manager: "Manager", employee: "Employee",
+};
 
 export default function UsersPage() {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["users"],
-    queryFn: async () =>
-      (await api.get<Paginated<User>>("/users/")).data,
-  });
+  const { user } = useAuth();
+  const isSuper = user?.role === "super_admin";
+  const qc = useQueryClient();
+  const usersQ = useQuery({ queryKey: ["users"], queryFn: () => usersApi.listUsers() });
+  const [editing, setEditing] = useState<User | "new" | null>(null);
+  const refresh = () => qc.invalidateQueries({ queryKey: ["users"] });
 
-  if (isLoading) return <TableSkeleton rows={4} />;
-  if (error) return <p className="text-danger">Failed to load users.</p>;
+  const deactivate = useMutation({ mutationFn: (id: number) => usersApi.deactivateUser(id), onSuccess: refresh });
+  const reactivate = useMutation({ mutationFn: (id: number) => usersApi.updateUser(id, { is_active: true }), onSuccess: refresh });
+
+  // Whether the current user is allowed to edit a given account (backend also enforces).
+  const canManage = (u: User) => isSuper || !["admin", "super_admin"].includes(u.role);
 
   return (
-    <div className="space-y-6">
-      <p className="text-sm text-text-3">Accounts, roles and access.</p>
-      <Table>
-        <THead>
-          <tr>
-            <Th>Email</Th>
-            <Th>Name</Th>
-            <Th>Role</Th>
-            <Th>Status</Th>
-          </tr>
-        </THead>
-        <TBody>
-          {data!.results.map((u) => (
-            <tr key={u.id}>
-              <Td>{u.email}</Td>
-              <Td>
-                {u.first_name} {u.last_name}
-              </Td>
-              <Td>
-                <Badge tone={u.role}>{u.role}</Badge>
-              </Td>
-              <Td>
-                <Badge tone={u.is_active ? "green" : "red"}>
-                  {u.is_active ? "active" : "inactive"}
-                </Badge>
-              </Td>
-            </tr>
-          ))}
-        </TBody>
-      </Table>
+    <div>
+      <PageHead title="Users" sub="Accounts, roles and access. Only a super admin can grant or edit admin roles.">
+        <Button onClick={() => setEditing("new")}>New user</Button>
+      </PageHead>
+
+      {editing && (
+        <UserDialog
+          user={editing === "new" ? null : editing}
+          isSuper={isSuper}
+          onClose={() => setEditing(null)}
+          onSaved={() => { setEditing(null); refresh(); }}
+        />
+      )}
+
+      <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+          <thead><tr style={{ background: "var(--surface-hover)", color: "var(--text-muted)", textAlign: "left" }}>
+            <Th>Email</Th><Th>Name</Th><Th>Role</Th><Th>Status</Th><Th></Th>
+          </tr></thead>
+          <tbody>
+            {(usersQ.data ?? []).map((u) => (
+              <tr key={u.id} style={{ borderTop: "1px solid var(--border)" }}>
+                <Td>{u.email}{u.id === user?.id && <span style={{ color: "var(--text-muted)" }}> · you</span>}</Td>
+                <Td>{[u.first_name, u.last_name].filter(Boolean).join(" ") || "—"}</Td>
+                <Td><Badge tone={u.role}>{ROLE_LABEL[u.role] ?? u.role}</Badge></Td>
+                <Td><Badge tone={u.is_active ? "green" : "red"}>{u.is_active ? "active" : "inactive"}</Badge></Td>
+                <Td right>
+                  <span style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
+                    {canManage(u) && <Button size="sm" variant="outline" onClick={() => setEditing(u)}>Edit</Button>}
+                    {canManage(u) && u.id !== user?.id && (
+                      u.is_active
+                        ? <Button size="sm" variant="ghost" onClick={() => deactivate.mutate(u.id)}>Deactivate</Button>
+                        : <Button size="sm" variant="ghost" onClick={() => reactivate.mutate(u.id)}>Reactivate</Button>
+                    )}
+                  </span>
+                </Td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
+}
+
+function UserDialog({ user, isSuper, onClose, onSaved }: { user: User | null; isSuper: boolean; onClose: () => void; onSaved: () => void }) {
+  const editing = !!user;
+  const [email, setEmail] = useState(user?.email ?? "");
+  const [first, setFirst] = useState(user?.first_name ?? "");
+  const [last, setLast] = useState(user?.last_name ?? "");
+  const [role, setRole] = useState<string>(user?.role ?? "employee");
+  const [password, setPassword] = useState("");
+  const [resetPw, setResetPw] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const roleOptions = ["employee", "manager", ...(isSuper ? ["admin", "super_admin"] : [])];
+
+  const save = useMutation({
+    mutationFn: () => {
+      if (editing) {
+        return usersApi.updateUser(user!.id, { email, first_name: first, last_name: last, role });
+      }
+      return usersApi.createUser({ email, first_name: first, last_name: last, role, password });
+    },
+    onSuccess: onSaved,
+    onError: (e: any) => setError(firstError(e, "Could not save the user.")),
+  });
+  const resetPwM = useMutation({
+    mutationFn: () => usersApi.resetUserPassword(user!.id, resetPw),
+    onSuccess: () => { setResetPw(""); setError(null); alert("Password reset."); },
+    onError: (e: any) => setError(firstError(e, "Could not reset the password.")),
+  });
+
+  const ok = email.trim() && (editing || password.length >= 8);
+
+  return (
+    <div role="dialog" style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.45)", display: "grid", placeItems: "center", zIndex: 60 }} onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: 460, maxWidth: "92vw", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: 22 }}>
+        <h3 style={{ margin: "0 0 14px", color: "var(--text-strong)", font: "600 18px var(--font-sans)" }}>
+          {editing ? "Edit user" : "New user"}
+        </h3>
+        <Field label="Email"><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></Field>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <Field label="First name"><Input value={first} onChange={(e) => setFirst(e.target.value)} /></Field>
+          <Field label="Last name"><Input value={last} onChange={(e) => setLast(e.target.value)} /></Field>
+        </div>
+        <Field label="Role">
+          <select value={role} onChange={(e) => setRole(e.target.value)} style={selectStyle}>
+            {roleOptions.map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
+          </select>
+          {!isSuper && <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Only a super admin can assign admin roles.</span>}
+        </Field>
+        {!editing && <Field label="Temporary password (min 8)"><Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} /></Field>}
+
+        {error && <p style={{ color: "var(--rose-400)", fontSize: 13, margin: "4px 0 10px" }}>{error}</p>}
+        <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+          <Button variant="outline" style={{ flex: 1 }} onClick={onClose}>Cancel</Button>
+          <Button style={{ flex: 1 }} loading={save.isPending} disabled={!ok} onClick={() => save.mutate()}>{editing ? "Save" : "Create"}</Button>
+        </div>
+
+        {editing && (
+          <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid var(--border)" }}>
+            <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 8 }}>Reset this user's password</div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <Input type="password" placeholder="New password (min 8)" value={resetPw} onChange={(e) => setResetPw(e.target.value)} style={{ flex: 1 }} />
+              <Button variant="outline" loading={resetPwM.isPending} disabled={resetPw.length < 8} onClick={() => resetPwM.mutate()}>Reset</Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function firstError(e: any, fallback: string): string {
+  const d = e?.response?.data;
+  if (typeof d?.detail === "string") return d.detail;
+  const k = d && Object.keys(d).find((key) => Array.isArray(d[key]));
+  if (k) return d[k][0];
+  return fallback;
+}
+
+const selectStyle: React.CSSProperties = { height: 38, width: "100%", background: "var(--surface-hover)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-strong)", padding: "0 10px" };
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return <label style={{ display: "block", marginBottom: 12 }}><span style={{ display: "block", fontSize: 12, color: "var(--text-muted)", marginBottom: 4 }}>{label}</span>{children}</label>;
+}
+function Th({ children, right }: { children?: React.ReactNode; right?: boolean }) {
+  return <th style={{ padding: "10px 14px", fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", textAlign: right ? "right" : "left" }}>{children}</th>;
+}
+function Td({ children, right }: { children: React.ReactNode; right?: boolean }) {
+  return <td style={{ padding: "10px 14px", textAlign: right ? "right" : "left", color: "var(--text-body)" }}>{children}</td>;
 }

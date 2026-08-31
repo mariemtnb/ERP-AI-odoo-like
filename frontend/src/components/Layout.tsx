@@ -140,10 +140,11 @@ export default function Layout() {
   }, []);
 
   // Role gates the entry; the feature flag hides the module; empty sections drop out.
+  const isSuper = user!.role === "super_admin";
   const visibleSections = NAV_SECTIONS.map((s) => ({
     title: s.title,
     items: s.items.filter(
-      (i) => (!i.roles || i.roles.includes(user!.role)) && (!i.feature || feature(i.feature))
+      (i) => (isSuper || !i.roles || i.roles.includes(user!.role)) && (!i.feature || feature(i.feature))
     ),
   })).filter((s) => s.items.length > 0);
   const initials =

@@ -13,6 +13,9 @@ export function ProtectedRoute({ roles }: { roles?: Role[] }) {
     );
   }
   if (!user) return <Navigate to="/welcome" replace />;
-  if (roles && !roles.includes(user.role)) return <Navigate to="/" replace />;
+  // Super admin is a superset of every role, so it clears any role gate.
+  if (roles && user.role !== "super_admin" && !roles.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }
   return <Outlet />;
 }
