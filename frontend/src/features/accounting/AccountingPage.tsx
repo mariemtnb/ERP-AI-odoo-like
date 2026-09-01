@@ -22,6 +22,7 @@ import { TableSkeleton } from "@/components/ui/skeleton";
 import { Table, TBody, Td, Th, THead } from "@/components/ui/table";
 import { useAuth } from "@/features/auth/AuthContext";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n";
 
 type Tab = "journal" | "trial-balance" | "income-statement";
 
@@ -43,6 +44,7 @@ const money = (n: number | string) =>
 
 export default function AccountingPage() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const canPost = user!.role !== "employee";
   const [tab, setTab] = useState<Tab>("journal");
   const [from, setFrom] = useState(firstOfMonth());
@@ -52,7 +54,7 @@ export default function AccountingPage() {
 
   return (
     <div>
-      <PageHead title="Accounting" sub="Double-entry ledger — every confirmed sale and goods receipt posts automatically.">
+      <PageHead title={t("nav.accounting")} sub={t("acc.sub")}>
         {tab !== "journal" && (
           <Button
             variant="outline"
@@ -60,12 +62,12 @@ export default function AccountingPage() {
             icon={<Download size={16} />}
             onClick={() => downloadStatementPdf(tab === "trial-balance" ? "trial-balance" : "income-statement", params)}
           >
-            Export PDF
+            {t("rep.exportPdf")}
           </Button>
         )}
         {canPost && (
           <Button variant="primary" size="md" icon={<Plus size={16} />} onClick={() => setDialogOpen(true)}>
-            New entry
+            {t("acc.newEntry")}
           </Button>
         )}
       </PageHead>
@@ -76,17 +78,17 @@ export default function AccountingPage() {
           value={tab}
           onChange={setTab}
           options={[
-            { value: "journal", label: "Journal" },
-            { value: "trial-balance", label: "Trial balance" },
-            { value: "income-statement", label: "Income statement" },
+            { value: "journal", label: t("acc.tab.journal") },
+            { value: "trial-balance", label: t("acc.tab.trial") },
+            { value: "income-statement", label: t("acc.tab.income") },
           ]}
         />
         <div className="space-y-1.5">
-          <Label htmlFor="a-from">From</Label>
+          <Label htmlFor="a-from">{t("common.from")}</Label>
           <Input id="a-from" type="date" className="w-40" value={from} onChange={(e) => setFrom(e.target.value)} />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="a-to">To</Label>
+          <Label htmlFor="a-to">{t("common.to")}</Label>
           <Input id="a-to" type="date" className="w-40" value={to} onChange={(e) => setTo(e.target.value)} />
         </div>
       </div>
@@ -102,6 +104,7 @@ export default function AccountingPage() {
 
 /* ---------------- Journal ---------------- */
 function Journal({ params }: { params: { from: string; to: string } }) {
+  const { t } = useI18n();
   const { data, isLoading } = useQuery({
     queryKey: ["journal", params.from, params.to],
     queryFn: () => listJournalEntries({ ...params, page_size: 50 }),
@@ -112,8 +115,8 @@ function Journal({ params }: { params: { from: string; to: string } }) {
     return (
       <EmptyState
         icon={BookOpen}
-        title="No journal entries in this period"
-        hint="Confirm a sale or receive a purchase order — the matching entry is posted automatically."
+        title={t("acc.noJournal")}
+        hint={t("acc.noJournalHint")}
       />
     );
   }
@@ -134,7 +137,7 @@ function Journal({ params }: { params: { from: string; to: string } }) {
                 {entry.memo || "—"}
               </span>
               <Badge tone={entry.reference_type === "manual" ? "neutral" : "sky"}>
-                {entry.reference_type}
+                {entry.reference_type === "manual" ? t("acc.manual") : entry.reference_type}
               </Badge>
             </div>
             <div className="flex items-center gap-4">
@@ -173,6 +176,7 @@ function Journal({ params }: { params: { from: string; to: string } }) {
 
 /* ---------------- Trial balance ---------------- */
 function TrialBalanceView({ params }: { params: { from: string; to: string } }) {
+  const { t } = useI18n();
   const { data, isLoading } = useQuery({
     queryKey: ["trial-balance", params.from, params.to],
     queryFn: () => getTrialBalance(params),
@@ -180,7 +184,7 @@ function TrialBalanceView({ params }: { params: { from: string; to: string } }) 
 
   if (isLoading) return <TableSkeleton rows={6} />;
   if (!data || data.rows.length === 0) {
-    return <EmptyState icon={BookOpen} title="Nothing posted in this period" hint="Widen the date range, or confirm a document to generate entries." />;
+    return <EmptyState icon={BookOpen} title={t("acc.noPosted")} hint={t("acc.noPostedHint")} />;
   }
 
   const balanced = Math.abs(data.total_debit - data.total_credit) < 0.005;
@@ -190,12 +194,12 @@ function TrialBalanceView({ params }: { params: { from: string; to: string } }) 
       <Table>
         <THead>
           <tr>
-            <Th>Code</Th>
-            <Th>Account</Th>
-            <Th>Type</Th>
-            <Th className="text-right">Debit</Th>
-            <Th className="text-right">Credit</Th>
-            <Th className="text-right">Balance</Th>
+            <Th>{t("acc.code")}</Th>
+            <Th>{t("acc.account")}</Th>
+            <Th>{t("acc.type")}</Th>
+            <Th className="text-right">{t("acc.debit")}</Th>
+            <Th className="text-right">{t("acc.credit")}</Th>
+            <Th className="text-right">{t("acc.balance")}</Th>
           </tr>
         </THead>
         <TBody>
@@ -203,7 +207,7 @@ function TrialBalanceView({ params }: { params: { from: string; to: string } }) 
             <tr key={r.code}>
               <Td className="font-mono text-xs">{r.code}</Td>
               <Td style={{ color: "var(--text-strong)" }}>{r.name}</Td>
-              <Td><Badge tone={TYPE_TONE[r.type]}>{r.type}</Badge></Td>
+              <Td><Badge tone={TYPE_TONE[r.type]}>{t(`acctype.${r.type}`)}</Badge></Td>
               <Td className="text-right">{money(r.debit)}</Td>
               <Td className="text-right">{money(r.credit)}</Td>
               <Td className="text-right" style={{ color: "var(--text-strong)" }}>{money(r.balance)}</Td>
@@ -213,10 +217,10 @@ function TrialBalanceView({ params }: { params: { from: string; to: string } }) 
       </Table>
       <p className="mt-3 flex items-center justify-end gap-3 text-sm">
         <span style={{ color: "var(--text-muted)" }}>
-          Debit <b className="tnum" style={{ color: "var(--text-strong)" }}>{money(data.total_debit)}</b> · Credit{" "}
+          {t("acc.debit")} <b className="tnum" style={{ color: "var(--text-strong)" }}>{money(data.total_debit)}</b> · {t("acc.credit")}{" "}
           <b className="tnum" style={{ color: "var(--text-strong)" }}>{money(data.total_credit)}</b>
         </span>
-        <Badge tone={balanced ? "emerald" : "rose"} dot>{balanced ? "Balanced" : "Out of balance"}</Badge>
+        <Badge tone={balanced ? "emerald" : "rose"} dot>{balanced ? t("acc.balanced") : t("acc.outOfBalance")}</Badge>
       </p>
     </>
   );
@@ -224,6 +228,7 @@ function TrialBalanceView({ params }: { params: { from: string; to: string } }) 
 
 /* ---------------- Income statement ---------------- */
 function IncomeStatementView({ params }: { params: { from: string; to: string } }) {
+  const { t } = useI18n();
   const { data, isLoading } = useQuery({
     queryKey: ["income-statement", params.from, params.to],
     queryFn: () => getIncomeStatement(params),
@@ -240,7 +245,7 @@ function IncomeStatementView({ params }: { params: { from: string; to: string } 
       <div style={{ padding: "6px 20px 14px" }}>
         {rows.length === 0 ? (
           <p style={{ padding: "16px 0", font: "400 13px/1 var(--font-sans)", color: "var(--text-faint)" }}>
-            Nothing recorded in this period.
+            {t("acc.nothingRecorded")}
           </p>
         ) : (
           rows.map((r) => (
@@ -253,7 +258,7 @@ function IncomeStatementView({ params }: { params: { from: string; to: string } 
           ))
         )}
         <div className="flex justify-between pt-3">
-          <span style={{ font: "600 13px/1 var(--font-sans)", color: "var(--text-muted)" }}>Total {title.toLowerCase()}</span>
+          <span style={{ font: "600 13px/1 var(--font-sans)", color: "var(--text-muted)" }}>{t("acc.totalWord")} {title.toLowerCase()}</span>
           <span className="tnum" style={{ font: "600 14px/1 var(--font-mono)", color: "var(--text-strong)" }}>{money(total)}</span>
         </div>
       </div>
@@ -263,8 +268,8 @@ function IncomeStatementView({ params }: { params: { from: string; to: string } 
   return (
     <div className="space-y-4">
       <div className="grid gap-4" style={{ gridTemplateColumns: "1fr 1fr" }}>
-        <Section title="Income" rows={data.income} total={data.total_income} />
-        <Section title="Expenses" rows={data.expenses} total={data.total_expenses} />
+        <Section title={t("acc.income")} rows={data.income} total={data.total_income} />
+        <Section title={t("acc.expenses")} rows={data.expenses} total={data.total_expenses} />
       </div>
       <div
         className="erp-card flex items-center justify-between"
@@ -274,7 +279,7 @@ function IncomeStatementView({ params }: { params: { from: string; to: string } 
         }}
       >
         <span style={{ font: "600 15px/1 var(--font-sans)", color: "var(--text-strong)" }}>
-          Net {data.net_profit >= 0 ? "profit" : "loss"}
+          {data.net_profit >= 0 ? t("acc.netProfit") : t("acc.netLoss")}
         </span>
         <span
           className="tnum"
@@ -296,6 +301,7 @@ type LineDraft = { account: string; debit: string; credit: string; label: string
 const emptyLine = (): LineDraft => ({ account: "", debit: "", credit: "", label: "" });
 
 function ManualEntryDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const { data: accounts = [] } = useQuery({ queryKey: ["accounts"], queryFn: listAccounts });
   const [memo, setMemo] = useState("");
@@ -328,7 +334,7 @@ function ManualEntryDialog({ open, onClose }: { open: boolean; onClose: () => vo
       setError("");
       onClose();
     },
-    onError: (e: any) => setError(e?.response?.data?.detail ?? "Could not post the entry."),
+    onError: (e: any) => setError(e?.response?.data?.detail ?? t("acc.postError")),
   });
 
   const setLine = (i: number, k: keyof LineDraft, v: string) =>
@@ -337,22 +343,22 @@ function ManualEntryDialog({ open, onClose }: { open: boolean; onClose: () => vo
   function submit(e: FormEvent) {
     e.preventDefault();
     if (!balanced) {
-      setError("Debits must equal credits, and the total must be greater than zero.");
+      setError(t("acc.mustBalance"));
       return;
     }
     mutation.mutate();
   }
 
   return (
-    <Dialog open={open} onClose={onClose} title="New journal entry" className="max-w-2xl">
+    <Dialog open={open} onClose={onClose} title={t("acc.newJournalEntry")} className="max-w-2xl">
       <form onSubmit={submit} className="space-y-4">
         <div className="space-y-1.5">
-          <Label htmlFor="je-memo">Memo</Label>
-          <Input id="je-memo" value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="e.g. Owner capital deposit" />
+          <Label htmlFor="je-memo">{t("acc.memo")}</Label>
+          <Input id="je-memo" value={memo} onChange={(e) => setMemo(e.target.value)} placeholder={t("acc.memoPlaceholder")} />
         </div>
 
         <div className="space-y-2">
-          <Label>Lines</Label>
+          <Label>{t("docs.lines")}</Label>
           {lines.map((l, i) => (
             <div key={i} className="flex items-center gap-2">
               <Select
@@ -361,7 +367,7 @@ function ManualEntryDialog({ open, onClose }: { open: boolean; onClose: () => vo
                 value={l.account}
                 onChange={(e) => setLine(i, "account", e.target.value)}
               >
-                <option value="">Account…</option>
+                <option value="">{t("acc.accountPlaceholder")}</option>
                 {accounts.map((a) => (
                   <option key={a.id} value={a.code}>{a.code} — {a.name}</option>
                 ))}
@@ -372,7 +378,7 @@ function ManualEntryDialog({ open, onClose }: { open: boolean; onClose: () => vo
                 type="number"
                 step="0.01"
                 min="0"
-                placeholder="Debit"
+                placeholder={t("acc.debit")}
                 value={l.debit}
                 onChange={(e) => setLine(i, "debit", e.target.value)}
               />
@@ -382,27 +388,27 @@ function ManualEntryDialog({ open, onClose }: { open: boolean; onClose: () => vo
                 type="number"
                 step="0.01"
                 min="0"
-                placeholder="Credit"
+                placeholder={t("acc.credit")}
                 value={l.credit}
                 onChange={(e) => setLine(i, "credit", e.target.value)}
               />
             </div>
           ))}
           <Button type="button" variant="outline" size="sm" icon={<Plus size={14} />} onClick={() => setLines((ls) => [...ls, emptyLine()])}>
-            Add line
+            {t("docs.addLine")}
           </Button>
         </div>
 
         <div className="flex items-center justify-end gap-3 text-sm">
           <span style={{ color: "var(--text-muted)" }}>
-            Debit <b className="tnum">{money(totalDebit)}</b> · Credit <b className="tnum">{money(totalCredit)}</b>
+            {t("acc.debit")} <b className="tnum">{money(totalDebit)}</b> · {t("acc.credit")} <b className="tnum">{money(totalCredit)}</b>
           </span>
-          <Badge tone={balanced ? "emerald" : "amber"} dot>{balanced ? "Balanced" : "Not balanced"}</Badge>
+          <Badge tone={balanced ? "emerald" : "amber"} dot>{balanced ? t("acc.balanced") : t("acc.notBalanced")}</Badge>
         </div>
 
         {error && <p className="text-sm" style={{ color: "var(--rose-400)" }}>{error}</p>}
         <Button type="submit" className={cn("w-full")} loading={mutation.isPending} disabled={!balanced}>
-          Post entry
+          {t("acc.postEntry")}
         </Button>
       </form>
     </Dialog>
