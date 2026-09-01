@@ -13,27 +13,27 @@ import {
   ShoppingBag, ShoppingCart, Sparkles, TrendingUp, Truck, Users,
 } from "lucide-react";
 import { NeuralCore, type CoreState } from "./NeuralCore";
+import { useI18n } from "@/lib/i18n";
 import "./landing.css";
 
 gsap.registerPlugin(ScrollTrigger);
 if (import.meta.env.DEV) (window as unknown as { gsap: typeof gsap }).gsap = gsap;
 
 const ORBIT_MODULES = [
-  { label: "Products", icon: Package, r: 0.3, speed: 1.4 },
-  { label: "Inventory", icon: Boxes, r: 0.3, speed: 1.4 },
-  { label: "Customers", icon: Users, r: 0.3, speed: 1.4 },
-  { label: "Suppliers", icon: Truck, r: 0.48, speed: -1 },
-  { label: "Purchases", icon: ShoppingBag, r: 0.48, speed: -1 },
-  { label: "Sales", icon: ShoppingCart, r: 0.48, speed: -1 },
-  { label: "CRM pipeline", icon: Contact, r: 0.66, speed: 0.7 },
-  { label: "Reports", icon: FileText, r: 0.66, speed: 0.7 },
-  { label: "AI Assistant", icon: Sparkles, r: 0.66, speed: 0.7 },
+  { key: "nav.products", icon: Package, r: 0.3, speed: 1.4 },
+  { key: "nav.inventory", icon: Boxes, r: 0.3, speed: 1.4 },
+  { key: "nav.customers", icon: Users, r: 0.3, speed: 1.4 },
+  { key: "nav.suppliers", icon: Truck, r: 0.48, speed: -1 },
+  { key: "nav.purchases", icon: ShoppingBag, r: 0.48, speed: -1 },
+  { key: "nav.sales", icon: ShoppingCart, r: 0.48, speed: -1 },
+  { key: "land.crmPipeline", icon: Contact, r: 0.66, speed: 0.7 },
+  { key: "nav.reports", icon: FileText, r: 0.66, speed: 0.7 },
+  { key: "nav.assistant", icon: Sparkles, r: 0.66, speed: 0.7 },
 ];
 
-const AI_TYPED_TEXT =
-  "Three items are below minimum — Brass fitting (3/30), Steel hinge (8/25), PVC elbow (14/40). The brass fitting is critical. Draft a purchase order?";
-
 export default function LandingPage() {
+  const { t } = useI18n();
+  const AI_TYPED_TEXT = t("land.aiTyped");
   const navigate = useNavigate();
   const root = useRef<HTMLDivElement>(null);
   const coreState = useMemo<CoreState>(
@@ -266,57 +266,55 @@ export default function LandingPage() {
           <span className="brand-name">Intelligent<b>ERP</b></span>
         </a>
         <div className="nav-links">
-          <button className="nav-link" onClick={() => scrollTo("ecosystem")}>Platform</button>
-          <button className="nav-link" onClick={() => scrollTo("orbit-section")}>Modules</button>
-          <button className="nav-link" onClick={() => scrollTo("analytics")}>Intelligence</button>
-          <button className="nav-link" onClick={() => scrollTo("future")}>Vision</button>
+          <button className="nav-link" onClick={() => scrollTo("ecosystem")}>{t("land.nav.platform")}</button>
+          <button className="nav-link" onClick={() => scrollTo("orbit-section")}>{t("land.nav.modules")}</button>
+          <button className="nav-link" onClick={() => scrollTo("analytics")}>{t("land.nav.intelligence")}</button>
+          <button className="nav-link" onClick={() => scrollTo("future")}>{t("land.nav.vision")}</button>
         </div>
         <button className="lbtn lbtn-ghost" data-magnetic onClick={goWorkspace}>
-          <span className="sheen" />Enter workspace <ArrowRight size={15} />
+          <span className="sheen" />{t("land.enterWorkspace")} <ArrowRight size={15} />
         </button>
       </nav>
 
       {/* SCENE 1 — HERO */}
       <header className="hero scene" id="top">
-        <span className="hero-eyebrow"><span className="pulse" /> AI-native ERP · runs on your servers</span>
+        <span className="hero-eyebrow"><span className="pulse" /> {t("land.heroEyebrow")}</span>
         <h1>
           <span className="reveal-line">
-            <span className="reveal-word">The</span> <span className="reveal-word">operating</span>{" "}
-            <span className="reveal-word">system</span>
+            {t("land.heroLine1").split(" ").map((w, i) => (
+              <span key={i} className="reveal-word">{w}{" "}</span>
+            ))}
           </span>
           <br />
           <span className="reveal-line">
-            <span className="reveal-word">for</span>{" "}
-            <span className="reveal-word grad">intelligent</span>{" "}
-            <span className="reveal-word grad">business.</span>
+            {t("land.heroLine2").split(" ").map((w, i) => (
+              <span key={i} className="reveal-word grad">{w}{" "}</span>
+            ))}
           </span>
         </h1>
         <p className="lede">
-          Inventory, sales, purchasing and CRM — unified under one conscious assistant
-          that reads your data, drafts the work, and acts only with your approval.
+          {t("land.lede")}
         </p>
         <div className="cta-row">
           <button className="lbtn lbtn-primary" data-magnetic onClick={goWorkspace}>
-            <span className="sheen" />Launch the demo <ArrowRight size={15} strokeWidth={2.2} />
+            <span className="sheen" />{t("land.launchDemo")} <ArrowRight size={15} strokeWidth={2.2} />
           </button>
           <button className="lbtn lbtn-ghost" data-magnetic onClick={() => scrollTo("ecosystem")}>
-            <span className="sheen" />See how it thinks
+            <span className="sheen" />{t("land.seeThinks")}
           </button>
         </div>
-        <div className="scroll-hint"><span>Scroll</span><span className="track" /></div>
+        <div className="scroll-hint"><span>{t("land.scroll")}</span><span className="track" /></div>
       </header>
 
       {/* SCENE 2 — THE AI AWAKENS */}
       <section className="awaken scene">
         <div className="awaken-inner">
           <h2>
-            {[
-              "It", "watches", "every", "movement", "of", "stock,", "cash", "and", "demand", "—",
-            ].map((w, i) => (
+            {t("land.awaken1").split(" ").map((w, i) => (
               <span key={i} className="fade-word">{w} </span>
             ))}
-            {["and", "wakes", "the", "moment", "something", "matters."].map((w, i) => (
-              <span key={i} className="fade-word accent">{w} </span>
+            {t("land.awaken2").split(" ").map((w, i) => (
+              <span key={`a${i}`} className="fade-word accent">{w} </span>
             ))}
           </h2>
         </div>
@@ -324,45 +322,43 @@ export default function LandingPage() {
 
       {/* SCENE 3 — ECOSYSTEM */}
       <section className="section scene" id="ecosystem">
-        <div className="section-tag r">The platform</div>
-        <h2 className="r d1">One system. Every corner of the business, in sync.</h2>
+        <div className="section-tag r">{t("land.platform")}</div>
+        <h2 className="r d1">{t("land.ecoH")}</h2>
         <p className="sub r d2">
-          No integrations to babysit, no data silos. Products, warehouses, partners,
-          documents and analytics share a single source of truth — so the assistant can
-          reason across all of it at once.
+          {t("land.ecoSub")}
         </p>
         <div className="grid-cards">
           <div className="tilt-card r">
             <div className="card-ico"><PackageOpen size={22} strokeWidth={1.8} /></div>
-            <h3>Unified data core</h3>
-            <p>Inventory, orders and partners modelled once and shared everywhere — no duplication, no drift.</p>
+            <h3>{t("land.card1H")}</h3>
+            <p>{t("land.card1P")}</p>
           </div>
           <div className="tilt-card r d1">
             <div className="card-ico"><Sparkles size={22} strokeWidth={1.8} /></div>
-            <h3>Approval-first agent</h3>
-            <p>The AI proposes purchase orders, transfers and records — you confirm before anything is written.</p>
+            <h3>{t("land.card2H")}</h3>
+            <p>{t("land.card2P")}</p>
           </div>
           <div className="tilt-card r d2">
             <div className="card-ico"><Boxes size={22} strokeWidth={1.8} /></div>
-            <h3>On your infrastructure</h3>
-            <p>Local model, your database. Sensitive business data never leaves the servers you control.</p>
+            <h3>{t("land.card3H")}</h3>
+            <p>{t("land.card3P")}</p>
           </div>
         </div>
       </section>
 
       {/* SCENE 4 — MODULES ORBITING AI */}
       <section className="section scene" id="orbit-section">
-        <div className="section-tag r">The ecosystem</div>
-        <h2 className="r d1">Nine modules, orbiting one intelligence.</h2>
+        <div className="section-tag r">{t("land.ecosystem")}</div>
+        <h2 className="r d1">{t("land.orbitH")}</h2>
         <div className="orbit-stage">
           <div className="orbit-ring" style={{ width: "44%", height: "28%" }} />
           <div className="orbit-ring" style={{ width: "70%", height: "46%" }} />
           <div className="orbit-ring" style={{ width: "96%", height: "64%" }} />
           <div className="orbit-core"><Sparkles size={42} strokeWidth={1.7} /></div>
           {ORBIT_MODULES.map((m) => (
-            <div key={m.label} className="orbit-node" data-r={m.r} data-speed={m.speed}>
+            <div key={m.key} className="orbit-node" data-r={m.r} data-speed={m.speed}>
               <span className="ico"><m.icon size={15} strokeWidth={1.8} /></span>
-              {m.label}
+              {t(m.key)}
             </div>
           ))}
         </div>
@@ -370,18 +366,17 @@ export default function LandingPage() {
 
       {/* SCENE 5 — WORKFLOW */}
       <section className="section scene" id="workflow">
-        <div className="section-tag r">Live workflow</div>
-        <h2 className="r d1">Watch a stockout defuse itself.</h2>
+        <div className="section-tag r">{t("land.liveWorkflow")}</div>
+        <h2 className="r d1">{t("land.workflowH")}</h2>
         <p className="sub r d2">
-          A real chain of events across the platform — the assistant detects, reasons,
-          and prepares. You stay in command at the only step that matters.
+          {t("land.workflowSub")}
         </p>
         <div className="flow">
           {[
-            ["01 · DETECT", "Demand spikes", "Copper coil sales jump 34% this week; coverage drops below nine days."],
-            ["02 · REASON", "Assistant flags risk", "It cross-checks stock, lead time and the default supplier — surfacing an insight on the dashboard."],
-            ["03 · DRAFT", "PO prepared", "A purchase order for 200 units is drafted, priced and validated — waiting, never sent."],
-            ["04 · APPROVE", "You confirm", "One tap approves. Stock, movements and the ledger update in the same breath."],
+            [t("land.step1n"), t("land.step1h"), t("land.step1p")],
+            [t("land.step2n"), t("land.step2h"), t("land.step2p")],
+            [t("land.step3n"), t("land.step3h"), t("land.step3p")],
+            [t("land.step4n"), t("land.step4h"), t("land.step4p")],
           ].map(([n, h, p], i) => (
             <div key={n} className={`flow-step r${i ? ` d${i}` : ""}`}>
               <div className="step-n">{n}</div>
@@ -395,12 +390,12 @@ export default function LandingPage() {
 
       {/* SCENE 6 — LIVE ANALYTICS */}
       <section className="section scene" id="analytics">
-        <div className="section-tag r">Intelligence</div>
-        <h2 className="r d1">Every number, alive and explained.</h2>
+        <div className="section-tag r">{t("land.intelligence")}</div>
+        <h2 className="r d1">{t("land.analyticsH")}</h2>
         <div className="analytics">
           <div className="panel r">
             <div className="glow-wash" />
-            <span className="section-tag" style={{ margin: "0 0 18px" }}>Revenue · this month</span>
+            <span className="section-tag" style={{ margin: "0 0 18px" }}>{t("land.revenueThisMonth")}</span>
             <div className="metric-row">
               <span className="metric-val" data-count="48250">0</span>
               <span className="metric-unit">TND</span>
@@ -419,10 +414,10 @@ export default function LandingPage() {
           </div>
           <div className="panel r d1">
             <div className="glow-wash" />
-            <span className="section-tag" style={{ margin: "0 0 18px" }}>Assistant · reasoning</span>
+            <span className="section-tag" style={{ margin: "0 0 18px" }}>{t("land.assistantReasoning")}</span>
             <div className="ai-console">
               <div className="ai-msg" style={{ justifyContent: "flex-end" }}>
-                <div className="ai-bubble user">Which products are low on stock right now?</div>
+                <div className="ai-bubble user">{t("land.userBubble")}</div>
               </div>
               <div className="ai-msg">
                 <span className="ai-av"><Sparkles size={15} strokeWidth={1.8} /></span>
@@ -436,24 +431,23 @@ export default function LandingPage() {
       {/* SCENE 7 — FUTURE */}
       <section className="future scene" id="future">
         <h2 className="r">
-          Enterprise software wasn't supposed to feel like <span className="grad">this good.</span>
+          {t("land.futureH1")} <span className="grad">{t("land.futureH2")}</span>
         </h2>
       </section>
 
       {/* SCENE 8 — CTA */}
       <section className="cta scene">
         <div className="cta-card r">
-          <h2>Meet the ERP that thinks alongside you.</h2>
+          <h2>{t("land.ctaH")}</h2>
           <p>
-            Step into the live workspace — full dashboard, modules and the conversational
-            assistant.
+            {t("land.ctaP")}
           </p>
           <div className="cta-row">
             <button className="lbtn lbtn-primary" data-magnetic onClick={goWorkspace}>
-              <span className="sheen" />Enter the workspace <ArrowRight size={15} strokeWidth={2.2} />
+              <span className="sheen" />{t("land.enterWorkspace2")} <ArrowRight size={15} strokeWidth={2.2} />
             </button>
             <button className="lbtn lbtn-ghost" data-magnetic onClick={() => scrollTo("top")}>
-              <span className="sheen" />Back to top
+              <span className="sheen" />{t("land.backToTop")}
             </button>
           </div>
         </div>
@@ -465,12 +459,12 @@ export default function LandingPage() {
           <span className="brand-name">Intelligent<b>ERP</b></span>
         </a>
         <div className="foot-links">
-          <button onClick={() => scrollTo("ecosystem")}>Platform</button>
-          <button onClick={() => scrollTo("orbit-section")}>Modules</button>
-          <button onClick={() => scrollTo("analytics")}>Intelligence</button>
-          <button onClick={goWorkspace}>Demo</button>
+          <button onClick={() => scrollTo("ecosystem")}>{t("land.nav.platform")}</button>
+          <button onClick={() => scrollTo("orbit-section")}>{t("land.nav.modules")}</button>
+          <button onClick={() => scrollTo("analytics")}>{t("land.nav.intelligence")}</button>
+          <button onClick={goWorkspace}>{t("land.demo")}</button>
         </div>
-        <small>© 2026 IntelligentERP · Built on your infrastructure</small>
+        <small>{t("land.footer")}</small>
       </footer>
     </div>
   );
