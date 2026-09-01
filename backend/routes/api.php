@@ -431,9 +431,11 @@ Route::prefix('v1')->group(function () {
             Route::get('advances', [PayrollController::class, 'advances']);
             Route::get('payroll/runs', [PayrollController::class, 'runs']);
             Route::get('payroll/runs/{run}', [PayrollController::class, 'showRun']);
+            Route::get('payroll/settings', [PayrollController::class, 'settings']);
 
             Route::middleware('role:admin,manager')->group(function () {
                 Route::post('employees', [PayrollController::class, 'storeEmployee']);
+                Route::match(['put', 'patch'], 'payroll/settings', [PayrollController::class, 'updateSettings']);
                 Route::match(['put', 'patch'], 'employees/{employee}', [PayrollController::class, 'updateEmployee']);
 
                 Route::post('advances', [PayrollController::class, 'requestAdvance']);

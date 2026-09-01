@@ -12,6 +12,8 @@ export interface Employee {
   job_title: string;
   department: string;
   base_salary: string;
+  head_of_family: boolean;
+  dependent_children: number;
   currency: string;
   hire_date: string | null;
   phone: string;
@@ -59,6 +61,11 @@ export interface Payslip {
   deductions_total: string;
   advance_recovered: string;
   gross_pay: string;
+  cnss_employee: string;
+  cnss_employer: string;
+  taxable_base: string;
+  irpp: string;
+  css: string;
   net_pay: string;
   status: string;
   lines?: PayslipLine[];

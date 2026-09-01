@@ -16,14 +16,16 @@ class Payslip extends Model
 {
     protected $fillable = [
         'payroll_run_id', 'employee_id', 'base_salary', 'earnings_total',
-        'deductions_total', 'advance_recovered', 'gross_pay', 'net_pay',
-        'status', 'notes',
+        'deductions_total', 'advance_recovered', 'gross_pay',
+        'cnss_employee', 'cnss_employer', 'taxable_base', 'irpp', 'css',
+        'net_pay', 'status', 'notes',
     ];
 
     protected $attributes = [
         'base_salary' => 0, 'earnings_total' => 0, 'deductions_total' => 0,
-        'advance_recovered' => 0, 'gross_pay' => 0, 'net_pay' => 0,
-        'status' => 'draft', 'notes' => '',
+        'advance_recovered' => 0, 'gross_pay' => 0,
+        'cnss_employee' => 0, 'cnss_employer' => 0, 'taxable_base' => 0, 'irpp' => 0, 'css' => 0,
+        'net_pay' => 0, 'status' => 'draft', 'notes' => '',
     ];
 
     public function run(): BelongsTo
@@ -53,6 +55,11 @@ class Payslip extends Model
             'deductions_total' => (string) $this->deductions_total,
             'advance_recovered' => (string) $this->advance_recovered,
             'gross_pay' => (string) $this->gross_pay,
+            'cnss_employee' => (string) $this->cnss_employee,
+            'cnss_employer' => (string) $this->cnss_employer,
+            'taxable_base' => (string) $this->taxable_base,
+            'irpp' => (string) $this->irpp,
+            'css' => (string) $this->css,
             'net_pay' => (string) $this->net_pay,
             'status' => $this->status,
             'notes' => $this->notes,

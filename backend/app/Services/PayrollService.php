@@ -11,6 +11,7 @@ use App\Models\PayrollRun;
 use App\Models\Payslip;
 use App\Models\PayslipLine;
 use App\Models\User;
+use App\Services\TunisianPayrollTax;
 use App\Support\AccountMap;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -239,7 +240,12 @@ class PayrollService
             $net = round((float) $run->payslips->sum('net_pay'), 3);
             $advance = round((float) $run->payslips->sum('advance_recovered'), 3);
             $deductions = round((float) $run->payslips->sum('deductions_total'), 3);
+            $cnss = round((float) $run->payslips->sum('cnss_employee'), 3);
+            $tax = round((float) $run->payslips->sum('irpp') + (float) $run->payslips->sum('css'), 3);
 
+            // Gross (debit) is split across everything credited: net to the
+            // employees, recovered advances, other deductions, and the CNSS /
+            // IRPP+CSS withholdings now owed to the collecting bodies.
             $lines = [
                 ['account' => AccountMap::code('salary_expense'), 'debit' => $gross, 'label' => "Payroll {$run->number}"],
                 ['account' => AccountMap::code('salaries_payable'), 'credit' => $net, 'label' => "Net pay {$run->number}"],
@@ -249,6 +255,12 @@ class PayrollService
             }
             if ($deductions > 0) {
                 $lines[] = ['account' => AccountMap::code('payroll_deductions'), 'credit' => $deductions, 'label' => "Deductions {$run->number}"];
+            }
+            if ($cnss > 0) {
+                $lines[] = ['account' => AccountMap::code('cnss_payable'), 'credit' => $cnss, 'label' => "CNSS withheld {$run->number}"];
+            }
+            if ($tax > 0) {
+                $lines[] = ['account' => AccountMap::code('income_tax_payable'), 'credit' => $tax, 'label' => "IRPP & CSS withheld {$run->number}"];
             }
 
             $entry = AccountingService::post(
@@ -336,7 +348,7 @@ class PayrollService
 
     public static function recomputePayslip(Payslip $slip): Payslip
     {
-        $slip->load('lines');
+        $slip->load('lines', 'employee');
         $earnings = round((float) $slip->lines->where('type', PayslipLine::EARNING)->sum('amount'), 3);
         // Deduction lines split: those recovering an advance vs the rest.
         $advanceRecovered = round((float) $slip->lines
@@ -347,13 +359,29 @@ class PayrollService
             ->whereNull('employee_advance_id')->sum('amount'), 3);
 
         $gross = round((float) $slip->base_salary + $earnings, 3);
-        $net = round($gross - $deductions - $advanceRecovered, 3);
+
+        // Statutory Tunisian charges withheld from the gross: social security
+        // (CNSS employee share), income tax (IRPP) and the solidarity levy (CSS).
+        $tax = TunisianPayrollTax::compute(
+            $gross,
+            (bool) ($slip->employee?->head_of_family ?? false),
+            (int) ($slip->employee?->dependent_children ?? 0),
+        );
+
+        $net = round($gross
+            - $tax['cnss_employee'] - $tax['irpp'] - $tax['css']
+            - $deductions - $advanceRecovered, 3);
 
         $slip->update([
             'earnings_total' => $earnings,
             'deductions_total' => $deductions,
             'advance_recovered' => $advanceRecovered,
             'gross_pay' => $gross,
+            'cnss_employee' => $tax['cnss_employee'],
+            'cnss_employer' => $tax['cnss_employer'],
+            'taxable_base' => $tax['taxable_base'],
+            'irpp' => $tax['irpp'],
+            'css' => $tax['css'],
             'net_pay' => $net,
         ]);
 

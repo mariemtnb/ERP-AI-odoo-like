@@ -18,12 +18,13 @@ class Employee extends Model
 
     protected $fillable = [
         'code', 'user_id', 'first_name', 'last_name', 'job_title', 'department',
-        'base_salary', 'currency', 'hire_date', 'end_date', 'phone', 'email',
-        'rib', 'bank_account_id', 'is_active', 'notes',
+        'base_salary', 'head_of_family', 'dependent_children', 'currency', 'hire_date',
+        'end_date', 'phone', 'email', 'rib', 'bank_account_id', 'is_active', 'notes',
     ];
 
     protected $attributes = [
         'last_name' => '', 'job_title' => '', 'department' => '', 'base_salary' => 0,
+        'head_of_family' => false, 'dependent_children' => 0,
         'currency' => 'TND', 'phone' => '', 'email' => '', 'rib' => '',
         'is_active' => true, 'notes' => '',
     ];
@@ -32,6 +33,8 @@ class Employee extends Model
     {
         return [
             'base_salary' => 'decimal:3',
+            'head_of_family' => 'boolean',
+            'dependent_children' => 'integer',
             'hire_date' => 'date:Y-m-d',
             'end_date' => 'date:Y-m-d',
             'is_active' => 'boolean',
@@ -84,6 +87,8 @@ class Employee extends Model
             'job_title' => $this->job_title,
             'department' => $this->department,
             'base_salary' => (string) $this->base_salary,
+            'head_of_family' => $this->head_of_family,
+            'dependent_children' => $this->dependent_children,
             'currency' => $this->currency,
             'hire_date' => $this->hire_date?->format('Y-m-d'),
             'end_date' => $this->end_date?->format('Y-m-d'),

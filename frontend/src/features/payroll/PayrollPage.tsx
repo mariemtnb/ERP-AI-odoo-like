@@ -52,7 +52,7 @@ export default function PayrollPage() {
 
 /* ─────────────── employees ─────────────── */
 
-const emptyEmp = { first_name: "", last_name: "", job_title: "", base_salary: "", phone: "", rib: "" };
+const emptyEmp = { first_name: "", last_name: "", job_title: "", base_salary: "", head_of_family: false, dependent_children: "", phone: "", rib: "" };
 
 function EmployeesTab() {
   const { t } = useI18n();
@@ -64,7 +64,11 @@ function EmployeesTab() {
   const { data, isLoading } = useQuery({ queryKey: ["employees"], queryFn: () => listEmployees() });
 
   const create = useMutation({
-    mutationFn: () => createEmployee({ ...form, base_salary: Number(form.base_salary) }),
+    mutationFn: () => createEmployee({
+      ...form,
+      base_salary: Number(form.base_salary),
+      dependent_children: Number(form.dependent_children || 0),
+    }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["employees"] });
       setOpen(false);
@@ -127,6 +131,13 @@ function EmployeesTab() {
               <Input id="e-job" value={form.job_title} onChange={set("job_title")} /></div>
             <div className="space-y-1.5"><Label htmlFor="e-sal">{t("pay.baseSalary")}</Label>
               <Input id="e-sal" type="number" step="0.001" min="0" value={form.base_salary} onChange={set("base_salary")} required /></div>
+            <div className="space-y-1.5"><Label htmlFor="e-kids">{t("pay.dependentChildren")}</Label>
+              <Input id="e-kids" type="number" min="0" max="20" value={form.dependent_children} onChange={set("dependent_children")} /></div>
+            <label className="col-span-2 flex items-center gap-2 text-sm text-text-2">
+              <input type="checkbox" checked={form.head_of_family}
+                onChange={(e) => setForm((f) => ({ ...f, head_of_family: e.target.checked }))} />
+              {t("pay.headOfFamily")}
+            </label>
             <div className="space-y-1.5"><Label htmlFor="e-ph">{t("field.phone")}</Label>
               <Input id="e-ph" value={form.phone} onChange={set("phone")} /></div>
             <div className="space-y-1.5"><Label htmlFor="e-rib">{t("pay.rib")}</Label>
@@ -375,6 +386,7 @@ function RunDetail({ id, onClose }: { id: number | null; onClose: () => void }) 
           <THead>
             <tr>
               <Th>{t("pay.employee")}</Th><Th className="text-right">{t("pay.base")}</Th><Th className="text-right">{t("pay.bonus")}</Th>
+              <Th className="text-right">{t("pay.cnss")}</Th><Th className="text-right">{t("pay.irpp")}</Th>
               <Th className="text-right">{t("pay.deductions")}</Th><Th className="text-right">{t("pay.advance")}</Th>
               <Th className="text-right">{t("pay.net")}</Th>{draft && <Th />}
             </tr>
@@ -385,6 +397,8 @@ function RunDetail({ id, onClose }: { id: number | null; onClose: () => void }) 
                 <Td>{p.employee_name}</Td>
                 <Td className="text-right">{formatTnd(p.base_salary)}</Td>
                 <Td className="text-right">{Number(p.earnings_total) > 0 ? formatTnd(p.earnings_total) : "—"}</Td>
+                <Td className="text-right text-text-2">{Number(p.cnss_employee) > 0 ? formatTnd(p.cnss_employee) : "—"}</Td>
+                <Td className="text-right text-text-2">{Number(p.irpp) + Number(p.css) > 0 ? formatTnd(Number(p.irpp) + Number(p.css)) : "—"}</Td>
                 <Td className="text-right">{Number(p.deductions_total) > 0 ? formatTnd(p.deductions_total) : "—"}</Td>
                 <Td className="text-right">{Number(p.advance_recovered) > 0 ? formatTnd(p.advance_recovered) : "—"}</Td>
                 <Td className="text-right font-medium">{formatTnd(p.net_pay)}</Td>

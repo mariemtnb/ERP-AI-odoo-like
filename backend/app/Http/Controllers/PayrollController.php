@@ -52,6 +52,8 @@ class PayrollController extends Controller
             'job_title' => ['sometimes', 'nullable', 'string', 'max:120'],
             'department' => ['sometimes', 'nullable', 'string', 'max:120'],
             'base_salary' => ['required', 'numeric', 'min:0'],
+            'head_of_family' => ['sometimes', 'boolean'],
+            'dependent_children' => ['sometimes', 'integer', 'min:0', 'max:20'],
             'currency' => ['sometimes', 'string', 'size:3'],
             'hire_date' => ['sometimes', 'nullable', 'date'],
             'phone' => ['sometimes', 'nullable', 'string', 'max:30'],
@@ -76,6 +78,8 @@ class PayrollController extends Controller
             'job_title' => ['sometimes', 'nullable', 'string', 'max:120'],
             'department' => ['sometimes', 'nullable', 'string', 'max:120'],
             'base_salary' => ['sometimes', 'numeric', 'min:0'],
+            'head_of_family' => ['sometimes', 'boolean'],
+            'dependent_children' => ['sometimes', 'integer', 'min:0', 'max:20'],
             'hire_date' => ['sometimes', 'nullable', 'date'],
             'end_date' => ['sometimes', 'nullable', 'date'],
             'phone' => ['sometimes', 'nullable', 'string', 'max:30'],
@@ -87,6 +91,37 @@ class PayrollController extends Controller
         $employee->update($data);
 
         return response()->json($employee->refresh()->toApi());
+    }
+
+    // ---------------- statutory tax settings ----------------
+
+    /** The current CNSS / IRPP / CSS configuration. */
+    public function settings()
+    {
+        return response()->json(\App\Models\PayrollSetting::current()->toApi());
+    }
+
+    /** Update the rates, reliefs and IRPP scale (admin). */
+    public function updateSettings(Request $request)
+    {
+        $data = $request->validate([
+            'cnss_employee_rate' => ['sometimes', 'numeric', 'min:0', 'max:1'],
+            'cnss_employer_rate' => ['sometimes', 'numeric', 'min:0', 'max:1'],
+            'css_rate' => ['sometimes', 'numeric', 'min:0', 'max:1'],
+            'expense_abatement_rate' => ['sometimes', 'numeric', 'min:0', 'max:1'],
+            'expense_abatement_cap' => ['sometimes', 'numeric', 'min:0'],
+            'head_of_family_deduction' => ['sometimes', 'numeric', 'min:0'],
+            'child_deduction' => ['sometimes', 'numeric', 'min:0'],
+            'max_children' => ['sometimes', 'integer', 'min:0', 'max:20'],
+            'irpp_brackets' => ['sometimes', 'array', 'min:1'],
+            'irpp_brackets.*.upto' => ['present', 'nullable', 'numeric', 'min:0'],
+            'irpp_brackets.*.rate' => ['required', 'numeric', 'min:0', 'max:1'],
+        ]);
+
+        $settings = \App\Models\PayrollSetting::current();
+        $settings->update($data);
+
+        return response()->json($settings->refresh()->toApi());
     }
 
     // ---------------- advances ----------------

@@ -35,6 +35,16 @@ class PayrollTest extends TestCase
         // enough on its own, so clear it or an earlier test that toggles the
         // payroll flag leaks its value into this one.
         \App\Models\FeatureFlag::flush();
+        // These tests exercise the payroll *accounting* (gross → net, advances,
+        // bonuses), not the statutory calculation, so run them with the tax
+        // config zeroed — then net equals gross. Tunisian CNSS/IRPP/CSS have
+        // their own dedicated test (PayrollTaxTest).
+        \App\Models\PayrollSetting::current()->update([
+            'cnss_employee_rate' => 0, 'cnss_employer_rate' => 0, 'css_rate' => 0,
+            'expense_abatement_rate' => 0, 'expense_abatement_cap' => 0,
+            'head_of_family_deduction' => 0, 'child_deduction' => 0,
+            'irpp_brackets' => [['upto' => null, 'rate' => 0]],
+        ]);
         $this->manager = User::create(['email' => 'm@t.t', 'password' => 'x', 'role' => 'manager']);
         $this->emp = Employee::create([
             'code' => 'EMP-1', 'first_name' => 'Ali', 'last_name' => 'Ben Salah',
