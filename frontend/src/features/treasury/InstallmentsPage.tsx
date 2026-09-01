@@ -21,6 +21,7 @@ import {
   formatTnd, frLabel, label,
 } from "@/lib/tnLabels";
 import type { Installment, PaymentMethod } from "@/types";
+import { useI18n } from "@/lib/i18n";
 
 const emptyPlan = {
   reference_type: "sale",
@@ -34,6 +35,7 @@ const emptyPlan = {
 };
 
 export default function InstallmentsPage() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [tab, setTab] = useState("plans");
   const [createOpen, setCreateOpen] = useState(false);
@@ -79,7 +81,7 @@ export default function InstallmentsPage() {
       setError("");
     },
     onError: (e: any) =>
-      setError(e?.response?.data?.detail ?? "Could not create this plan."),
+      setError(e?.response?.data?.detail ?? t("ins.createPlanError")),
   });
 
   const set = (k: keyof typeof emptyPlan) => (e: { target: { value: string } }) =>
@@ -102,11 +104,10 @@ export default function InstallmentsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-text-3">
-          Paiement par facilités · <span className="italic">khlas bel taqsit</span> — split an
-          invoice into scheduled instalments and follow what is still owed.
+          {t("ins.sub")}
         </p>
         <Button onClick={() => { setError(""); setCreateOpen(true); }}>
-          <Plus className="h-4 w-4" /> New plan
+          <Plus className="h-4 w-4" /> {t("ins.newPlan")}
         </Button>
       </div>
 
@@ -115,8 +116,8 @@ export default function InstallmentsPage() {
         value={tab}
         onChange={setTab}
         options={[
-          { value: "plans", label: "Plans" },
-          { value: "overdue", label: "Overdue" },
+          { value: "plans", label: t("ins.tab.plans") },
+          { value: "overdue", label: t("ins.tab.overdue") },
         ]}
       />
 
@@ -126,11 +127,11 @@ export default function InstallmentsPage() {
         ) : rows.length === 0 ? (
           <EmptyState
             icon={CalendarClock}
-            title="No payment plans yet"
-            hint="Split a sale into instalments — a down payment plus monthly échéances is the usual arrangement."
+            title={t("ins.noPlans")}
+            hint={t("ins.noPlansHint")}
             action={
               <Button onClick={() => { setError(""); setCreateOpen(true); }}>
-                <Plus className="h-4 w-4" /> New plan
+                <Plus className="h-4 w-4" /> {t("ins.newPlan")}
               </Button>
             }
           />
@@ -138,12 +139,12 @@ export default function InstallmentsPage() {
           <Table>
             <THead>
               <tr>
-                <Th>Plan</Th>
-                <Th>Customer</Th>
-                <Th>Schedule</Th>
-                <Th>Next due</Th>
-                <Th>Status</Th>
-                <Th className="text-right">Remaining</Th>
+                <Th>{t("ins.plan")}</Th>
+                <Th>{t("field.customer")}</Th>
+                <Th>{t("ins.schedule")}</Th>
+                <Th>{t("ins.nextDue")}</Th>
+                <Th>{t("common.status")}</Th>
+                <Th className="text-right">{t("rec.remaining")}</Th>
               </tr>
             </THead>
             <TBody>
@@ -152,17 +153,17 @@ export default function InstallmentsPage() {
                   <Td className="font-medium">{p.number}</Td>
                   <Td>{p.customer_name ?? p.supplier_name ?? "—"}</Td>
                   <Td>
-                    {p.installment_count} × {p.frequency}
+                    {p.installment_count} × {t(`ins.freq.${p.frequency}`)}
                     {Number(p.down_payment) > 0 && (
                       <span className="ml-1 text-xs text-text-3">
-                        (+ {formatTnd(p.down_payment)} down)
+                        (+ {formatTnd(p.down_payment)} {t("ins.down")})
                       </span>
                     )}
                   </Td>
                   <Td>
                     {p.next_due_date ?? "—"}
                     {Number(p.overdue_amount ?? 0) > 0 && (
-                      <Badge tone="red" className="ml-2">late</Badge>
+                      <Badge tone="red" className="ml-2">{t("ins.late")}</Badge>
                     )}
                   </Td>
                   <Td>
@@ -183,19 +184,19 @@ export default function InstallmentsPage() {
       ) : overdueRows.length === 0 ? (
         <EmptyState
           icon={CalendarClock}
-          title="Nothing overdue"
-          hint="Every instalment is either paid or not due yet."
+          title={t("ins.nothingOverdue")}
+          hint={t("ins.nothingOverdueHint")}
         />
       ) : (
         <Table>
           <THead>
             <tr>
-              <Th>Plan</Th>
-              <Th>Customer</Th>
+              <Th>{t("ins.plan")}</Th>
+              <Th>{t("field.customer")}</Th>
               <Th>#</Th>
-              <Th>Due date</Th>
-              <Th>Days late</Th>
-              <Th className="text-right">Remaining</Th>
+              <Th>{t("ins.dueDate")}</Th>
+              <Th>{t("ins.daysLate")}</Th>
+              <Th className="text-right">{t("rec.remaining")}</Th>
             </tr>
           </THead>
           <TBody>
@@ -206,7 +207,7 @@ export default function InstallmentsPage() {
                 <Td>{i.sequence}</Td>
                 <Td>{i.due_date}</Td>
                 <Td>
-                  <Badge tone="red">{i.days_late} d</Badge>
+                  <Badge tone="red">{i.days_late} {t("ins.dayShort")}</Badge>
                 </Td>
                 <Td className="text-right font-medium">{formatTnd(i.remaining_amount)}</Td>
               </tr>
@@ -216,70 +217,69 @@ export default function InstallmentsPage() {
       )}
 
       {/* ── create plan ── */}
-      <Dialog open={createOpen} onClose={() => setCreateOpen(false)} title="New payment plan">
+      <Dialog open={createOpen} onClose={() => setCreateOpen(false)} title={t("ins.newPlanTitle")}>
         <form onSubmit={submit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="p-type">Document</Label>
+              <Label htmlFor="p-type">{t("ins.document")}</Label>
               <Select id="p-type" value={form.reference_type} onChange={set("reference_type")}>
-                <option value="sale">Sale</option>
-                <option value="purchase">Purchase</option>
+                <option value="sale">{t("ins.docSale")}</option>
+                <option value="purchase">{t("ins.docPurchase")}</option>
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="p-ref">Document ID</Label>
+              <Label htmlFor="p-ref">{t("ins.documentId")}</Label>
               <Input id="p-ref" type="number" value={form.reference_id} onChange={set("reference_id")} required />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="p-total">Total amount</Label>
+              <Label htmlFor="p-total">{t("ins.totalAmount")}</Label>
               <Input id="p-total" type="number" step="0.001" min="0" value={form.total_amount} onChange={set("total_amount")} required />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="p-down">Down payment</Label>
+              <Label htmlFor="p-down">{t("ins.downPayment")}</Label>
               <Input id="p-down" type="number" step="0.001" min="0" value={form.down_payment} onChange={set("down_payment")} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="p-count">Instalments</Label>
+              <Label htmlFor="p-count">{t("ins.instalments")}</Label>
               <Input id="p-count" type="number" min="1" max="120" value={form.installment_count} onChange={set("installment_count")} required />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="p-freq">Frequency</Label>
+              <Label htmlFor="p-freq">{t("ins.frequency")}</Label>
               <Select id="p-freq" value={form.frequency} onChange={set("frequency")}>
-                <option value="weekly">Weekly</option>
-                <option value="biweekly">Every two weeks</option>
-                <option value="monthly">Monthly</option>
-                <option value="quarterly">Quarterly</option>
+                <option value="weekly">{t("ins.freq.weekly")}</option>
+                <option value="biweekly">{t("ins.freq.biweekly")}</option>
+                <option value="monthly">{t("ins.freq.monthly")}</option>
+                <option value="quarterly">{t("ins.freq.quarterly")}</option>
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="p-start">Start date</Label>
+              <Label htmlFor="p-start">{t("subs.startDate")}</Label>
               <Input id="p-start" type="date" value={form.start_date} onChange={set("start_date")} required />
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="p-notes">Notes</Label>
+            <Label htmlFor="p-notes">{t("field.notes")}</Label>
             <Input id="p-notes" value={form.notes} onChange={set("notes")} />
           </div>
 
           {financed > 0 && Number(form.installment_count) > 0 && (
             <p className="rounded-md bg-surface-2 p-3 text-sm text-text-2">
               {Number(form.down_payment) > 0 && (
-                <>Down payment {formatTnd(form.down_payment)} today, then </>
+                <>{t("ins.downPrefix")} {formatTnd(form.down_payment)} {t("ins.downSuffix")} </>
               )}
-              {form.installment_count} × ≈{formatTnd(perInstallment)} {form.frequency}.
+              {form.installment_count} × ≈{formatTnd(perInstallment)} {t(`ins.freq.${form.frequency}`)}.
               <span className="block text-xs text-text-3">
-                The last instalment absorbs the rounding so the plan totals exactly{" "}
+                {t("ins.roundingPrefix")}{" "}
                 {formatTnd(form.total_amount)}.
               </span>
             </p>
           )}
           <p className="text-xs text-text-3">
-            A plan reschedules a debt; it does not create one. Nothing is posted until an
-            instalment is actually paid.
+            {t("ins.planNote")}
           </p>
           {error && <p className="text-sm text-danger">{error}</p>}
           <Button type="submit" className="w-full" disabled={createMutation.isPending}>
-            {createMutation.isPending ? "Saving…" : "Create plan"}
+            {createMutation.isPending ? t("common.saving") : t("ins.createPlan")}
           </Button>
         </form>
       </Dialog>
@@ -298,6 +298,7 @@ function PlanDetail({
   onClose: () => void;
   onChanged: () => void;
 }) {
+  const { t } = useI18n();
   const [payFor, setPayFor] = useState<Installment | null>(null);
   const [error, setError] = useState("");
 
@@ -310,12 +311,12 @@ function PlanDetail({
   const cancelMutation = useMutation({
     mutationFn: () => cancelInstallmentPlan(id!),
     onSuccess: onChanged,
-    onError: (e: any) => setError(e?.response?.data?.detail ?? "Could not cancel."),
+    onError: (e: any) => setError(e?.response?.data?.detail ?? t("ins.couldNotCancel")),
   });
 
   if (!plan) {
     return (
-      <Dialog open={id !== null} onClose={onClose} title="Payment plan">
+      <Dialog open={id !== null} onClose={onClose} title={t("ins.paymentPlan")}>
         <TableSkeleton rows={3} />
       </Dialog>
     );
@@ -326,21 +327,21 @@ function PlanDetail({
       <Dialog
         open={id !== null && payFor === null}
         onClose={onClose}
-        title={`${plan.number} · payment schedule`}
+        title={`${plan.number} · ${t("ins.paymentSchedule")}`}
         className="max-w-2xl"
       >
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-3 text-sm">
             <div>
-              <p className="eyebrow">Total</p>
+              <p className="eyebrow">{t("common.total")}</p>
               <p className="text-lg font-semibold">{formatTnd(plan.total_amount)}</p>
             </div>
             <div>
-              <p className="eyebrow">Paid</p>
+              <p className="eyebrow">{t("ins.paid")}</p>
               <p className="text-lg font-semibold text-positive">{formatTnd(plan.paid_amount)}</p>
             </div>
             <div>
-              <p className="eyebrow">Remaining</p>
+              <p className="eyebrow">{t("rec.remaining")}</p>
               <p className="text-lg font-semibold">{formatTnd(plan.remaining_amount)}</p>
             </div>
           </div>
@@ -360,10 +361,10 @@ function PlanDetail({
             <THead>
               <tr>
                 <Th>#</Th>
-                <Th>Due</Th>
-                <Th>Status</Th>
-                <Th className="text-right">Amount</Th>
-                <Th className="text-right">Paid</Th>
+                <Th>{t("ins.due")}</Th>
+                <Th>{t("common.status")}</Th>
+                <Th className="text-right">{t("subs.amount")}</Th>
+                <Th className="text-right">{t("ins.paid")}</Th>
                 <Th />
               </tr>
             </THead>
@@ -373,7 +374,7 @@ function PlanDetail({
                   <Td>
                     {i.sequence}
                     {i.is_down_payment && (
-                      <Badge tone="sky" className="ml-1">avance</Badge>
+                      <Badge tone="sky" className="ml-1">{t("ins.advance")}</Badge>
                     )}
                   </Td>
                   <Td>{i.due_date}</Td>
@@ -389,7 +390,7 @@ function PlanDetail({
                   <Td className="text-right">
                     {i.status !== "paid" && i.status !== "cancelled" && (
                       <Button size="sm" variant="secondary" onClick={() => setPayFor(i)}>
-                        <Wallet className="h-3.5 w-3.5" /> Pay
+                        <Wallet className="h-3.5 w-3.5" /> {t("ins.pay")}
                       </Button>
                     )}
                   </Td>
@@ -401,7 +402,7 @@ function PlanDetail({
           {error && <p className="text-sm text-danger">{error}</p>}
           {plan.status === "active" && (
             <Button variant="ghost" size="sm" onClick={() => cancelMutation.mutate()}>
-              Cancel plan
+              {t("ins.cancelPlan")}
             </Button>
           )}
         </div>
@@ -428,6 +429,7 @@ function PayDialog({
   onClose: () => void;
   onPaid: () => void;
 }) {
+  const { t } = useI18n();
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState<PaymentMethod>("cash");
   const [bankAccountId, setBankAccountId] = useState("");
@@ -453,7 +455,7 @@ function PayDialog({
       setError("");
       onPaid();
     },
-    onError: (e: any) => setError(e?.response?.data?.detail ?? "Payment failed."),
+    onError: (e: any) => setError(e?.response?.data?.detail ?? t("ins.paymentFailed")),
   });
 
   const needsBank = ["bank_transfer", "card", "bank_deposit", "bank_withdrawal"].includes(method);
@@ -462,7 +464,7 @@ function PayDialog({
     <Dialog
       open={installment !== null}
       onClose={onClose}
-      title={installment ? `Pay instalment #${installment.sequence}` : "Pay"}
+      title={installment ? `${t("ins.payInstallment")}${installment.sequence}` : t("ins.pay")}
     >
       {installment && (
         <form
@@ -473,12 +475,12 @@ function PayDialog({
           }}
         >
           <p className="text-sm text-text-2">
-            Due {installment.due_date} · remaining{" "}
+            {t("ins.dueRemaining1")} {installment.due_date} {t("ins.dueRemaining2")}{" "}
             <strong>{formatTnd(installment.remaining_amount)}</strong>
           </p>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="pay-amount">Amount</Label>
+              <Label htmlFor="pay-amount">{t("subs.amount")}</Label>
               <Input
                 id="pay-amount"
                 type="number"
@@ -490,7 +492,7 @@ function PayDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="pay-method">Method</Label>
+              <Label htmlFor="pay-method">{t("pay.method")}</Label>
               <Select
                 id="pay-method"
                 value={method}
@@ -503,13 +505,13 @@ function PayDialog({
             </div>
             {needsBank && (
               <div className="space-y-1.5">
-                <Label htmlFor="pay-bank">Bank account</Label>
+                <Label htmlFor="pay-bank">{t("bnk.bankAccount")}</Label>
                 <Select
                   id="pay-bank"
                   value={bankAccountId}
                   onChange={(e) => setBankAccountId(e.target.value)}
                 >
-                  <option value="">— choose —</option>
+                  <option value="">{t("pay.choose")}</option>
                   {(bankAccounts ?? []).map((a) => (
                     <option key={a.id} value={a.id}>{a.label}</option>
                   ))}
@@ -517,19 +519,18 @@ function PayDialog({
               </div>
             )}
             <div className="space-y-1.5">
-              <Label htmlFor="pay-ref">Reference</Label>
+              <Label htmlFor="pay-ref">{t("bnk.reference")}</Label>
               <Input id="pay-ref" value={reference} onChange={(e) => setReference(e.target.value)} />
             </div>
           </div>
           {(method === "cheque" || method === "traite") && (
             <p className="rounded-md bg-surface-2 p-3 text-xs text-text-2">
-              Register the {method} in the Cheques &amp; Kembyelet screen and link it there —
-              the instalment is only credited once that instrument actually clears.
+              {t("ins.chequeNote")}
             </p>
           )}
           {error && <p className="text-sm text-danger">{error}</p>}
           <Button type="submit" className="w-full" disabled={mutation.isPending}>
-            {mutation.isPending ? "Recording…" : "Record payment"}
+            {mutation.isPending ? t("ins.recording") : t("ins.recordPayment")}
           </Button>
         </form>
       )}
