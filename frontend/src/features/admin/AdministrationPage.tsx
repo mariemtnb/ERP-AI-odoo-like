@@ -17,15 +17,16 @@ import { Select } from "@/components/ui/select";
 import { TableSkeleton } from "@/components/ui/skeleton";
 import { Table, TBody, Td, Th, THead } from "@/components/ui/table";
 import { Tooltip } from "@/components/ui/tooltip";
+import { useI18n } from "@/lib/i18n";
 
 export default function AdministrationPage() {
+  const { t } = useI18n();
   const [tab, setTab] = useState("organisation");
 
   return (
     <div className="space-y-6">
       <p className="text-sm text-text-3">
-        Administration — company structure, fiscal periods, document numbering, the
-        permission model, the audit trail and which modules are switched on.
+        {t("adm.sub")}
       </p>
 
       <Segmented
@@ -33,11 +34,11 @@ export default function AdministrationPage() {
         value={tab}
         onChange={setTab}
         options={[
-          { value: "organisation", label: "Organisation" },
-          { value: "fiscal", label: "Fiscal & numbering" },
-          { value: "permissions", label: "Roles & permissions" },
-          { value: "audit", label: "Audit trail" },
-          { value: "modules", label: "Modules" },
+          { value: "organisation", label: t("adm.tab.org") },
+          { value: "fiscal", label: t("adm.tab.fiscal") },
+          { value: "permissions", label: t("adm.tab.permissions") },
+          { value: "audit", label: t("adm.tab.audit") },
+          { value: "modules", label: t("adm.tab.modules") },
         ]}
       />
 
@@ -53,6 +54,7 @@ export default function AdministrationPage() {
 /* ─────────────── organisation ─────────────── */
 
 function OrganisationTab() {
+  const { t } = useI18n();
   const { data: companies, isLoading } = useQuery({
     queryKey: ["admin-companies"],
     queryFn: listCompanies,
@@ -64,16 +66,16 @@ function OrganisationTab() {
   return (
     <div className="space-y-6">
       <section className="space-y-2">
-        <h3 className="text-sm font-semibold">Companies</h3>
+        <h3 className="text-sm font-semibold">{t("adm.companies")}</h3>
         <Table>
           <THead>
             <tr>
-              <Th>Code</Th>
-              <Th>Name</Th>
-              <Th>Parent</Th>
-              <Th>Currency</Th>
-              <Th>Timezone</Th>
-              <Th>Branches</Th>
+              <Th>{t("adm.code")}</Th>
+              <Th>{t("field.name")}</Th>
+              <Th>{t("adm.parent")}</Th>
+              <Th>{t("bnk.currency")}</Th>
+              <Th>{t("adm.timezone")}</Th>
+              <Th>{t("adm.branches")}</Th>
             </tr>
           </THead>
           <TBody>
@@ -82,7 +84,7 @@ function OrganisationTab() {
                 <Td className="font-mono">{c.code}</Td>
                 <Td>
                   <span className="font-medium">{c.name}</span>
-                  {c.is_default && <Badge tone="emerald" className="ml-2">default</Badge>}
+                  {c.is_default && <Badge tone="emerald" className="ml-2">{t("bnk.default")}</Badge>}
                 </Td>
                 <Td>{c.parent_name ?? "—"}</Td>
                 <Td>{c.currency}</Td>
@@ -95,15 +97,15 @@ function OrganisationTab() {
       </section>
 
       <section className="space-y-2">
-        <h3 className="text-sm font-semibold">Branches</h3>
+        <h3 className="text-sm font-semibold">{t("adm.branches")}</h3>
         <Table>
           <THead>
             <tr>
-              <Th>Code</Th>
-              <Th>Name</Th>
-              <Th>Company</Th>
-              <Th>City</Th>
-              <Th>Warehouse</Th>
+              <Th>{t("adm.code")}</Th>
+              <Th>{t("field.name")}</Th>
+              <Th>{t("adm.company")}</Th>
+              <Th>{t("adm.city")}</Th>
+              <Th>{t("inv.warehouse")}</Th>
             </tr>
           </THead>
           <TBody>
@@ -126,6 +128,7 @@ function OrganisationTab() {
 /* ─────────────── fiscal years & numbering ─────────────── */
 
 function FiscalTab() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [error, setError] = useState("");
 
@@ -151,7 +154,7 @@ function FiscalTab() {
       setError("");
       qc.invalidateQueries({ queryKey: ["admin-sequences"] });
     },
-    onError: (e: any) => setError(e?.response?.data?.detail ?? "Could not save."),
+    onError: (e: any) => setError(e?.response?.data?.detail ?? t("adm.couldNotSave")),
   });
 
   if (isLoading) return <TableSkeleton rows={4} />;
@@ -159,19 +162,18 @@ function FiscalTab() {
   return (
     <div className="space-y-6">
       <section className="space-y-2">
-        <h3 className="text-sm font-semibold">Fiscal years</h3>
+        <h3 className="text-sm font-semibold">{t("adm.fiscalYears")}</h3>
         <p className="text-sm text-text-3">
-          Closing a period stops anything being backdated into books that have already
-          been reported.
+          {t("adm.fiscalNote")}
         </p>
         <Table>
           <THead>
             <tr>
-              <Th>Year</Th>
-              <Th>From</Th>
-              <Th>To</Th>
-              <Th>Status</Th>
-              <Th>Closed by</Th>
+              <Th>{t("adm.year")}</Th>
+              <Th>{t("common.from")}</Th>
+              <Th>{t("common.to")}</Th>
+              <Th>{t("common.status")}</Th>
+              <Th>{t("adm.closedBy")}</Th>
               <Th />
             </tr>
           </THead>
@@ -183,7 +185,7 @@ function FiscalTab() {
                 <Td>{y.ends_on}</Td>
                 <Td>
                   <Badge tone={y.status === "open" ? "emerald" : y.status === "locked" ? "red" : "employee"}>
-                    {y.status}
+                    {t(`adm.fy.${y.status}`)}
                   </Badge>
                 </Td>
                 <Td>{y.closed_by_email ?? "—"}</Td>
@@ -193,9 +195,9 @@ function FiscalTab() {
                     onChange={(e) => statusMutation.mutate({ id: y.id, status: e.target.value })}
                     className="max-w-32"
                   >
-                    <option value="open">Open</option>
-                    <option value="closed">Closed</option>
-                    <option value="locked">Locked</option>
+                    <option value="open">{t("adm.fy.open")}</option>
+                    <option value="closed">{t("adm.fy.closed")}</option>
+                    <option value="locked">{t("adm.fy.locked")}</option>
                   </Select>
                 </Td>
               </tr>
@@ -205,21 +207,20 @@ function FiscalTab() {
       </section>
 
       <section className="space-y-2">
-        <h3 className="text-sm font-semibold">Document numbering</h3>
+        <h3 className="text-sm font-semibold">{t("adm.numbering")}</h3>
         <p className="text-sm text-text-3">
-          Tokens: <code>{"{PREFIX}"}</code> <code>{"{YYYY}"}</code> <code>{"{YY}"}</code>{" "}
-          <code>{"{MM}"}</code> <code>{"{SEQ:4}"}</code>. The counter is reserved under a
-          lock, so concurrent requests cannot mint the same number.
+          {t("adm.numberingNote1")} <code>{"{PREFIX}"}</code> <code>{"{YYYY}"}</code> <code>{"{YY}"}</code>{" "}
+          <code>{"{MM}"}</code> <code>{"{SEQ:4}"}</code>. {t("adm.numberingNote2")}
         </p>
         {error && <p className="text-sm text-danger">{error}</p>}
         <Table>
           <THead>
             <tr>
-              <Th>Document</Th>
-              <Th>Format</Th>
-              <Th>Next</Th>
-              <Th>Resets</Th>
-              <Th>Preview</Th>
+              <Th>{t("adm.document")}</Th>
+              <Th>{t("adm.format")}</Th>
+              <Th>{t("adm.next")}</Th>
+              <Th>{t("adm.resets")}</Th>
+              <Th>{t("adm.preview")}</Th>
             </tr>
           </THead>
           <TBody>
@@ -252,6 +253,7 @@ function FiscalTab() {
 /* ─────────────── roles & permissions ─────────────── */
 
 function PermissionsTab() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [selected, setSelected] = useState<Role | null>(null);
   const [draft, setDraft] = useState<Set<string>>(new Set());
@@ -270,13 +272,13 @@ function PermissionsTab() {
       setSelected(null);
       qc.invalidateQueries({ queryKey: ["admin-roles"] });
     },
-    onError: (e: any) => setError(e?.response?.data?.detail ?? "Could not save."),
+    onError: (e: any) => setError(e?.response?.data?.detail ?? t("adm.couldNotSave")),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteRole(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-roles"] }),
-    onError: (e: any) => setError(e?.response?.data?.detail ?? "Could not delete."),
+    onError: (e: any) => setError(e?.response?.data?.detail ?? t("adm.couldNotDelete")),
   });
 
   if (isLoading) return <TableSkeleton rows={4} />;
@@ -294,10 +296,10 @@ function PermissionsTab() {
       <Table>
         <THead>
           <tr>
-            <Th>Role</Th>
-            <Th>Inherits</Th>
-            <Th>Permissions</Th>
-            <Th>Type</Th>
+            <Th>{t("adm.role")}</Th>
+            <Th>{t("adm.inherits")}</Th>
+            <Th>{t("adm.permissions")}</Th>
+            <Th>{t("adm.type")}</Th>
             <Th />
           </tr>
         </THead>
@@ -312,11 +314,11 @@ function PermissionsTab() {
               <Td className="tnum">{r.permissions?.length ?? 0}</Td>
               <Td>
                 {r.is_system ? (
-                  <Tooltip label="Built-in role — the users.role column depends on it">
-                    <Badge tone="sky"><Lock className="mr-1 h-3 w-3" />built-in</Badge>
+                  <Tooltip label={t("adm.builtInTip")}>
+                    <Badge tone="sky"><Lock className="mr-1 h-3 w-3" />{t("adm.builtIn")}</Badge>
                   </Tooltip>
                 ) : (
-                  <Badge tone="employee">custom</Badge>
+                  <Badge tone="employee">{t("adm.custom")}</Badge>
                 )}
               </Td>
               <Td className="text-right">
@@ -329,7 +331,7 @@ function PermissionsTab() {
                     setDraft(new Set(r.permissions ?? []));
                   }}
                 >
-                  <ShieldCheck className="h-3.5 w-3.5" /> Edit
+                  <ShieldCheck className="h-3.5 w-3.5" /> {t("common.edit")}
                 </Button>
                 {!r.is_system && (
                   <Button
@@ -338,7 +340,7 @@ function PermissionsTab() {
                     className="ml-1"
                     onClick={() => deleteMutation.mutate(r.id)}
                   >
-                    Delete
+                    {t("common.delete")}
                   </Button>
                 )}
               </Td>
@@ -350,13 +352,12 @@ function PermissionsTab() {
       <Dialog
         open={selected !== null}
         onClose={() => setSelected(null)}
-        title={selected ? `Permissions — ${selected.name}` : "Permissions"}
+        title={selected ? `${t("adm.permTitlePrefix")} ${selected.name}` : t("adm.permissions")}
         className="max-w-3xl"
       >
         <div className="space-y-4">
           <p className="text-sm text-text-2">
-            Inherited permissions are not shown here: a role automatically holds
-            everything its parent holds. Ticking a box grants it directly.
+            {t("adm.permNote")}
           </p>
           <div className="max-h-96 space-y-4 overflow-y-auto pr-2">
             {Object.entries(byModule).map(([module, perms]) => (
@@ -375,7 +376,7 @@ function PermissionsTab() {
                         }}
                       />
                       <span className="font-mono text-xs">{p.key}</span>
-                      {p.is_approval && <Badge tone="amber">approval</Badge>}
+                      {p.is_approval && <Badge tone="amber">{t("adm.approval")}</Badge>}
                     </label>
                   ))}
                 </div>
@@ -389,7 +390,7 @@ function PermissionsTab() {
             disabled={saveMutation.isPending}
           >
             <Save className="h-4 w-4" />
-            {saveMutation.isPending ? "Saving…" : `Save ${draft.size} permission(s)`}
+            {saveMutation.isPending ? t("common.saving") : `${t("adm.savePrefix")} ${draft.size} ${t("adm.permsSuffix")}`}
           </Button>
         </div>
       </Dialog>
@@ -400,6 +401,7 @@ function PermissionsTab() {
 /* ─────────────── audit trail ─────────────── */
 
 function AuditTab() {
+  const { t } = useI18n();
   const [actor, setActor] = useState("");
   const [detail, setDetail] = useState<AuditRow | null>(null);
 
@@ -412,16 +414,16 @@ function AuditTab() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="w-56 space-y-1.5">
-          <Label htmlFor="audit-actor">Actor</Label>
+          <Label htmlFor="audit-actor">{t("adm.actor")}</Label>
           <Select id="audit-actor" value={actor} onChange={(e) => setActor(e.target.value)}>
-            <option value="">Everyone</option>
-            <option value="user">People</option>
-            <option value="agent">AI assistant</option>
-            <option value="system">System</option>
+            <option value="">{t("adm.everyone")}</option>
+            <option value="user">{t("adm.people")}</option>
+            <option value="agent">{t("adm.aiAssistant")}</option>
+            <option value="system">{t("adm.system")}</option>
           </Select>
         </div>
         <Button variant="secondary" onClick={() => downloadAuditCsv()}>
-          <Download className="h-4 w-4" /> Export CSV
+          <Download className="h-4 w-4" /> {t("adm.exportCsv")}
         </Button>
       </div>
 
@@ -431,11 +433,11 @@ function AuditTab() {
         <Table>
           <THead>
             <tr>
-              <Th>When</Th>
-              <Th>Record</Th>
-              <Th>What happened</Th>
-              <Th>Actor</Th>
-              <Th>IP</Th>
+              <Th>{t("adm.when")}</Th>
+              <Th>{t("adm.record")}</Th>
+              <Th>{t("adm.whatHappened")}</Th>
+              <Th>{t("adm.actor")}</Th>
+              <Th>{t("adm.ip")}</Th>
             </tr>
           </THead>
           <TBody>
@@ -451,7 +453,7 @@ function AuditTab() {
                 <Td>{row.summary}</Td>
                 <Td>
                   <Badge tone={row.actor === "agent" ? "violet" : "employee"}>
-                    {row.actor === "agent" ? "AI" : row.user_email ?? row.actor}
+                    {row.actor === "agent" ? t("adm.ai") : row.user_email ?? row.actor}
                   </Badge>
                 </Td>
                 <Td className="font-mono text-xs">{row.ip || "—"}</Td>
@@ -464,30 +466,30 @@ function AuditTab() {
       <Dialog
         open={detail !== null}
         onClose={() => setDetail(null)}
-        title={detail ? `${detail.auditable_type} — ${detail.event}` : "Audit entry"}
+        title={detail ? `${detail.auditable_type} — ${detail.event}` : t("adm.auditEntry")}
         className="max-w-2xl"
       >
         {detail && (
           <div className="space-y-3 text-sm">
             <div className="grid grid-cols-2 gap-2 text-text-2">
-              <p>When: {new Date(detail.created_at).toLocaleString()}</p>
-              <p>Who: {detail.user_email ?? detail.actor}</p>
-              <p>IP: {detail.ip || "—"}</p>
-              <p>Method: {detail.method || "—"}</p>
+              <p>{t("adm.whenLabel")} {new Date(detail.created_at).toLocaleString()}</p>
+              <p>{t("adm.whoLabel")} {detail.user_email ?? detail.actor}</p>
+              <p>{t("adm.ipLabel")} {detail.ip || "—"}</p>
+              <p>{t("adm.methodLabel")} {detail.method || "—"}</p>
             </div>
-            {detail.reason && <p className="text-text-2">Reason: {detail.reason}</p>}
+            {detail.reason && <p className="text-text-2">{t("adm.reasonLabel")} {detail.reason}</p>}
             {detail.batch_id && (
-              <p className="text-xs text-text-3">Bulk batch {detail.batch_id}</p>
+              <p className="text-xs text-text-3">{t("adm.bulkBatch")} {detail.batch_id}</p>
             )}
             {detail.changed_fields && (
               <div>
-                <Label>Changed</Label>
+                <Label>{t("adm.changed")}</Label>
                 <Table>
                   <THead>
                     <tr>
-                      <Th>Field</Th>
-                      <Th>Before</Th>
-                      <Th>After</Th>
+                      <Th>{t("adm.field")}</Th>
+                      <Th>{t("adm.before")}</Th>
+                      <Th>{t("adm.after")}</Th>
                     </tr>
                   </THead>
                   <TBody>
@@ -513,6 +515,7 @@ function AuditTab() {
 /* ─────────────── modules ─────────────── */
 
 function ModulesTab() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [error, setError] = useState("");
 
@@ -525,7 +528,7 @@ function ModulesTab() {
       qc.invalidateQueries({ queryKey: ["admin-features"] });
       qc.invalidateQueries({ queryKey: ["me-context"] });
     },
-    onError: (e: any) => setError(e?.response?.data?.detail ?? "Could not change this module."),
+    onError: (e: any) => setError(e?.response?.data?.detail ?? t("adm.couldNotChange")),
   });
 
   if (isLoading) return <TableSkeleton rows={6} />;
@@ -533,8 +536,7 @@ function ModulesTab() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-text-3">
-        Switching a module off hides its navigation and makes its endpoints return 404 —
-        no deployment required.
+        {t("adm.modulesNote")}
       </p>
       {error && <p className="text-sm text-danger">{error}</p>}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -545,7 +547,7 @@ function ModulesTab() {
               <p className="font-mono text-xs text-text-3">{f.key}</p>
             </div>
             {f.is_locked ? (
-              <Tooltip label="Required module — cannot be switched off">
+              <Tooltip label={t("adm.requiredTip")}>
                 <Badge tone="sky"><Lock className="h-3 w-3" /></Badge>
               </Tooltip>
             ) : (
@@ -555,7 +557,7 @@ function ModulesTab() {
                 onClick={() => mutation.mutate({ id: f.id, enabled: !f.enabled })}
               >
                 <ToggleLeft className="h-4 w-4" />
-                {f.enabled ? "On" : "Off"}
+                {f.enabled ? t("adm.on") : t("adm.off")}
               </Button>
             )}
           </div>
