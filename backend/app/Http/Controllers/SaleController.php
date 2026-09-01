@@ -142,4 +142,45 @@ class SaleController extends Controller
 
         return $pdf->download("{$invoice->number}.pdf");
     }
+
+    /** Email the sale (quote or invoice) to the customer, with a portal link. */
+    public function email(Request $request, Sale $sale)
+    {
+        $sale->load(self::WITH);
+        $customer = $sale->customer;
+        if (! $customer || ! $customer->email) {
+            return response()->json(['detail' => 'This customer has no email address on file.'], 422);
+        }
+
+        $token = $sale->ensureToken();
+        $invoice = $sale->invoice; // null for an un-invoiced sale (a quote)
+        $docLabel = $invoice ? 'Invoice' : 'Quote';
+
+        // The invoice template needs a number and a date; a quote supplies the
+        // sale's own so the same template renders both.
+        $header = $invoice ?: (object) ['number' => $sale->number, 'issued_at' => $sale->created_at];
+        $pdf = Pdf::loadView('reports.invoice', ['invoice' => $header, 'sale' => $sale])->output();
+
+        $frontend = rtrim((string) config('app.frontend_url'), '/');
+        $portalUrl = "{$frontend}/portal/sales/{$token}";
+
+        // The portal link is created regardless; email delivery is best-effort
+        // so a mail server that is down or unconfigured never blocks sharing.
+        $sent = true;
+        try {
+            \Illuminate\Support\Facades\Mail::to($customer->email)
+                ->send(new \App\Mail\SaleDocumentMail($sale, $portalUrl, $pdf, $docLabel));
+            $sale->update(['emailed_at' => now()]);
+        } catch (\Throwable $e) {
+            $sent = false;
+            report($e);
+        }
+
+        return response()->json([
+            'sent' => $sent,
+            'emailed_to' => $customer->email,
+            'portal_url' => $portalUrl,
+            'emailed_at' => $sale->emailed_at?->toISOString(),
+        ]);
+    }
 }

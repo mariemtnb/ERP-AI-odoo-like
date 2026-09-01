@@ -1,8 +1,8 @@
 import { useMemo, useRef, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FileText, Plus, ScanLine, Trash2 } from "lucide-react";
+import { FileText, Mail, Plus, ScanLine, Trash2 } from "lucide-react";
 import { documentsApi, extractInvoice } from "@/api/documents";
-import { downloadInvoice, generateInvoice } from "@/api/reports";
+import { downloadInvoice, emailSale, generateInvoice } from "@/api/reports";
 import { listProducts } from "@/api/catalog";
 import { partnersApi } from "@/api/partners";
 import { Badge } from "@/components/ui/badge";
@@ -75,6 +75,7 @@ export default function DocumentsPage({
   ]);
   const [error, setError] = useState("");
   const [actionError, setActionError] = useState("");
+  const [portalLink, setPortalLink] = useState("");
   const [scanning, setScanning] = useState(false);
   const [scanNote, setScanNote] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
@@ -152,6 +153,12 @@ export default function DocumentsPage({
     },
     onError: (err: any) =>
       setActionError(err?.response?.data?.detail ?? t("docs.actionFailed")),
+  });
+
+  const emailMutation = useMutation({
+    mutationFn: (id: number) => emailSale(id),
+    onSuccess: (r) => { setPortalLink(r.portal_url); invalidate(); },
+    onError: (err: any) => setActionError(err?.response?.data?.detail ?? t("docs.actionFailed")),
   });
 
   function submit(e: FormEvent) {
@@ -247,7 +254,7 @@ export default function DocumentsPage({
               <tr
                 key={d.id}
                 className="cursor-pointer hover:bg-white/[0.03]"
-                onClick={() => { setActionError(""); setViewDoc(d); }}
+                onClick={() => { setActionError(""); setPortalLink(""); setViewDoc(d); }}
               >
                 <Td className="font-mono text-xs">{d.number}</Td>
                 <Td>{isPurchase ? d.supplier_name : d.customer_name}</Td>
@@ -410,6 +417,15 @@ export default function DocumentsPage({
               {t("common.total")}: {Number(viewDoc.total_amount).toFixed(2)}
             </p>
             {actionError && <p className="text-sm text-danger">{actionError}</p>}
+            {portalLink && (
+              <div className="rounded-md bg-surface-2 p-3 text-sm">
+                <p className="mb-1 text-text-2">{t("docs.emailSent")}</p>
+                <div className="flex items-center gap-2">
+                  <input readOnly value={portalLink} className="flex-1 rounded border border-border bg-surface px-2 py-1 text-xs text-text-2" />
+                  <Button size="sm" variant="outline" onClick={() => navigator.clipboard?.writeText(portalLink)}>{t("common.copy")}</Button>
+                </div>
+              </div>
+            )}
             {canWrite && (
               <div className="flex justify-end gap-2">
                 {!isPurchase && viewDoc.status === "confirmed" && (
@@ -421,6 +437,15 @@ export default function DocumentsPage({
                     }}
                   >
                     <FileText className="h-4 w-4" /> {t("docs.invoicePdf")}
+                  </Button>
+                )}
+                {!isPurchase && (
+                  <Button
+                    variant="outline"
+                    disabled={emailMutation.isPending}
+                    onClick={() => { setActionError(""); emailMutation.mutate(viewDoc.id); }}
+                  >
+                    <Mail className="h-4 w-4" /> {emailMutation.isPending ? t("docs.emailing") : t("docs.emailCustomer")}
                   </Button>
                 )}
                 {viewDoc.status === "draft" && (

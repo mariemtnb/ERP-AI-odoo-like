@@ -47,6 +47,10 @@ Route::prefix('v1')->group(function () {
     Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:5,1');
     Route::post('auth/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:10,1');
 
+    // Public customer portal: view a shared sale by its unguessable token.
+    Route::get('portal/sales/{token}', [\App\Http\Controllers\PortalController::class, 'sale'])
+        ->middleware('throttle:60,1');
+
     /*
     | `active` runs on every authenticated request: deactivating an account has
     | to revoke access immediately, not whenever the current token happens to
@@ -143,6 +147,7 @@ Route::prefix('v1')->group(function () {
         Route::post('sales/{sale}/confirm', [SaleController::class, 'confirm']);
         Route::post('sales/{sale}/cancel', [SaleController::class, 'cancel']);
         Route::match(['get', 'post'], 'sales/{sale}/invoice', [SaleController::class, 'invoice']);
+        Route::post('sales/{sale}/email', [SaleController::class, 'email'])->middleware('throttle:20,1');
 
         // --- point of sale: cashiers (any authenticated) run the till ---
         Route::get('pos/session', [\App\Http\Controllers\PosController::class, 'session']);

@@ -47,6 +47,7 @@ import ProductsPage from "@/features/products/ProductsPage";
 import UsersPage from "@/features/users/UsersPage";
 import RolesPage from "@/features/roles/RolesPage";
 import PricelistsPage from "@/features/pricelists/PricelistsPage";
+import PortalSalePage from "@/features/portal/PortalSalePage";
 
 // Keep results warm across tab switches: the dev backend re-bootstraps Laravel
 // on every request, so refetching all of a page's queries on each navigation is
@@ -79,6 +80,7 @@ export default function App() {
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/portal/sales/:token" element={<PortalSalePage />} />
             <Route element={<ProtectedRoute />}>
               <Route element={<Layout />}>
                 <Route index element={<DashboardPage />} />

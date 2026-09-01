@@ -17,14 +17,25 @@ class Sale extends Model
     public const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [
-        'number', 'customer_id', 'status', 'sale_date', 'total_amount', 'created_by',
+        'number', 'portal_token', 'customer_id', 'status', 'sale_date',
+        'total_amount', 'emailed_at', 'created_by',
     ];
 
     protected $attributes = ['status' => self::STATUS_DRAFT, 'total_amount' => 0];
 
     protected function casts(): array
     {
-        return ['sale_date' => 'date:Y-m-d', 'total_amount' => 'decimal:2'];
+        return ['sale_date' => 'date:Y-m-d', 'total_amount' => 'decimal:2', 'emailed_at' => 'datetime'];
+    }
+
+    /** A stable, hard-to-guess token for the customer's public view. */
+    public function ensureToken(): string
+    {
+        if (! $this->portal_token) {
+            $this->update(['portal_token' => bin2hex(random_bytes(24))]);
+        }
+
+        return $this->portal_token;
     }
 
     public function customer(): BelongsTo
@@ -63,6 +74,8 @@ class Sale extends Model
             'status' => $this->status,
             'sale_date' => $this->sale_date?->format('Y-m-d'),
             'total_amount' => $this->total_amount,
+            'portal_token' => $this->portal_token,
+            'emailed_at' => $this->emailed_at?->toISOString(),
             'created_by_email' => $this->creator?->email,
             'lines' => $this->lines->map(fn ($l) => $l->toApi())->values()->all(),
             'created_at' => $this->created_at?->toISOString(),

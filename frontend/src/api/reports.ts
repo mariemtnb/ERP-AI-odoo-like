@@ -92,3 +92,8 @@ export async function generateInvoice(saleId: number) {
 export function downloadInvoice(saleId: number, number: string) {
   return downloadBlob(`/sales/${saleId}/invoice/`, {}, `${number}.pdf`);
 }
+
+export async function emailSale(saleId: number) {
+  const { data } = await api.post<{ sent: boolean; emailed_to: string; portal_url: string }>(`/sales/${saleId}/email`);
+  return data;
+}
