@@ -5,16 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/features/auth/AuthContext";
+import { useI18n } from "@/lib/i18n";
 import * as usersApi from "@/api/users";
 import * as rolesApi from "@/api/roles";
 import type { User } from "@/types";
 
-const SYSTEM_LABEL: Record<string, string> = {
-  super_admin: "Super admin", admin: "Admin", manager: "Manager", employee: "Employee",
-};
-
 export default function UsersPage() {
   const { user } = useAuth();
+  const { t } = useI18n();
+  const SYSTEM_LABEL: Record<string, string> = {
+    super_admin: t("role.super_admin"), admin: t("role.admin"), manager: t("role.manager"), employee: t("role.employee"),
+  };
   const isSuper = user?.role === "super_admin";
   const qc = useQueryClient();
   const usersQ = useQuery({ queryKey: ["users"], queryFn: () => usersApi.listUsers() });
@@ -34,8 +35,8 @@ export default function UsersPage() {
 
   return (
     <div>
-      <PageHead title="Users" sub="Accounts, roles and access. Only a super admin can grant or edit admin roles.">
-        <Button onClick={() => setEditing("new")}>New user</Button>
+      <PageHead title={t("users.title")} sub={t("users.sub")}>
+        <Button onClick={() => setEditing("new")}>{t("users.new")}</Button>
       </PageHead>
 
       {editing && (
@@ -51,22 +52,22 @@ export default function UsersPage() {
       <div style={{ background: "var(--surface-card)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
           <thead><tr style={{ background: "var(--surface-hover)", color: "var(--text-muted)", textAlign: "left" }}>
-            <Th>Email</Th><Th>Name</Th><Th>Role</Th><Th>Status</Th><Th></Th>
+            <Th>{t("users.col.email")}</Th><Th>{t("users.col.name")}</Th><Th>{t("users.col.role")}</Th><Th>{t("users.col.status")}</Th><Th></Th>
           </tr></thead>
           <tbody>
             {(usersQ.data ?? []).map((u) => (
               <tr key={u.id} style={{ borderTop: "1px solid var(--border)" }}>
-                <Td>{u.email}{u.id === user?.id && <span style={{ color: "var(--text-muted)" }}> · you</span>}</Td>
+                <Td>{u.email}{u.id === user?.id && <span style={{ color: "var(--text-muted)" }}> · {t("users.you")}</span>}</Td>
                 <Td>{[u.first_name, u.last_name].filter(Boolean).join(" ") || "—"}</Td>
                 <Td><Badge tone={u.role}>{roleLabel(u.role)}</Badge></Td>
-                <Td><Badge tone={u.is_active ? "green" : "red"}>{u.is_active ? "active" : "inactive"}</Badge></Td>
+                <Td><Badge tone={u.is_active ? "green" : "red"}>{u.is_active ? t("users.active") : t("users.inactive")}</Badge></Td>
                 <Td right>
                   <span style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
-                    {canManage(u) && <Button size="sm" variant="outline" onClick={() => setEditing(u)}>Edit</Button>}
+                    {canManage(u) && <Button size="sm" variant="outline" onClick={() => setEditing(u)}>{t("common.edit")}</Button>}
                     {canManage(u) && u.id !== user?.id && (
                       u.is_active
-                        ? <Button size="sm" variant="ghost" onClick={() => deactivate.mutate(u.id)}>Deactivate</Button>
-                        : <Button size="sm" variant="ghost" onClick={() => reactivate.mutate(u.id)}>Reactivate</Button>
+                        ? <Button size="sm" variant="ghost" onClick={() => deactivate.mutate(u.id)}>{t("users.deactivate")}</Button>
+                        : <Button size="sm" variant="ghost" onClick={() => reactivate.mutate(u.id)}>{t("users.reactivate")}</Button>
                     )}
                   </span>
                 </Td>

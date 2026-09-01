@@ -4,10 +4,12 @@ import { PageHead } from "@/components/ui/page-head";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { useI18n } from "@/lib/i18n";
 import * as rolesApi from "@/api/roles";
 import type { ManagedRole } from "@/api/roles";
 
 export default function RolesPage() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const rolesQ = useQuery({ queryKey: ["roles"], queryFn: () => rolesApi.listRoles() });
   const modulesQ = useQuery({ queryKey: ["role-modules"], queryFn: () => rolesApi.listModules() });
@@ -28,11 +30,8 @@ export default function RolesPage() {
 
   return (
     <div>
-      <PageHead
-        title="Roles & Access"
-        sub="Build a custom role and grant it only the modules it should see. Built-in roles have full access and cannot be changed."
-      >
-        <Button onClick={() => setEditing("new")}>New role</Button>
+      <PageHead title={t("roles.title")} sub={t("roles.sub")}>
+        <Button onClick={() => setEditing("new")}>{t("roles.new")}</Button>
       </PageHead>
 
       {editing && (
@@ -48,7 +47,7 @@ export default function RolesPage() {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
           <thead>
             <tr style={{ background: "var(--surface-hover)", color: "var(--text-muted)", textAlign: "left" }}>
-              <Th>Role</Th><Th>Access</Th><Th>Users</Th><Th></Th>
+              <Th>{t("roles.col.role")}</Th><Th>{t("roles.col.access")}</Th><Th>{t("roles.col.users")}</Th><Th></Th>
             </tr>
           </thead>
           <tbody>
@@ -60,9 +59,9 @@ export default function RolesPage() {
                 </Td>
                 <Td>
                   {r.is_system ? (
-                    <Badge tone="emerald">Full access</Badge>
+                    <Badge tone="emerald">{t("roles.fullAccess")}</Badge>
                   ) : r.modules.length === 0 ? (
-                    <Badge tone="rose">No modules</Badge>
+                    <Badge tone="rose">{t("roles.noModules")}</Badge>
                   ) : (
                     <span style={{ display: "flex", flexWrap: "wrap", gap: 6, maxWidth: 460 }}>
                       {r.modules.map((m) => (
@@ -75,15 +74,14 @@ export default function RolesPage() {
                 <Td right>
                   {!r.is_system && (
                     <span style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
-                      <Button size="sm" variant="outline" onClick={() => setEditing(r)}>Edit</Button>
+                      <Button size="sm" variant="outline" onClick={() => setEditing(r)}>{t("common.edit")}</Button>
                       <Button
                         size="sm"
                         variant="ghost"
                         disabled={r.user_count > 0}
-                        title={r.user_count > 0 ? "Reassign its users first" : undefined}
                         onClick={() => r.id && del.mutate(r.id)}
                       >
-                        Delete
+                        {t("common.delete")}
                       </Button>
                     </span>
                   )}

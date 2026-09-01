@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { ThemeProvider } from "@/lib/theme";
+import { I18nProvider } from "@/lib/i18n";
 import { SessionProvider } from "@/lib/session";
 import { AuthProvider } from "@/features/auth/AuthContext";
 import LoginPage from "@/features/auth/LoginPage";
@@ -65,6 +66,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
+      <I18nProvider>
       <AuthProvider>
         {/* Effective permissions + enabled modules, so the shell can hide
             what this user cannot reach. The backend still enforces both. */}
@@ -141,6 +143,7 @@ export default function App() {
         </BrowserRouter>
         </SessionProvider>
       </AuthProvider>
+      </I18nProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
