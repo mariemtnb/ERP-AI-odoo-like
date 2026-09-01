@@ -4,10 +4,12 @@ import { PageHead } from "@/components/ui/page-head";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/features/auth/AuthContext";
+import { useI18n } from "@/lib/i18n";
 import * as api from "@/api/projects";
 
 export default function ProjectsPage() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const isManager = user?.role === "admin" || user?.role === "manager";
   const qc = useQueryClient();
   const projectsQ = useQuery({ queryKey: ["projects"], queryFn: api.listProjectsApi });
@@ -16,8 +18,8 @@ export default function ProjectsPage() {
 
   return (
     <div>
-      <PageHead title="Projects" sub="Track project tasks, log time, and watch hours against budget.">
-        {isManager && <Button onClick={() => setAdding((v) => !v)}>{adding ? "Close" : "New project"}</Button>}
+      <PageHead title={t("nav.projects")} sub={t("prj.sub")}>
+        {isManager && <Button onClick={() => setAdding((v) => !v)}>{adding ? t("common.close") : t("prj.new")}</Button>}
       </PageHead>
 
       {adding && <NewProject onDone={() => { setAdding(false); qc.invalidateQueries({ queryKey: ["projects"] }); }} onCancel={() => setAdding(false)} />}
@@ -32,20 +34,21 @@ export default function ProjectsPage() {
             }}>
               <div style={{ fontWeight: 600 }}>{p.name}</div>
               <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                {p.customer_name ?? "internal"} · {p.logged_hours}{p.budget_hours ? `/${p.budget_hours}` : ""} h · {p.status}
+                {p.customer_name ?? t("prj.internal")} · {p.logged_hours}{p.budget_hours ? `/${p.budget_hours}` : ""} h · {t(`prj.status.${p.status}`)}
               </div>
             </button>
           ))}
-          {projectsQ.data?.length === 0 && <p style={{ padding: 14, color: "var(--text-muted)", fontSize: 13 }}>No projects yet.</p>}
+          {projectsQ.data?.length === 0 && <p style={{ padding: 14, color: "var(--text-muted)", fontSize: 13 }}>{t("prj.none")}</p>}
         </div>
 
-        <div>{selected ? <ProjectDetail projectId={selected} isManager={isManager} /> : <p style={{ color: "var(--text-muted)" }}>Select a project.</p>}</div>
+        <div>{selected ? <ProjectDetail projectId={selected} isManager={isManager} /> : <p style={{ color: "var(--text-muted)" }}>{t("prj.select")}</p>}</div>
       </div>
     </div>
   );
 }
 
 function ProjectDetail({ projectId, isManager }: { projectId: number; isManager: boolean }) {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const detailQ = useQuery({ queryKey: ["project", projectId], queryFn: () => api.getProjectDetail(projectId) });
   const summaryQ = useQuery({ queryKey: ["project-sum", projectId], queryFn: () => api.getSummary(projectId) });
@@ -75,60 +78,61 @@ function ProjectDetail({ projectId, isManager }: { projectId: number; isManager:
     <>
       {s && (
         <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
-          <Stat label="Logged" value={`${s.logged_hours} h`} />
-          <Stat label="Billable" value={`${s.billable_hours} h`} accent />
-          <Stat label="Non-billable" value={`${s.non_billable_hours} h`} />
-          {s.budget_hours != null && <Stat label={s.over_budget ? "Over budget" : "Remaining"} value={`${s.remaining_hours} h`} danger={s.over_budget} />}
+          <Stat label={t("prj.logged")} value={`${s.logged_hours} h`} />
+          <Stat label={t("prj.billable")} value={`${s.billable_hours} h`} accent />
+          <Stat label={t("prj.nonBillable")} value={`${s.non_billable_hours} h`} />
+          {s.budget_hours != null && <Stat label={s.over_budget ? t("prj.overBudget") : t("prj.remaining")} value={`${s.remaining_hours} h`} danger={s.over_budget} />}
         </div>
       )}
 
       <Panel>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 10, alignItems: "end" }}>
-          <Field label="Task">
+          <Field label={t("prj.task")}>
             <select value={task} onChange={(e) => setTask(e.target.value)} style={selectStyle}>
-              <option value="">— none —</option>
-              {(detailQ.data?.tasks ?? []).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+              <option value="">{t("common.none")}</option>
+              {(detailQ.data?.tasks ?? []).map((tk) => <option key={tk.id} value={tk.id}>{tk.name}</option>)}
             </select>
           </Field>
-          <Field label="Date"><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></Field>
-          <Field label="Hours"><Input type="number" min={0} step="0.25" value={hours} onChange={(e) => setHours(e.target.value)} /></Field>
-          <Field label="Note"><Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="optional" /></Field>
+          <Field label={t("common.date")}><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></Field>
+          <Field label={t("prj.hours")}><Input type="number" min={0} step="0.25" value={hours} onChange={(e) => setHours(e.target.value)} /></Field>
+          <Field label={t("prj.note")}><Input value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("prj.optional")} /></Field>
           <label style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 13, color: "var(--text-body)" }}>
-            <input type="checkbox" checked={billable} onChange={(e) => setBillable(e.target.checked)} /> Billable
+            <input type="checkbox" checked={billable} onChange={(e) => setBillable(e.target.checked)} /> {t("prj.billableWord")}
           </label>
-          <Button loading={log.isPending} disabled={!date || !(Number(hours) > 0)} onClick={() => log.mutate()}>Log time</Button>
+          <Button loading={log.isPending} disabled={!date || !(Number(hours) > 0)} onClick={() => log.mutate()}>{t("prj.logTime")}</Button>
         </div>
         {isManager && (
           <div style={{ display: "flex", gap: 8, marginTop: 14, alignItems: "center" }}>
-            <Input placeholder="Add a task…" value={newTask} onChange={(e) => setNewTask(e.target.value)} style={{ maxWidth: 240 }} />
-            <Button size="sm" variant="outline" loading={addTaskM.isPending} disabled={!newTask.trim()} onClick={() => addTaskM.mutate()}>Add task</Button>
+            <Input placeholder={t("prj.addTaskPlaceholder")} value={newTask} onChange={(e) => setNewTask(e.target.value)} style={{ maxWidth: 240 }} />
+            <Button size="sm" variant="outline" loading={addTaskM.isPending} disabled={!newTask.trim()} onClick={() => addTaskM.mutate()}>{t("prj.addTask")}</Button>
           </div>
         )}
       </Panel>
 
-      <Table head={["Date", "Task", "Hours", "Billable", "By"]}>
+      <Table head={[t("common.date"), t("prj.task"), t("prj.hours"), t("prj.billableWord"), t("docs.col.by")]}>
         {(sheetsQ.data ?? []).map((e) => (
           <tr key={e.id} style={{ borderTop: "1px solid var(--border)" }}>
             <Td mono>{e.work_date}</Td><Td>{e.task_name ?? "—"}</Td><Td mono right>{e.hours}</Td>
-            <Td>{e.billable ? "Yes" : "No"}</Td><Td muted>{e.user_email}</Td>
+            <Td>{e.billable ? t("common.yes") : t("common.no")}</Td><Td muted>{e.user_email}</Td>
           </tr>
         ))}
-        {sheetsQ.data?.length === 0 && <tr><Td colSpan={5} muted>No time logged yet.</Td></tr>}
+        {sheetsQ.data?.length === 0 && <tr><Td colSpan={5} muted>{t("prj.noTime")}</Td></tr>}
       </Table>
     </>
   );
 }
 
 function NewProject({ onDone, onCancel }: { onDone: () => void; onCancel: () => void }) {
+  const { t } = useI18n();
   const [name, setName] = useState("");
   const [budget, setBudget] = useState("");
   const add = useMutation({ mutationFn: () => api.createProject({ name, budget_hours: Number(budget) || null }), onSuccess: onDone });
   return (
     <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: 18, marginBottom: 18, display: "flex", gap: 12, alignItems: "end" }}>
-      <Field label="Name"><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Client website" /></Field>
-      <Field label="Budget hours"><Input type="number" min={0} value={budget} onChange={(e) => setBudget(e.target.value)} /></Field>
-      <Button variant="outline" onClick={onCancel}>Cancel</Button>
-      <Button loading={add.isPending} disabled={!name.trim()} onClick={() => add.mutate()}>Create</Button>
+      <Field label={t("field.name")}><Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("prj.namePlaceholder")} /></Field>
+      <Field label={t("prj.budgetHours")}><Input type="number" min={0} value={budget} onChange={(e) => setBudget(e.target.value)} /></Field>
+      <Button variant="outline" onClick={onCancel}>{t("common.cancel")}</Button>
+      <Button loading={add.isPending} disabled={!name.trim()} onClick={() => add.mutate()}>{t("common.create")}</Button>
     </div>
   );
 }
