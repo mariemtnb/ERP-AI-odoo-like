@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    // Online payment provider. 'mock' is a built-in sandbox that moves no real
+    // money; set a real provider (and its credentials) to go live.
+    'payments' => [
+        'provider' => env('PAYMENT_PROVIDER', 'mock'),
+    ],
+
 ];

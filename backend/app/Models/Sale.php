@@ -53,6 +53,16 @@ class Sale extends Model
         return $this->hasOne(Invoice::class);
     }
 
+    public function onlinePayments(): HasMany
+    {
+        return $this->hasMany(OnlinePayment::class);
+    }
+
+    public function isPaidOnline(): bool
+    {
+        return $this->onlinePayments->where('status', OnlinePayment::PAID)->isNotEmpty();
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

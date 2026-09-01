@@ -47,9 +47,16 @@ Route::prefix('v1')->group(function () {
     Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:5,1');
     Route::post('auth/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:10,1');
 
-    // Public customer portal: view a shared sale by its unguessable token.
+    // Public customer portal: view a shared sale by its unguessable token,
+    // and pay it online through the configured gateway (sandbox by default).
     Route::get('portal/sales/{token}', [\App\Http\Controllers\PortalController::class, 'sale'])
         ->middleware('throttle:60,1');
+    Route::post('portal/sales/{token}/pay', [\App\Http\Controllers\PortalController::class, 'pay'])
+        ->middleware('throttle:20,1');
+    Route::get('portal/pay/{payToken}', [\App\Http\Controllers\PortalController::class, 'payIntent'])
+        ->middleware('throttle:60,1');
+    Route::post('portal/pay/{payToken}/confirm', [\App\Http\Controllers\PortalController::class, 'confirmPay'])
+        ->middleware('throttle:20,1');
 
     /*
     | `active` runs on every authenticated request: deactivating an account has

@@ -20,6 +20,7 @@ interface PortalSale {
   invoice_date: string | null;
   customer: { name: string | null; email: string | null; address: string | null };
   company: { name: string };
+  paid_online: boolean;
   lines: PortalLine[];
 }
 
@@ -28,6 +29,7 @@ export default function PortalSalePage() {
   const { token } = useParams<{ token: string }>();
   const [sale, setSale] = useState<PortalSale | null>(null);
   const [state, setState] = useState<"loading" | "ok" | "error">("loading");
+  const [paying, setPaying] = useState(false);
 
   useEffect(() => {
     fetch(`${API_BASE}/portal/sales/${token}`)
@@ -35,6 +37,23 @@ export default function PortalSalePage() {
       .then((d) => { setSale(d); setState("ok"); })
       .catch(() => setState("error"));
   }, [token]);
+
+  async function pay() {
+    setPaying(true);
+    try {
+      const r = await fetch(`${API_BASE}/portal/sales/${token}/pay`, { method: "POST" });
+      const d = await r.json();
+      if (r.ok && d.checkout_url) {
+        window.location.href = d.checkout_url;
+      } else {
+        alert(d.detail ?? "Could not start the payment.");
+        setPaying(false);
+      }
+    } catch {
+      alert("Could not start the payment.");
+      setPaying(false);
+    }
+  }
 
   return (
     <div style={styles.page}>
@@ -94,6 +113,14 @@ export default function PortalSalePage() {
               <span style={styles.total}>{Number(sale.total_amount).toFixed(3)} TND</span>
             </div>
 
+            {sale.paid_online ? (
+              <div style={styles.paidBadge}>✓ Paid</div>
+            ) : Number(sale.total_amount) > 0 ? (
+              <button style={styles.payBtn} disabled={paying} onClick={pay}>
+                {paying ? "Redirecting…" : "Pay online"}
+              </button>
+            ) : null}
+
             <p style={styles.footer}>Thank you for your business.</p>
           </>
         )}
@@ -120,4 +147,6 @@ const styles: Record<string, React.CSSProperties> = {
   muted: { color: "#58665f", fontSize: 13 },
   h1: { fontSize: 22, margin: "0 0 8px" },
   footer: { marginTop: 24, textAlign: "center", color: "#8695" + "8e", fontSize: 13 },
+  payBtn: { marginTop: 20, width: "100%", background: green, color: "#fff", border: "none", borderRadius: 10, padding: "13px 0", fontSize: 16, fontWeight: 600, cursor: "pointer" },
+  paidBadge: { marginTop: 20, textAlign: "center", background: "#dcece4", color: "#0a5c43", borderRadius: 10, padding: "12px 0", fontSize: 16, fontWeight: 700 },
 };
