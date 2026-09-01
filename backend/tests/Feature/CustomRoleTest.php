@@ -119,6 +119,39 @@ class CustomRoleTest extends TestCase
         $this->actingAs($cashier, 'api')->getJson('/api/v1/customers')->assertStatus(403);
     }
 
+    public function test_custom_role_is_blocked_from_a_disallowed_module(): void
+    {
+        // Cashier may touch pos + sales, nothing else.
+        $this->actingAs($this->super(), 'api')
+            ->postJson('/api/v1/roles', ['name' => 'Cashier', 'modules' => ['pos', 'sales']])
+            ->assertCreated();
+        $cashier = User::create(['email' => 'c@t.t', 'password' => 'x', 'role' => 'cashier']);
+
+        // Helpdesk is not on the allowlist → refused, even to read.
+        $this->actingAs($cashier, 'api')->getJson('/api/v1/tickets')->assertStatus(403);
+        // A sales resource is on the allowlist → the module gate lets it through.
+        $this->actingAs($cashier, 'api')->getJson('/api/v1/customers')->assertOk();
+    }
+
+    public function test_module_gate_ignores_built_in_roles(): void
+    {
+        // An employee has no allowlist, so the module gate never fires for them
+        // (whatever the route's own role gate then decides).
+        $employee = User::create(['email' => 'e@t.t', 'password' => 'x', 'role' => 'employee']);
+        $this->actingAs($employee, 'api')->getJson('/api/v1/tickets')->assertOk();
+    }
+
+    public function test_pathless_endpoints_stay_reachable_for_custom_roles(): void
+    {
+        $this->actingAs($this->super(), 'api')
+            ->postJson('/api/v1/roles', ['name' => 'Cashier', 'modules' => ['pos']])
+            ->assertCreated();
+        $cashier = User::create(['email' => 'c@t.t', 'password' => 'x', 'role' => 'cashier']);
+
+        // me/context and notifications carry no module and must never be gated.
+        $this->actingAs($cashier, 'api')->getJson('/api/v1/me/context')->assertOk();
+    }
+
     public function test_updating_a_custom_role_resyncs_modules(): void
     {
         $super = $this->super();
