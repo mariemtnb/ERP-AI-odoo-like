@@ -10,18 +10,20 @@ import {
   listCreditNotes,
 } from "@/api/returns";
 import type { BusinessDoc } from "@/types";
+import { useI18n } from "@/lib/i18n";
 
 const money = (n: number | string) => Number(n).toFixed(2);
 
 export default function ReturnsPage() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [creating, setCreating] = useState(false);
   const notesQ = useQuery({ queryKey: ["credit-notes"], queryFn: () => listCreditNotes() });
 
   return (
     <div>
-      <PageHead title="Returns & Credit Notes" sub="Credit part or all of a confirmed sale — restock and reverse the books in one step.">
-        <Button onClick={() => setCreating(true)}>New return</Button>
+      <PageHead title={t("ret.title")} sub={t("ret.sub")}>
+        <Button onClick={() => setCreating(true)}>{t("ret.new")}</Button>
       </PageHead>
 
       {creating && (
@@ -38,8 +40,8 @@ export default function ReturnsPage() {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
           <thead>
             <tr style={{ background: "var(--surface-hover)", color: "var(--text-muted)", textAlign: "left" }}>
-              <Th>Credit note</Th><Th>Sale</Th><Th>Customer</Th><Th>Reason</Th>
-              <Th>Restocked</Th><Th style={{ textAlign: "right" }}>Amount</Th>
+              <Th>{t("ret.creditNote")}</Th><Th>{t("ret.sale")}</Th><Th>{t("field.customer")}</Th><Th>{t("inv.reason")}</Th>
+              <Th>{t("ret.restocked")}</Th><Th style={{ textAlign: "right" }}>{t("subs.amount")}</Th>
             </tr>
           </thead>
           <tbody>
@@ -49,12 +51,12 @@ export default function ReturnsPage() {
                 <Td mono>{n.sale_number ?? "—"}</Td>
                 <Td>{n.customer_name ?? "—"}</Td>
                 <Td>{n.reason || "—"}</Td>
-                <Td>{n.restocked ? "Yes" : "No"}</Td>
+                <Td>{n.restocked ? t("common.yes") : t("common.no")}</Td>
                 <Td mono right>{money(n.total_amount)} TND</Td>
               </tr>
             ))}
             {notesQ.data?.results.length === 0 && (
-              <tr><Td colSpan={6} muted>No credit notes yet.</Td></tr>
+              <tr><Td colSpan={6} muted>{t("ret.none")}</Td></tr>
             )}
           </tbody>
         </table>
@@ -65,6 +67,7 @@ export default function ReturnsPage() {
 
 /* ---------- new return flow ---------- */
 function NewReturn({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
+  const { t } = useI18n();
   const [search, setSearch] = useState("");
   const [sale, setSale] = useState<BusinessDoc | null>(null);
   const [qtys, setQtys] = useState<Record<number, string>>({});
@@ -94,11 +97,11 @@ function NewReturn({ onClose, onDone }: { onClose: () => void; onDone: () => voi
       const lines = (sale?.lines ?? [])
         .filter((l) => Number(qtys[l.product] || 0) > 0)
         .map((l) => ({ product: l.product, quantity: Number(qtys[l.product]), unit_price: Number(l.unit_price) }));
-      if (lines.length === 0) throw new Error("Enter at least one quantity to return.");
+      if (lines.length === 0) throw new Error(t("ret.enterQty"));
       return createCreditNote(sale!.id, { reason, restock, lines });
     },
     onSuccess: onDone,
-    onError: (e: any) => setError(e?.response?.data?.detail ?? e?.message ?? "Could not create the credit note."),
+    onError: (e: any) => setError(e?.response?.data?.detail ?? e?.message ?? t("ret.createError")),
   });
 
   return (
@@ -106,10 +109,10 @@ function NewReturn({ onClose, onDone }: { onClose: () => void; onDone: () => voi
       {!sale ? (
         <>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <strong style={{ color: "var(--text-strong)" }}>Pick a confirmed sale to credit</strong>
-            <Button variant="ghost" size="sm" onClick={onClose}>Cancel</Button>
+            <strong style={{ color: "var(--text-strong)" }}>{t("ret.pickSale")}</strong>
+            <Button variant="ghost" size="sm" onClick={onClose}>{t("common.cancel")}</Button>
           </div>
-          <Input placeholder="Search sale by number or customer…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input placeholder={t("ret.searchSale")} value={search} onChange={(e) => setSearch(e.target.value)} />
           <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 6 }}>
             {(salesQ.data?.results ?? []).map((s) => (
               <button
@@ -121,20 +124,20 @@ function NewReturn({ onClose, onDone }: { onClose: () => void; onDone: () => voi
                 <span style={{ color: "var(--text-muted)", marginLeft: 10 }}>{s.customer_name} · {money(s.total_amount)} TND</span>
               </button>
             ))}
-            {salesQ.data?.results.length === 0 && <p style={{ color: "var(--text-muted)", fontSize: 13 }}>No confirmed sales match.</p>}
+            {salesQ.data?.results.length === 0 && <p style={{ color: "var(--text-muted)", fontSize: 13 }}>{t("ret.noSaleMatch")}</p>}
           </div>
         </>
       ) : (
         <>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <strong style={{ color: "var(--text-strong)" }}>Return items from {sale.number}</strong>
-            <Button variant="ghost" size="sm" onClick={() => setSale(null)}>Change sale</Button>
+            <strong style={{ color: "var(--text-strong)" }}>{t("ret.returnFrom")} {sale.number}</strong>
+            <Button variant="ghost" size="sm" onClick={() => setSale(null)}>{t("ret.changeSale")}</Button>
           </div>
 
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
             <thead>
               <tr style={{ color: "var(--text-muted)", textAlign: "left" }}>
-                <Th>Product</Th><Th right>Sold</Th><Th right>Returnable</Th><Th right>Return qty</Th>
+                <Th>{t("field.product")}</Th><Th right>{t("ret.sold")}</Th><Th right>{t("ret.returnable")}</Th><Th right>{t("ret.returnQty")}</Th>
               </tr>
             </thead>
             <tbody>
@@ -163,17 +166,17 @@ function NewReturn({ onClose, onDone }: { onClose: () => void; onDone: () => voi
           <div style={{ display: "flex", gap: 16, alignItems: "center", marginTop: 14, flexWrap: "wrap" }}>
             <label style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 14, color: "var(--text-body)" }}>
               <input type="checkbox" checked={restock} onChange={(e) => setRestock(e.target.checked)} />
-              Restock returned goods
+              {t("ret.restockGoods")}
             </label>
-            <Input placeholder="Reason (optional)" value={reason} onChange={(e) => setReason(e.target.value)} style={{ flex: 1, minWidth: 180 }} />
-            <div style={{ fontWeight: 700, color: "var(--text-strong)" }}>Credit {money(total)} TND</div>
+            <Input placeholder={t("ret.reasonOptional")} value={reason} onChange={(e) => setReason(e.target.value)} style={{ flex: 1, minWidth: 180 }} />
+            <div style={{ fontWeight: 700, color: "var(--text-strong)" }}>{t("ret.creditWord")} {money(total)} TND</div>
           </div>
 
           {error && <p style={{ color: "var(--rose-400)", fontSize: 13, marginTop: 10 }}>{error}</p>}
           <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
-            <Button variant="outline" onClick={onClose}>Cancel</Button>
+            <Button variant="outline" onClick={onClose}>{t("common.cancel")}</Button>
             <Button loading={submit.isPending} disabled={total <= 0} onClick={() => submit.mutate()}>
-              Issue credit note
+              {t("ret.issue")}
             </Button>
           </div>
         </>
