@@ -19,14 +19,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { useI18n } from "@/lib/i18n";
 import type { LeadStatus } from "@/types";
 
-const COLUMNS: { status: LeadStatus; label: string; tone: string }[] = [
-  { status: "new", label: "New", tone: "employee" },
-  { status: "contacted", label: "Contacted", tone: "manager" },
-  { status: "qualified", label: "Qualified", tone: "admin" },
-  { status: "won", label: "Won", tone: "green" },
-  { status: "lost", label: "Lost", tone: "red" },
+const COLUMNS: { status: LeadStatus; tone: string }[] = [
+  { status: "new", tone: "employee" },
+  { status: "contacted", tone: "manager" },
+  { status: "qualified", tone: "admin" },
+  { status: "won", tone: "green" },
+  { status: "lost", tone: "red" },
 ];
 
 const NEXT: Partial<Record<LeadStatus, LeadStatus>> = {
@@ -37,6 +38,7 @@ const NEXT: Partial<Record<LeadStatus, LeadStatus>> = {
 const emptyForm = { name: "", company: "", email: "", phone: "", source: "", notes: "" };
 
 export default function CrmPage() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
@@ -58,7 +60,7 @@ export default function CrmPage() {
       setError("");
     },
     onError: (e: any) =>
-      setError(JSON.stringify(e?.response?.data ?? "Request failed.")),
+      setError(JSON.stringify(e?.response?.data ?? t("common.requestFailed"))),
   });
 
   const statusMutation = useMutation({
@@ -82,12 +84,11 @@ export default function CrmPage() {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-text-3">
-            Prospect pipeline · {leads.length} lead{leads.length === 1 ? "" : "s"} — advance
-            deals, convert winners.
+            {t("crm.pipeline1")} {leads.length} {t("crm.leadWord")} {t("crm.pipeline2")}
           </p>
         </div>
         <Button onClick={() => { setError(""); setCreateOpen(true); }}>
-          <Plus className="h-4 w-4" /> New lead
+          <Plus className="h-4 w-4" /> {t("crm.new")}
         </Button>
       </div>
 
@@ -103,11 +104,11 @@ export default function CrmPage() {
       ) : leads.length === 0 ? (
         <EmptyState
           icon={Contact}
-          title="Your pipeline is empty"
-          hint="Add your first lead — track calls and meetings, then convert winners into customers."
+          title={t("crm.emptyTitle")}
+          hint={t("crm.emptyHint")}
           action={
             <Button onClick={() => { setError(""); setCreateOpen(true); }}>
-              <Plus className="h-4 w-4" /> New lead
+              <Plus className="h-4 w-4" /> {t("crm.new")}
             </Button>
           }
         />
@@ -118,7 +119,7 @@ export default function CrmPage() {
             return (
               <div key={col.status} className="space-y-3">
                 <div className="flex items-center justify-between px-1">
-                  <Badge tone={col.tone}>{col.label}</Badge>
+                  <Badge tone={col.tone}>{t(`crm.status.${col.status}`)}</Badge>
                   <span className="text-xs text-text-3">{items.length}</span>
                 </div>
                 {items.map((lead) => (
@@ -137,7 +138,7 @@ export default function CrmPage() {
                       </p>
                     )}
                     {NEXT[lead.status] && (
-                      <Tooltip label="Move this person one step closer to becoming a customer" className="w-full">
+                      <Tooltip label={t("crm.moveTip")} className="w-full">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -147,7 +148,7 @@ export default function CrmPage() {
                           statusMutation.mutate({ id: lead.id, status: NEXT[lead.status]! });
                         }}
                       >
-                        <ArrowRight className="h-3 w-3" /> {NEXT[lead.status]}
+                        <ArrowRight className="h-3 w-3" /> {t(`crm.status.${NEXT[lead.status]}`)}
                       </Button>
                       </Tooltip>
                     )}
@@ -160,37 +161,37 @@ export default function CrmPage() {
       )}
 
       {/* create dialog */}
-      <Dialog open={createOpen} onClose={() => setCreateOpen(false)} title="New lead">
+      <Dialog open={createOpen} onClose={() => setCreateOpen(false)} title={t("crm.new")}>
         <form onSubmit={submit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="l-name">Name</Label>
+              <Label htmlFor="l-name">{t("field.name")}</Label>
               <Input id="l-name" value={form.name} onChange={set("name")} required />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="l-company">Company</Label>
+              <Label htmlFor="l-company">{t("crm.company")}</Label>
               <Input id="l-company" value={form.company} onChange={set("company")} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="l-email">Email</Label>
+              <Label htmlFor="l-email">{t("field.email")}</Label>
               <Input id="l-email" type="email" value={form.email} onChange={set("email")} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="l-phone">Phone</Label>
+              <Label htmlFor="l-phone">{t("field.phone")}</Label>
               <Input id="l-phone" value={form.phone} onChange={set("phone")} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="l-source">Source</Label>
-              <Input id="l-source" placeholder="web, referral, event…" value={form.source} onChange={set("source")} />
+              <Label htmlFor="l-source">{t("crm.source")}</Label>
+              <Input id="l-source" placeholder={t("crm.sourcePlaceholder")} value={form.source} onChange={set("source")} />
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="l-notes">Notes</Label>
+            <Label htmlFor="l-notes">{t("field.notes")}</Label>
             <Input id="l-notes" value={form.notes} onChange={set("notes")} />
           </div>
           {error && <p className="break-all text-sm text-danger">{error}</p>}
           <Button type="submit" className="w-full" disabled={createMutation.isPending}>
-            {createMutation.isPending ? "Saving…" : "Create lead"}
+            {createMutation.isPending ? t("common.saving") : t("crm.createLead")}
           </Button>
         </form>
       </Dialog>
@@ -209,6 +210,7 @@ function LeadDetail({
   onClose: () => void;
   onChanged: () => void;
 }) {
+  const { t } = useI18n();
   const [activity, setActivity] = useState({ type: "call", summary: "" });
   const [error, setError] = useState("");
 
@@ -230,7 +232,7 @@ function LeadDetail({
   const convertMutation = useMutation({
     mutationFn: () => convertLead(id!),
     onSuccess: onChanged,
-    onError: (e: any) => setError(e?.response?.data?.detail ?? "Conversion failed."),
+    onError: (e: any) => setError(e?.response?.data?.detail ?? t("crm.conversionFailed")),
   });
 
   const loseMutation = useMutation({
@@ -242,19 +244,19 @@ function LeadDetail({
     <Dialog
       open={id !== null}
       onClose={onClose}
-      title={lead ? lead.name : "Lead"}
+      title={lead ? lead.name : t("crm.lead")}
       className="max-w-2xl"
     >
       {lead && (
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-2 text-sm text-text-2">
-            <p>Company: {lead.company || "—"}</p>
-            <p>Source: {lead.source || "—"}</p>
-            <p>Email: {lead.email || "—"}</p>
-            <p>Phone: {lead.phone || "—"}</p>
-            <p>Assigned to: {lead.assigned_to_email ?? "—"}</p>
+            <p>{t("crm.companyLabel")} {lead.company || "—"}</p>
+            <p>{t("crm.sourceLabel")} {lead.source || "—"}</p>
+            <p>{t("crm.emailLabel")} {lead.email || "—"}</p>
+            <p>{t("crm.phoneLabel")} {lead.phone || "—"}</p>
+            <p>{t("crm.assignedTo")} {lead.assigned_to_email ?? "—"}</p>
             <p>
-              Status: <Badge tone={lead.status === "won" ? "green" : lead.status === "lost" ? "red" : "manager"}>{lead.status}</Badge>
+              {t("crm.statusLabel")} <Badge tone={lead.status === "won" ? "green" : lead.status === "lost" ? "red" : "manager"}>{t(`crm.status.${lead.status}`)}</Badge>
             </p>
           </div>
           {lead.notes && <p className="text-sm text-text-2">{lead.notes}</p>}
@@ -262,22 +264,22 @@ function LeadDetail({
           {lead.status !== "won" && lead.status !== "lost" && (
             <div className="flex gap-2">
               <Button size="sm" onClick={() => convertMutation.mutate()} disabled={convertMutation.isPending}>
-                <UserCheck className="h-4 w-4" /> Convert to customer
+                <UserCheck className="h-4 w-4" /> {t("crm.convert")}
               </Button>
               <Button size="sm" variant="destructive" onClick={() => loseMutation.mutate()}>
-                Mark lost
+                {t("crm.markLost")}
               </Button>
             </div>
           )}
           {lead.customer_id && (
             <p className="text-sm text-positive">
-              Converted → customer #{lead.customer_id}
+              {t("crm.converted")}{lead.customer_id}
             </p>
           )}
           {error && <p className="text-sm text-danger">{error}</p>}
 
           <div className="space-y-2">
-            <Label>Activity log</Label>
+            <Label>{t("crm.activityLog")}</Label>
             <form
               className="flex gap-2"
               onSubmit={(e) => {
@@ -290,24 +292,24 @@ function LeadDetail({
                 onChange={(e) => setActivity((a) => ({ ...a, type: e.target.value }))}
                 className="w-32"
               >
-                <option value="call">Call</option>
-                <option value="email">Email</option>
-                <option value="meeting">Meeting</option>
-                <option value="note">Note</option>
+                <option value="call">{t("crm.act.call")}</option>
+                <option value="email">{t("crm.act.email")}</option>
+                <option value="meeting">{t("crm.act.meeting")}</option>
+                <option value="note">{t("crm.act.note")}</option>
               </Select>
               <Input
-                placeholder="What happened?"
+                placeholder={t("crm.whatHappened")}
                 value={activity.summary}
                 onChange={(e) => setActivity((a) => ({ ...a, summary: e.target.value }))}
               />
               <Button type="submit" size="sm" disabled={activityMutation.isPending}>
-                Log
+                {t("crm.log")}
               </Button>
             </form>
             <ul className="max-h-48 space-y-2 overflow-y-auto text-sm">
               {(lead.activities ?? []).map((a) => (
                 <li key={a.id} className="rounded-md bg-surface-2 p-2">
-                  <span className="text-xs uppercase text-accent-strong">{a.type}</span>{" "}
+                  <span className="text-xs uppercase text-accent-strong">{t(`crm.act.${a.type}`)}</span>{" "}
                   {a.summary}
                   <span className="ml-2 text-xs text-text-3">
                     {new Date(a.created_at).toLocaleString()} · {a.created_by_email}
