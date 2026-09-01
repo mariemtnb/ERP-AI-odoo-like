@@ -18,8 +18,10 @@ import { TableSkeleton } from "@/components/ui/skeleton";
 import { Table, TBody, Td, Th, THead } from "@/components/ui/table";
 import { Tooltip } from "@/components/ui/tooltip";
 import { BANK_TX_STATUS, STATUS_TONE, formatTnd, frLabel, label } from "@/lib/tnLabels";
+import { useI18n } from "@/lib/i18n";
 
 export default function ReconciliationPage() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [accountId, setAccountId] = useState("");
   const [status, setStatus] = useState("unmatched");
@@ -65,15 +67,14 @@ export default function ReconciliationPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-text-3">
-          Rapprochement bancaire — match each statement line to the payment, cheque or
-          instalment it represents.
+          {t("rec.sub")}
         </p>
         {accountId && (
           <Button
             variant="secondary"
             onClick={() => downloadReconciliationPdf({ bank_account: Number(accountId) })}
           >
-            <Download className="h-4 w-4" /> Export PDF
+            <Download className="h-4 w-4" /> {t("rep.exportPdf")}
           </Button>
         )}
       </div>
@@ -81,24 +82,24 @@ export default function ReconciliationPage() {
       {/* balances */}
       {report && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <SummaryTile label="Statement balance" value={formatTnd(report.statement_balance)} />
-          <SummaryTile label="Book balance" value={formatTnd(report.book_balance)} />
+          <SummaryTile label={t("rec.statementBalance")} value={formatTnd(report.statement_balance)} />
+          <SummaryTile label={t("rec.bookBalance")} value={formatTnd(report.book_balance)} />
           <SummaryTile
-            label="Difference"
+            label={t("rec.difference")}
             value={formatTnd(report.difference)}
             tone={Number(report.difference) === 0 ? "positive" : "danger"}
           />
           <SummaryTile
-            label="In transit"
+            label={t("rec.inTransit")}
             value={formatTnd(report.instruments_in_transit.amount)}
-            hint={`${report.instruments_in_transit.count} instrument(s) deposited, not yet credited`}
+            hint={`${report.instruments_in_transit.count} ${t("rec.inTransitHint")}`}
           />
         </div>
       )}
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="w-64 space-y-1.5">
-          <Label htmlFor="r-account">Bank account</Label>
+          <Label htmlFor="r-account">{t("bnk.bankAccount")}</Label>
           <Select id="r-account" value={accountId} onChange={(e) => setAccountId(e.target.value)}>
             {(accounts ?? []).map((a) => (
               <option key={a.id} value={a.id}>{a.label} · {a.bank_name}</option>
@@ -111,11 +112,11 @@ export default function ReconciliationPage() {
             value={status}
             onChange={setStatus}
             options={[
-              { value: "unmatched", label: "Unmatched" },
-              { value: "partially_matched", label: "Partial" },
-              { value: "disputed", label: "Disputed" },
-              { value: "matched", label: "Matched" },
-              { value: "all", label: "All" },
+              { value: "unmatched", label: t("rec.unmatched") },
+              { value: "partially_matched", label: t("rec.partial") },
+              { value: "disputed", label: t("rec.disputed") },
+              { value: "matched", label: t("rec.matched") },
+              { value: "all", label: t("common.all") },
             ]}
           />
         </div>
@@ -126,46 +127,46 @@ export default function ReconciliationPage() {
       ) : rows.length === 0 ? (
         <EmptyState
           icon={CheckCircle2}
-          title="Nothing to reconcile here"
+          title={t("rec.nothingTitle")}
           hint={
             status === "unmatched"
-              ? "Every imported line for this account has been matched."
-              : "No statement line matches this filter. Import a statement from the Banking screen."
+              ? t("rec.allMatched")
+              : t("rec.noFilterMatch")
           }
         />
       ) : (
         <Table>
           <THead>
             <tr>
-              <Th>Date</Th>
-              <Th>Label</Th>
-              <Th>Reference</Th>
-              <Th>Status</Th>
-              <Th className="text-right">Amount</Th>
-              <Th className="text-right">Remaining</Th>
+              <Th>{t("common.date")}</Th>
+              <Th>{t("bnk.labelCol")}</Th>
+              <Th>{t("bnk.reference")}</Th>
+              <Th>{t("common.status")}</Th>
+              <Th className="text-right">{t("subs.amount")}</Th>
+              <Th className="text-right">{t("rec.remaining")}</Th>
             </tr>
           </THead>
           <TBody>
-            {rows.map((t) => (
-              <tr key={t.id} className="cursor-pointer" onClick={() => setTxId(t.id)}>
-                <Td>{t.operation_date}</Td>
-                <Td className="max-w-xs truncate">{t.label}</Td>
-                <Td>{t.reference || "—"}</Td>
+            {rows.map((row) => (
+              <tr key={row.id} className="cursor-pointer" onClick={() => setTxId(row.id)}>
+                <Td>{row.operation_date}</Td>
+                <Td className="max-w-xs truncate">{row.label}</Td>
+                <Td>{row.reference || "—"}</Td>
                 <Td>
-                  <Tooltip label={frLabel(BANK_TX_STATUS, t.status)}>
-                    <Badge tone={STATUS_TONE[t.status] ?? "employee"}>
-                      {label(BANK_TX_STATUS, t.status)}
+                  <Tooltip label={frLabel(BANK_TX_STATUS, row.status)}>
+                    <Badge tone={STATUS_TONE[row.status] ?? "employee"}>
+                      {label(BANK_TX_STATUS, row.status)}
                     </Badge>
                   </Tooltip>
                 </Td>
                 <Td
                   className={`text-right font-medium ${
-                    t.direction === "credit" ? "text-positive" : "text-danger"
+                    row.direction === "credit" ? "text-positive" : "text-danger"
                   }`}
                 >
-                  {formatTnd(t.amount)}
+                  {formatTnd(row.amount)}
                 </Td>
-                <Td className="text-right">{formatTnd(t.remaining_amount)}</Td>
+                <Td className="text-right">{formatTnd(row.remaining_amount)}</Td>
               </tr>
             ))}
           </TBody>
@@ -212,6 +213,7 @@ function MatchDialog({
   onClose: () => void;
   onChanged: () => void;
 }) {
+  const { t } = useI18n();
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [disputeReason, setDisputeReason] = useState("");
@@ -235,7 +237,7 @@ function MatchDialog({
     mutationFn: (input: { matchable_type: string; matchable_id?: number | null; amount: number }) =>
       matchTransaction(id!, { ...input, note }),
     onSuccess: done,
-    onError: (e: any) => setError(e?.response?.data?.detail ?? "Could not match."),
+    onError: (e: any) => setError(e?.response?.data?.detail ?? t("rec.couldNotMatch")),
   });
 
   const unmatchMutation = useMutation({
@@ -255,7 +257,7 @@ function MatchDialog({
 
   if (!tx) {
     return (
-      <Dialog open={id !== null} onClose={onClose} title="Reconcile">
+      <Dialog open={id !== null} onClose={onClose} title={t("rec.reconcile")}>
         <TableSkeleton rows={3} />
       </Dialog>
     );
@@ -264,10 +266,10 @@ function MatchDialog({
   const remaining = Number(tx.remaining_amount);
 
   return (
-    <Dialog open={id !== null} onClose={onClose} title="Reconcile a statement line" className="max-w-2xl">
+    <Dialog open={id !== null} onClose={onClose} title={t("rec.reconcileLine")} className="max-w-2xl">
       <div className="space-y-4">
         <div>
-          <p className="text-sm text-text-2">{tx.operation_date} · {tx.reference || "no reference"}</p>
+          <p className="text-sm text-text-2">{tx.operation_date} · {tx.reference || t("rec.noReference")}</p>
           <p className="text-lg font-medium">{tx.label}</p>
           <p
             className={`text-2xl font-semibold ${
@@ -277,7 +279,7 @@ function MatchDialog({
             {formatTnd(tx.amount)}
           </p>
           <p className="text-sm text-text-3">
-            {formatTnd(tx.remaining_amount)} left to explain ·{" "}
+            {formatTnd(tx.remaining_amount)} {t("rec.leftToExplain")} ·{" "}
             <Badge tone={STATUS_TONE[tx.status] ?? "employee"}>
               {label(BANK_TX_STATUS, tx.status)}
             </Badge>
@@ -287,7 +289,7 @@ function MatchDialog({
         {/* existing matches */}
         {(tx.matches ?? []).length > 0 && (
           <div className="space-y-2">
-            <Label>Already matched</Label>
+            <Label>{t("rec.alreadyMatched")}</Label>
             <ul className="space-y-1 text-sm">
               {tx.matches!.map((m) => (
                 <li
@@ -306,7 +308,7 @@ function MatchDialog({
                     variant="ghost"
                     onClick={() => unmatchMutation.mutate(m.id)}
                   >
-                    <Unlink className="h-3.5 w-3.5" /> Undo
+                    <Unlink className="h-3.5 w-3.5" /> {t("rec.undo")}
                   </Button>
                 </li>
               ))}
@@ -318,7 +320,7 @@ function MatchDialog({
           <>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="m-amount">Amount to apply</Label>
+                <Label htmlFor="m-amount">{t("rec.amountToApply")}</Label>
                 <Input
                   id="m-amount"
                   type="number"
@@ -330,17 +332,16 @@ function MatchDialog({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="m-note">Note</Label>
+                <Label htmlFor="m-note">{t("rec.note")}</Label>
                 <Input id="m-note" value={note} onChange={(e) => setNote(e.target.value)} />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label>Suggested matches</Label>
+              <Label>{t("rec.suggested")}</Label>
               {(data?.suggestions ?? []).length === 0 ? (
                 <p className="text-sm text-text-3">
-                  Nothing in the ERP looks like this line. Record it as an adjustment below if
-                  it is a bank charge or interest.
+                  {t("rec.noSuggestions")}
                 </p>
               ) : (
                 <ul className="space-y-1">
@@ -353,7 +354,7 @@ function MatchDialog({
                         <span className="text-xs uppercase text-accent-strong">{s.type}</span>{" "}
                         {s.label}
                         <span className="ml-2 text-xs text-text-3">
-                          {s.amount} · {s.date ?? "no date"}
+                          {s.amount} · {s.date ?? t("rec.noDate")}
                         </span>
                       </span>
                       <Button
@@ -367,20 +368,19 @@ function MatchDialog({
                         }
                         disabled={matchMutation.isPending}
                       >
-                        <Scale className="h-3.5 w-3.5" /> Match
+                        <Scale className="h-3.5 w-3.5" /> {t("rec.match")}
                       </Button>
                     </li>
                   ))}
                 </ul>
               )}
               <p className="text-xs text-text-3">
-                Matching a deposited cheque marks it cleared — that bank line <em>is</em> the
-                moment it cleared.
+                {t("rec.matchNote")}
               </p>
             </div>
 
             <div className="flex flex-wrap gap-2 border-t border-white/[0.06] pt-3">
-              <Tooltip label="Bank charge, interest or an unidentified line — posts to fees or suspense">
+              <Tooltip label={t("rec.adjustmentTip")}>
                 <Button
                   size="sm"
                   variant="secondary"
@@ -393,12 +393,12 @@ function MatchDialog({
                   }
                   disabled={matchMutation.isPending}
                 >
-                  Record as adjustment
+                  {t("rec.recordAdjustment")}
                 </Button>
               </Tooltip>
               <Input
                 className="max-w-56"
-                placeholder="Dispute reason…"
+                placeholder={t("rec.disputeReason")}
                 value={disputeReason}
                 onChange={(e) => setDisputeReason(e.target.value)}
               />
@@ -408,7 +408,7 @@ function MatchDialog({
                 disabled={!disputeReason || disputeMutation.isPending}
                 onClick={() => disputeMutation.mutate()}
               >
-                <Flag className="h-3.5 w-3.5" /> Dispute
+                <Flag className="h-3.5 w-3.5" /> {t("rec.dispute")}
               </Button>
             </div>
           </>
