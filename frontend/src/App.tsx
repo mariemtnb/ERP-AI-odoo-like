@@ -46,6 +46,7 @@ import PartnersPage from "@/features/partners/PartnersPage";
 import ProductsPage from "@/features/products/ProductsPage";
 import UsersPage from "@/features/users/UsersPage";
 import RolesPage from "@/features/roles/RolesPage";
+import PricelistsPage from "@/features/pricelists/PricelistsPage";
 
 // Keep results warm across tab switches: the dev backend re-bootstraps Laravel
 // on every request, so refetching all of a page's queries on each navigation is
@@ -120,6 +121,9 @@ export default function App() {
                   element={<DocumentsPage kind="sales" title="Sales" />}
                 />
                 <Route path="pos" element={<PosPage />} />
+                <Route element={<ProtectedRoute roles={["admin", "manager"]} />}>
+                  <Route path="pricelists" element={<PricelistsPage />} />
+                </Route>
                 <Route element={<ProtectedRoute roles={["admin", "manager"]} />}>
                   <Route path="manufacturing" element={<ManufacturingPage />} />
                 </Route>

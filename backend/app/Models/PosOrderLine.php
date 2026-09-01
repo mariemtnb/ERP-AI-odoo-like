@@ -10,14 +10,17 @@ class PosOrderLine extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'pos_order_id', 'product_id', 'quantity', 'unit_price', 'line_total',
+        'pos_order_id', 'product_id', 'quantity', 'unit_price', 'discount_pct', 'line_total',
     ];
+
+    protected $attributes = ['discount_pct' => 0];
 
     protected function casts(): array
     {
         return [
             'quantity' => 'decimal:3',
             'unit_price' => 'decimal:2',
+            'discount_pct' => 'decimal:2',
             'line_total' => 'decimal:2',
         ];
     }
@@ -35,6 +38,7 @@ class PosOrderLine extends Model
             'sku' => $this->product?->sku,
             'quantity' => $this->quantity,
             'unit_price' => $this->unit_price,
+            'discount_pct' => $this->discount_pct,
             'line_total' => $this->line_total,
         ];
     }

@@ -40,6 +40,8 @@ abstract class PartnerController extends Controller
             'address' => ['sometimes', 'nullable', 'string'],
             'notes' => ['sometimes', 'nullable', 'string'],
             'is_active' => ['sometimes', 'boolean'],
+            // Customers only; harmless for suppliers.
+            'pricelist_id' => ['sometimes', 'nullable', 'integer', 'exists:pricelists,id'],
         ];
     }
 

@@ -25,6 +25,7 @@ final class Modules
         'reordering'    => 'Reordering',
         'rfq'           => 'RFQs',
         'sales'         => 'Customers & Sales',
+        'pricelists'    => 'Pricelists & Discounts',
         'pos'           => 'Point of Sale',
         'subscriptions' => 'Subscriptions',
         'returns'       => 'Returns',
@@ -66,6 +67,7 @@ final class Modules
         'rfqs' => 'rfq',
         // sales
         'customers' => 'sales', 'sales' => 'sales',
+        'pricelists' => 'pricelists', 'pricelist-rules' => 'pricelists', 'pricing' => 'pricelists',
         'pos' => 'pos',
         'subscriptions' => 'subscriptions',
         'credit-notes' => 'returns',

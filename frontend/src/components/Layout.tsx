@@ -5,7 +5,7 @@ import {
   BarChart3, BookOpen, Boxes, Building2, CalendarClock, ClipboardList, Coffee, Coins, Contact, Factory, FileText, FolderKanban, Landmark,
   LayoutDashboard, LifeBuoy, LogOut, Megaphone, Moon, PackageCheck, PanelLeftClose, PanelLeftOpen, Package,
   ReceiptText, RefreshCw, Repeat, Scale, Search, Settings, ShieldCheck, ShoppingBag,
-  ShoppingCart, Sparkles, Store, Sun, TrendingUp, Truck, Undo2, UserCog, Users, UserSquare2, Wallet,
+  ShoppingCart, Sparkles, Store, Sun, Tag, TrendingUp, Truck, Undo2, UserCog, Users, UserSquare2, Wallet,
 } from "lucide-react";
 import { useTheme, THEME_ORDER } from "@/lib/theme";
 import { useSession } from "@/lib/session";
@@ -66,6 +66,7 @@ const NAV_SECTIONS: NavSection[] = [
       { to: "/customers", label: "nav.customers", icon: UserSquare2, feature: "sales" },
       { to: "/sales", label: "nav.sales", icon: ShoppingCart, feature: "sales" },
       { to: "/pos", label: "nav.pos", icon: Store, feature: "pos" },
+      { to: "/pricelists", label: "nav.pricelists", icon: Tag, roles: ["admin", "manager"], feature: "pricelists" },
       { to: "/subscriptions", label: "nav.subscriptions", icon: Repeat, roles: ["admin", "manager"], feature: "subscriptions" },
       { to: "/returns", label: "nav.returns", icon: Undo2, roles: ["admin", "manager"], feature: "returns" },
       { to: "/shipping", label: "nav.shipping", icon: PackageCheck, feature: "shipping" },

@@ -70,9 +70,23 @@ class PosService
             throw new InvalidTransition('Cannot check out an empty basket.');
         }
 
+        // Normalise every line: resolve the price from the pricelist when the
+        // till didn't send one, apply any per-line discount, and cache the
+        // line total so the sum and the stored rows agree.
+        $customer = $customerId ? \App\Models\Customer::find($customerId) : null;
         $total = 0.0;
-        foreach ($lines as $line) {
-            $total += (float) $line['quantity'] * (float) $line['unit_price'];
+        foreach ($lines as $i => $line) {
+            $product = \App\Models\Product::find($line['product']);
+            $price = $line['unit_price'] ?? \App\Services\PricingService::priceFor(
+                $product, (float) $line['quantity'], $customer
+            );
+            $discount = (float) ($line['discount_pct'] ?? 0);
+            $lineTotal = round((float) $line['quantity'] * (float) $price * (1 - $discount / 100), 2);
+
+            $lines[$i]['unit_price'] = $price;
+            $lines[$i]['discount_pct'] = $discount;
+            $lines[$i]['_line_total'] = $lineTotal;
+            $total += $lineTotal;
         }
         $total = round($total, 2);
 
@@ -103,13 +117,13 @@ class PosService
             ]);
 
             foreach ($lines as $line) {
-                $lineTotal = round((float) $line['quantity'] * (float) $line['unit_price'], 2);
                 PosOrderLine::create([
                     'pos_order_id' => $order->id,
                     'product_id' => $line['product'],
                     'quantity' => $line['quantity'],
                     'unit_price' => $line['unit_price'],
-                    'line_total' => $lineTotal,
+                    'discount_pct' => $line['discount_pct'] ?? 0,
+                    'line_total' => $line['_line_total'],
                 ]);
                 // Throws InsufficientStock, rolling back the whole basket.
                 StockService::recordMovement(

@@ -152,6 +152,21 @@ Route::prefix('v1')->group(function () {
         Route::post('pos/orders', [\App\Http\Controllers\PosController::class, 'checkout']);
         Route::get('pos/orders/{order}', [\App\Http\Controllers\PosController::class, 'show']);
 
+        // --- pricelists & discounts: everyone reads and resolves prices;
+        //     managers/admins manage the lists and rules ---
+        Route::middleware('feature:pricelists')->group(function () {
+            Route::get('pricing/resolve', [\App\Http\Controllers\PricelistController::class, 'resolve']);
+            Route::get('pricelists', [\App\Http\Controllers\PricelistController::class, 'index']);
+            Route::get('pricelists/{pricelist}', [\App\Http\Controllers\PricelistController::class, 'show']);
+            Route::middleware('role:admin,manager')->group(function () {
+                Route::post('pricelists', [\App\Http\Controllers\PricelistController::class, 'store']);
+                Route::match(['put', 'patch'], 'pricelists/{pricelist}', [\App\Http\Controllers\PricelistController::class, 'update']);
+                Route::delete('pricelists/{pricelist}', [\App\Http\Controllers\PricelistController::class, 'destroy']);
+                Route::post('pricelists/{pricelist}/rules', [\App\Http\Controllers\PricelistController::class, 'addRule']);
+                Route::delete('pricelist-rules/{rule}', [\App\Http\Controllers\PricelistController::class, 'removeRule']);
+            });
+        });
+
         // --- sales returns / credit notes: everyone reads; managers/admins issue ---
         Route::get('credit-notes', [\App\Http\Controllers\CreditNoteController::class, 'index']);
         Route::get('credit-notes/{creditNote}', [\App\Http\Controllers\CreditNoteController::class, 'show']);

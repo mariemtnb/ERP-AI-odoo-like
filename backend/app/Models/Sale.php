@@ -49,7 +49,7 @@ class Sale extends Model
 
     public function recomputeTotal(): void
     {
-        $this->total_amount = $this->lines->sum(fn ($l) => $l->quantity * $l->unit_price);
+        $this->total_amount = $this->lines->sum(fn ($l) => $l->subtotal());
         $this->save();
     }
 

@@ -45,7 +45,9 @@ class SaleController extends Controller
             'lines' => ['required', 'array', 'min:1'],
             'lines.*.product' => ['required', 'integer', 'exists:products,id'],
             'lines.*.quantity' => ['required', 'numeric', 'gt:0'],
-            'lines.*.unit_price' => ['required', 'numeric', 'min:0'],
+            // Optional: when omitted, the applicable pricelist decides the price.
+            'lines.*.unit_price' => ['sometimes', 'nullable', 'numeric', 'min:0'],
+            'lines.*.discount_pct' => ['sometimes', 'numeric', 'min:0', 'max:100'],
         ]);
     }
 
@@ -60,12 +62,19 @@ class SaleController extends Controller
                 'sale_date' => $data['sale_date'],
                 'created_by' => $request->user()->id,
             ]);
+            $customer = \App\Models\Customer::find($data['customer']);
             foreach ($data['lines'] as $line) {
+                $product = \App\Models\Product::find($line['product']);
+                // Use the given price, or let the pricelist resolve it.
+                $price = $line['unit_price'] ?? \App\Services\PricingService::priceFor(
+                    $product, (float) $line['quantity'], $customer
+                );
                 SaleLine::create([
                     'sale_id' => $sale->id,
                     'product_id' => $line['product'],
                     'quantity' => $line['quantity'],
-                    'unit_price' => $line['unit_price'],
+                    'unit_price' => $price,
+                    'discount_pct' => $line['discount_pct'] ?? 0,
                 ]);
             }
             $sale->load('lines')->recomputeTotal();

@@ -31,8 +31,8 @@ P2 = later. **Effort:** S ≈ 1 unit · M ≈ 2–3 · L ≈ 4+.
 ## Status
 
 - [x] 1. Tunisian payroll engine (CNSS + IRPP) — **done**
-- [ ] 2. Pricelists & discounts — *in progress*
-- [ ] 3. Email documents + customer portal
+- [x] 2. Pricelists & discounts — **done**
+- [ ] 3. Email documents + customer portal — *in progress*
 - [ ] 4. Online payments
 - [ ] 5. Vendor bill 3-way matching
 - [ ] 6. VAT return / fiscal declarations
