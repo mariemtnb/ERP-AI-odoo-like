@@ -190,6 +190,25 @@ class PayrollTest extends TestCase
         $this->actingAs($this->manager, 'api')->getJson('/api/v1/employees')->assertStatus(404);
     }
 
+    public function test_creating_an_employee_generates_a_code_without_a_numbering_sequence(): void
+    {
+        // No `emp` numbering sequence is seeded, so the legacy fallback runs.
+        // It must count against the employees table's actual numbering column
+        // (`code`), not the `number` column other documents use — otherwise
+        // the query hits an undefined column and the request 500s.
+        $this->assertSame(0, \App\Models\NumberingSequence::where('key', 'emp')->count());
+
+        $response = $this->actingAs($this->manager, 'api')
+            ->postJson('/api/v1/employees', [
+                'first_name' => 'Nadia',
+                'base_salary' => 1200,
+            ])
+            ->assertStatus(201);
+
+        $this->assertNotEmpty($response->json('code'));
+        $this->assertStringStartsWith('EMP-', $response->json('code'));
+    }
+
     public function test_employee_cannot_run_payroll(): void
     {
         $employee = User::create(['email' => 'e@t.t', 'password' => 'x', 'role' => 'employee']);

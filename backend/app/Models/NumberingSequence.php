@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Document numbering.
@@ -103,8 +104,22 @@ class NumberingSequence extends Model
             return $prefix . '-' . now()->format('Y') . '-0001';
         }
 
+        // Different tables store the document number under different columns
+        // (most use `number`, but e.g. employees use `code`). Pick whichever
+        // the model's table actually has; if neither is present, skip the
+        // count entirely rather than crash on an undefined column.
+        $instance = new $model;
+        $table = $instance->getTable();
+        $column = collect(['number', 'code'])
+            ->first(fn ($c) => Schema::hasColumn($table, $c));
+
         $year = now()->year;
-        $count = $model::where('number', 'like', "{$prefix}-{$year}-%")->count();
+
+        if (! $column) {
+            return sprintf('%s-%d-%04d', $prefix, $year, 1);
+        }
+
+        $count = $model::where($column, 'like', "{$prefix}-{$year}-%")->count();
 
         return sprintf('%s-%d-%04d', $prefix, $year, $count + 1);
     }
