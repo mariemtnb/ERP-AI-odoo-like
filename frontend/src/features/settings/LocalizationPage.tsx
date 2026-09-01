@@ -17,15 +17,16 @@ import { Table, TBody, Td, Th, THead } from "@/components/ui/table";
 import { Tooltip } from "@/components/ui/tooltip";
 import { FISCAL_REGIME } from "@/lib/tnLabels";
 import type { CompanyProfile } from "@/types";
+import { useI18n } from "@/lib/i18n";
 
 export default function LocalizationPage() {
+  const { t } = useI18n();
   const [tab, setTab] = useState("profile");
 
   return (
     <div className="space-y-6">
       <p className="text-sm text-text-3">
-        Paramètres de localisation — the fiscal identity of the company, the accounting
-        journals, and which ledger account each kind of movement posts to.
+        {t("loc.sub")}
       </p>
 
       <Segmented
@@ -33,9 +34,9 @@ export default function LocalizationPage() {
         value={tab}
         onChange={setTab}
         options={[
-          { value: "profile", label: "Company & fiscal" },
-          { value: "mappings", label: "Account mapping" },
-          { value: "journals", label: "Journals" },
+          { value: "profile", label: t("loc.tab.profile") },
+          { value: "mappings", label: t("loc.tab.mappings") },
+          { value: "journals", label: t("loc.tab.journals") },
         ]}
       />
 
@@ -47,6 +48,7 @@ export default function LocalizationPage() {
 }
 
 function ProfileTab() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [form, setForm] = useState<Partial<CompanyProfile>>({});
   const [saved, setSaved] = useState(false);
@@ -69,7 +71,7 @@ function ProfileTab() {
       setError("");
       setTimeout(() => setSaved(false), 2500);
     },
-    onError: (e: any) => setError(e?.response?.data?.detail ?? "Could not save."),
+    onError: (e: any) => setError(e?.response?.data?.detail ?? t("adm.couldNotSave")),
   });
 
   const set = (k: keyof CompanyProfile) => (e: { target: { value: string } }) =>
@@ -88,21 +90,21 @@ function ProfileTab() {
   return (
     <form onSubmit={submit} className="space-y-6">
       <section className="erp-card space-y-4 p-5">
-        <h3 className="text-sm font-semibold">Identity</h3>
+        <h3 className="text-sm font-semibold">{t("loc.identity")}</h3>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field id="legal_name" label="Legal name" value={form.legal_name} onChange={set("legal_name")} />
-          <Field id="trade_name" label="Trade name" value={form.trade_name} onChange={set("trade_name")} />
-          <Field id="address" label="Address" value={form.address} onChange={set("address")} />
-          <Field id="city" label="City" value={form.city} onChange={set("city")} />
-          <Field id="postal_code" label="Postal code" value={form.postal_code} onChange={set("postal_code")} />
-          <Field id="phone" label="Phone" value={form.phone} onChange={set("phone")} />
-          <Field id="email" label="Email" value={form.email} onChange={set("email")} />
+          <Field id="legal_name" label={t("loc.legalName")} value={form.legal_name} onChange={set("legal_name")} />
+          <Field id="trade_name" label={t("loc.tradeName")} value={form.trade_name} onChange={set("trade_name")} />
+          <Field id="address" label={t("field.address")} value={form.address} onChange={set("address")} />
+          <Field id="city" label={t("adm.city")} value={form.city} onChange={set("city")} />
+          <Field id="postal_code" label={t("loc.postalCode")} value={form.postal_code} onChange={set("postal_code")} />
+          <Field id="phone" label={t("field.phone")} value={form.phone} onChange={set("phone")} />
+          <Field id="email" label={t("field.email")} value={form.email} onChange={set("email")} />
         </div>
       </section>
 
       <section className="erp-card space-y-4 p-5">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold">Tax identifiers</h3>
+          <h3 className="text-sm font-semibold">{t("loc.taxIds")}</h3>
           {profile?.full_tax_id && (
             <Badge tone="sky">{profile.full_tax_id}</Badge>
           )}
@@ -110,21 +112,21 @@ function ProfileTab() {
         <div className="grid gap-4 sm:grid-cols-4">
           <Field
             id="tax_id"
-            label="Matricule fiscal"
+            label={t("loc.matricule")}
             value={form.tax_id}
             onChange={set("tax_id")}
-            hint="Main tax identifier"
+            hint={t("loc.mainTaxId")}
           />
-          <Field id="vat_code" label="VAT code" value={form.vat_code} onChange={set("vat_code")} />
-          <Field id="category_code" label="Category" value={form.category_code} onChange={set("category_code")} />
+          <Field id="vat_code" label={t("loc.vatCode")} value={form.vat_code} onChange={set("vat_code")} />
+          <Field id="category_code" label={t("loc.category")} value={form.category_code} onChange={set("category_code")} />
           <Field
             id="establishment_code"
-            label="Establishment"
+            label={t("loc.establishment")}
             value={form.establishment_code}
             onChange={set("establishment_code")}
           />
-          <Field id="trade_register" label="Registre de commerce" value={form.trade_register} onChange={set("trade_register")} />
-          <Field id="customs_code" label="Customs code" value={form.customs_code} onChange={set("customs_code")} />
+          <Field id="trade_register" label={t("loc.tradeRegister")} value={form.trade_register} onChange={set("trade_register")} />
+          <Field id="customs_code" label={t("loc.customsCode")} value={form.customs_code} onChange={set("customs_code")} />
         </div>
         {(profile?.warnings ?? []).length > 0 && (
           <p className="text-sm text-warning">
@@ -134,74 +136,74 @@ function ProfileTab() {
       </section>
 
       <section className="erp-card space-y-4 p-5">
-        <h3 className="text-sm font-semibold">Fiscal settings</h3>
+        <h3 className="text-sm font-semibold">{t("loc.fiscalSettings")}</h3>
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-1.5">
-            <Label htmlFor="fiscal_regime">Regime</Label>
+            <Label htmlFor="fiscal_regime">{t("loc.regime")}</Label>
             <Select id="fiscal_regime" value={form.fiscal_regime ?? "reel"} onChange={set("fiscal_regime")}>
               {Object.entries(FISCAL_REGIME).map(([key, l]) => (
                 <option key={key} value={key}>{l.en} · {l.fr}</option>
               ))}
             </Select>
           </div>
-          <Field id="default_vat_rate" label="Default VAT rate (%)" type="number" value={form.default_vat_rate} onChange={set("default_vat_rate")} />
-          <Field id="withholding_rate" label="Withholding rate (%)" type="number" value={form.withholding_rate} onChange={set("withholding_rate")} />
+          <Field id="default_vat_rate" label={t("loc.defaultVat")} type="number" value={form.default_vat_rate} onChange={set("default_vat_rate")} />
+          <Field id="withholding_rate" label={t("loc.withholding")} type="number" value={form.withholding_rate} onChange={set("withholding_rate")} />
           <Field
             id="stamp_duty_amount"
-            label="Stamp duty (timbre fiscal)"
+            label={t("loc.stampDuty")}
             type="number"
             value={form.stamp_duty_amount}
             onChange={set("stamp_duty_amount")}
           />
-          <Field id="currency" label="Currency" value={form.currency} onChange={set("currency")} />
+          <Field id="currency" label={t("bnk.currency")} value={form.currency} onChange={set("currency")} />
           <Field
             id="currency_decimals"
-            label="Decimals"
+            label={t("loc.decimals")}
             type="number"
             value={form.currency_decimals}
             onChange={set("currency_decimals")}
-            hint="TND is normally 3"
+            hint={t("loc.tndDecimals")}
           />
           <Field
             id="default_payment_terms_days"
-            label="Payment terms (days)"
+            label={t("loc.paymentTerms")}
             type="number"
             value={form.default_payment_terms_days}
             onChange={set("default_payment_terms_days")}
           />
           <Field
             id="late_payment_grace_days"
-            label="Grace period (days)"
+            label={t("loc.grace")}
             type="number"
             value={form.late_payment_grace_days}
             onChange={set("late_payment_grace_days")}
-            hint="Before an instalment counts as late"
+            hint={t("loc.graceHint")}
           />
           <Field
             id="invoice_number_format"
-            label="Invoice numbering"
+            label={t("loc.invoiceNumbering")}
             value={form.invoice_number_format}
             onChange={set("invoice_number_format")}
-            hint="{YYYY} and {SEQ:4} are substituted"
+            hint={t("loc.invoiceNumberingHint")}
           />
         </div>
         <div className="space-y-2">
           <label className="flex items-center gap-2 text-sm text-text-2">
             <input type="checkbox" checked={!!form.vat_registered} onChange={check("vat_registered")} />
-            Registered for VAT
+            {t("loc.vatRegistered")}
           </label>
           <label className="flex items-center gap-2 text-sm text-text-2">
             <input type="checkbox" checked={!!form.stamp_duty_enabled} onChange={check("stamp_duty_enabled")} />
-            Apply stamp duty on invoices
+            {t("loc.applyStamp")}
           </label>
-          <Tooltip label="When off, unusual identifiers are reported as warnings but never block a save. Turn on only if your data is already clean.">
+          <Tooltip label={t("loc.enforceTip")}>
             <label className="flex items-center gap-2 text-sm text-text-2">
               <input
                 type="checkbox"
                 checked={!!form.enforce_legal_validation}
                 onChange={check("enforce_legal_validation")}
               />
-              Enforce identifier format checks (reject instead of warn)
+              {t("loc.enforceChecks")}
             </label>
           </Tooltip>
         </div>
@@ -210,9 +212,9 @@ function ProfileTab() {
       {error && <p className="text-sm text-danger">{error}</p>}
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={mutation.isPending}>
-          <Save className="h-4 w-4" /> {mutation.isPending ? "Saving…" : "Save settings"}
+          <Save className="h-4 w-4" /> {mutation.isPending ? t("common.saving") : t("loc.saveSettings")}
         </Button>
-        {saved && <span className="text-sm text-positive">Saved.</span>}
+        {saved && <span className="text-sm text-positive">{t("loc.savedDot")}</span>}
       </div>
     </form>
   );
@@ -243,6 +245,7 @@ function Field({
 }
 
 function MappingsTab() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("");
@@ -262,10 +265,10 @@ function MappingsTab() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["account-mappings"] });
       setDraft({});
-      setMessage("Mapping updated.");
+      setMessage(t("loc.mappingUpdated"));
       setError("");
     },
-    onError: (e: any) => setError(e?.response?.data?.detail ?? "Could not save the mapping."),
+    onError: (e: any) => setError(e?.response?.data?.detail ?? t("loc.couldNotSaveMapping")),
   });
 
   const templateMutation = useMutation({
@@ -284,23 +287,20 @@ function MappingsTab() {
   return (
     <div className="space-y-4">
       <div className="erp-card space-y-3 p-5">
-        <h3 className="text-sm font-semibold">Chart of accounts template</h3>
+        <h3 className="text-sm font-semibold">{t("loc.chartTemplate")}</h3>
         <p className="text-sm text-text-2">
-          Every posting resolves its accounts through this table. Applying a template just
-          re-points the keys — no account or history is deleted, and you can switch back.
+          {t("loc.chartNote")}
         </p>
         <div className="flex gap-2">
           <Button size="sm" onClick={() => templateMutation.mutate("tunisia")}>
-            <BookOpen className="h-4 w-4" /> Apply Tunisian chart
+            <BookOpen className="h-4 w-4" /> {t("loc.applyTunisian")}
           </Button>
           <Button size="sm" variant="secondary" onClick={() => templateMutation.mutate("default")}>
-            Restore generic chart
+            {t("loc.restoreGeneric")}
           </Button>
         </div>
         <p className="text-xs text-text-3">
-          The Tunisian codes shipped here (411 Clients, 401 Fournisseurs, 5112 Chèques à
-          encaisser…) are a practical starting point — confirm them with your accountant and
-          edit any row below.
+          {t("loc.chartHint")}
         </p>
       </div>
 
@@ -310,9 +310,9 @@ function MappingsTab() {
       <Table>
         <THead>
           <tr>
-            <Th>Movement</Th>
-            <Th>Meaning</Th>
-            <Th>Account</Th>
+            <Th>{t("loc.movement")}</Th>
+            <Th>{t("loc.meaning")}</Th>
+            <Th>{t("acc.account")}</Th>
           </tr>
         </THead>
         <TBody>
@@ -328,7 +328,7 @@ function MappingsTab() {
                 >
                   {!m.account_exists && (
                     <option value={m.account_code}>
-                      {m.account_code} — missing!
+                      {m.account_code} — {t("loc.missing")}
                     </option>
                   )}
                   {(accounts ?? []).map((a) => (
@@ -346,13 +346,14 @@ function MappingsTab() {
         onClick={() => saveMutation.mutate()}
       >
         <Save className="h-4 w-4" />
-        {saveMutation.isPending ? "Saving…" : `Save ${Object.keys(draft).length} change(s)`}
+        {saveMutation.isPending ? t("common.saving") : `${t("adm.savePrefix")} ${Object.keys(draft).length} ${t("loc.changesSuffix")}`}
       </Button>
     </div>
   );
 }
 
 function JournalsTab() {
+  const { t } = useI18n();
   const { data, isLoading } = useQuery({ queryKey: ["journals"], queryFn: listJournals });
 
   if (isLoading) return <TableSkeleton rows={6} />;
@@ -360,16 +361,15 @@ function JournalsTab() {
   return (
     <div className="space-y-3">
       <p className="text-sm text-text-2">
-        Entries are filed by journal, the way a Tunisian accountant reads the books. Every
-        posting made by the system picks its journal automatically.
+        {t("loc.journalsNote")}
       </p>
       <Table>
         <THead>
           <tr>
-            <Th>Code</Th>
-            <Th>Journal</Th>
-            <Th>Libellé</Th>
-            <Th>Type</Th>
+            <Th>{t("adm.code")}</Th>
+            <Th>{t("loc.journal")}</Th>
+            <Th>{t("loc.libelle")}</Th>
+            <Th>{t("adm.type")}</Th>
           </tr>
         </THead>
         <TBody>
