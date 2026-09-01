@@ -13,11 +13,11 @@ skinparam rectangle {
   BackgroundColor #F7F9FB
 }
 
-actor "User\n(admin · manager · employee)" as user
+actor "User\n(super admin · admin ·\nmanager · employee ·\ncustom roles)" as user
 
 rectangle "**React app**\nbrowser" as front #E8F4EE
 
-rectangle "**Laravel API**\nbusiness rules + database" as api #E8F0FA
+rectangle "**Laravel API**\nbusiness rules + database\nsecurity headers · CSP · login lockout\nrole + module access checks" as api #E8F0FA
 
 rectangle "**AI service**\nassistant" as ai #F3EBFA
 
@@ -36,6 +36,15 @@ note bottom of ai
   The assistant has no database access.
   It uses the same API a person uses,
   so permissions apply to it too.
+end note
+
+note bottom of api
+  Every request is checked: is the account
+  active and its role allowed here, and —
+  for a custom role — is this area on its
+  module allowlist. The browser hides what
+  a user cannot reach; the API refuses it
+  even if the URL is called directly.
 end note
 
 @enduml

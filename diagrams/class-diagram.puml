@@ -116,6 +116,27 @@ package "Access & audit" #F4F8FB {
     restrictions never inherit.
   }
 
+  class "EnsureRole /\nEnsureModuleAccess\n(request gates)" as gates {
+    role gate
+    module allowlist gate
+    --
+    Run on every request after
+    sign-in. Super admin passes any
+    gate; a custom role may touch only
+    the modules on its allowlist —
+    reads and writes alike.
+  }
+
+  class "Modules (catalogue)" as modules {
+    keys()
+    forSegment(path)
+    --
+    One list of the app's modules,
+    shared by the role editor, the
+    API gate and the sidebar, so all
+    three agree on what a module is.
+  }
+
   class AuditService {
     record()
     asAgent()
@@ -126,6 +147,8 @@ package "Access & audit" #F4F8FB {
     it is watching.
   }
 }
+
+gates --> modules : which module\nis this path?
 
 ' ---- who calls whom ----
 DocumentService --> StockService : moves stock

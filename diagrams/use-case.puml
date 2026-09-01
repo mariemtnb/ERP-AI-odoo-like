@@ -20,10 +20,13 @@ skinparam rectangle {
 actor Employee as employee
 actor Manager as manager
 actor Administrator as admin
+actor "Super admin" as superadmin
+actor "Custom role\n(e.g. Cashier)" as custom
 actor "AI assistant" as agent <<system>>
 
 manager --|> employee
 admin --|> manager
+superadmin --|> admin
 
 rectangle "Intelligent ERP" {
 
@@ -32,6 +35,7 @@ rectangle "Intelligent ERP" {
     usecase "Create a sale" as UC2
     usecase "Add a customer\nor a lead" as UC3
     usecase "Ask the assistant" as UC4
+    usecase "Edit own profile,\nchange password" as UC16
   }
 
   package "Manager" #F7F4FB {
@@ -41,14 +45,24 @@ rectangle "Intelligent ERP" {
     usecase "Set up instalment\nplans" as UC8
     usecase "Reconcile the bank" as UC9
     usecase "Read reports\nand the books" as UC10
+    usecase "Run POS, HR,\nprojects, helpdesk…" as UC17
   }
 
   package "Administrator" #F4F8FB {
-    usecase "Manage users\nand roles" as UC11
+    usecase "Manage users" as UC11
     usecase "Configure company,\ntax and numbering" as UC12
     usecase "Switch modules\non and off" as UC13
     usecase "Read the audit trail" as UC14
     usecase "Approve large\npurchase orders" as UC15
+  }
+
+  package "Super admin" #FBF7F2 {
+    usecase "Create custom roles\nand pick their modules" as UC18
+    usecase "Grant / edit\nadmin accounts" as UC19
+  }
+
+  package "Custom role" #F2FBFA {
+    usecase "Reach only the\nmodules granted\nto that role" as UC20
   }
 }
 
@@ -56,6 +70,7 @@ employee --> UC1
 employee --> UC2
 employee --> UC3
 employee --> UC4
+employee --> UC16
 
 manager --> UC5
 manager --> UC6
@@ -63,12 +78,18 @@ manager --> UC7
 manager --> UC8
 manager --> UC9
 manager --> UC10
+manager --> UC17
 
 admin --> UC11
 admin --> UC12
 admin --> UC13
 admin --> UC14
 admin --> UC15
+
+superadmin --> UC18
+superadmin --> UC19
+
+custom --> UC20
 
 ' The assistant acts for a person, never beyond that person's rights.
 ' Two arrows, not one per use case — the rule is the same everywhere.
@@ -82,6 +103,17 @@ note as N1 #FFFDF0
   and write whatever they could.
   Anything that changes data waits for
   the user to approve it first.
+end note
+
+note as N2 #F2FBFA
+  A super admin builds a custom role and
+  ticks the modules it may open (a Cashier
+  might get Sales, POS and Inventory only).
+  That allowlist is enforced in the sidebar,
+  the route guard AND the API — the same
+  boundary in all three places. Built-in
+  roles are unchanged and see everything
+  their level allows.
 end note
 
 @enduml

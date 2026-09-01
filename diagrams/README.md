@@ -44,6 +44,14 @@ as mojibake.
 
 The diagrams cover the whole implemented system: company structure and
 permissions, catalog and multi-warehouse stock, partners and CRM, purchase and
-sale lifecycles, double-entry accounting, the Tunisian treasury layer
-(cheques, traites/kembyelet, instalments), banking and reconciliation, the
-audit trail, and the AI assistant.
+sale lifecycles, point of sale, manufacturing, projects, helpdesk, HR and
+payroll, fixed assets, subscriptions, shipping and marketing, double-entry
+accounting, the Tunisian treasury layer (cheques, traites/kembyelet,
+instalments), banking and reconciliation, the audit trail, and the AI assistant.
+
+They also cover the access model: the four built-in roles (super admin, admin,
+manager, employee), plus **custom roles** whose holders can reach only the
+modules a super admin grants them — a rule enforced in the sidebar, the route
+guard and the API alike — and the security hardening (security headers, a
+strict Content-Security-Policy, and account lockout after repeated failed
+logins).
