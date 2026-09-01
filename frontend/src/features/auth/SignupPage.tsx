@@ -6,9 +6,11 @@ import { AuthShell } from "./AuthShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useI18n } from "@/lib/i18n";
 
 export default function SignupPage() {
   const { register } = useAuth();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -21,7 +23,7 @@ export default function SignupPage() {
     e.preventDefault();
     setError("");
     if (password.length < 8) {
-      setError("Password must be at least 8 characters.");
+      setError(t("auth.min8"));
       return;
     }
     setBusy(true);
@@ -37,10 +39,10 @@ export default function SignupPage() {
       const data = err?.response?.data;
       setError(
         data?.errors?.email
-          ? "That email is already registered."
+          ? t("auth.emailTaken")
           : data
             ? Object.values(data.errors ?? { d: [data.detail] }).flat().join(" ")
-            : "Unable to create your account. Is the server running?"
+            : t("auth.unableCreate")
       );
     } finally {
       setBusy(false);
@@ -53,16 +55,16 @@ export default function SignupPage() {
         className="font-semibold"
         style={{ margin: 0, font: "600 26px/1 var(--font-sans)", letterSpacing: "-0.02em", color: "var(--text-strong)" }}
       >
-        Create your account
+        {t("auth.createTitle")}
       </h2>
       <p style={{ margin: "8px 0 28px", font: "400 14px/1 var(--font-sans)", color: "var(--text-muted)" }}>
-        Start with a workspace account in seconds.
+        {t("auth.createSub")}
       </p>
 
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="first_name">First name</Label>
+            <Label htmlFor="first_name">{t("field.firstName")}</Label>
             <Input
               id="first_name"
               autoComplete="given-name"
@@ -73,7 +75,7 @@ export default function SignupPage() {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="last_name">Last name</Label>
+            <Label htmlFor="last_name">{t("field.lastName")}</Label>
             <Input
               id="last_name"
               autoComplete="family-name"
@@ -84,7 +86,7 @@ export default function SignupPage() {
           </div>
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t("field.email")}</Label>
           <Input
             id="email"
             type="email"
@@ -96,12 +98,12 @@ export default function SignupPage() {
           />
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{t("field.password")}</Label>
           <Input
             id="password"
             type="password"
             autoComplete="new-password"
-            placeholder="At least 8 characters"
+            placeholder={t("auth.min8Placeholder")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -109,15 +111,15 @@ export default function SignupPage() {
         </div>
         {error && <p style={{ font: "500 13px/1.4 var(--font-sans)", color: "var(--rose-400)" }}>{error}</p>}
         <Button type="submit" size="lg" className="mt-1.5 w-full" loading={busy}>
-          {busy ? "Creating account…" : "Create account"}
+          {busy ? t("auth.creating") : t("auth.createBtn")}
           {!busy && <ArrowRight size={16} />}
         </Button>
       </form>
 
       <p style={{ margin: "22px 0 0", font: "400 14px/1 var(--font-sans)", color: "var(--text-muted)" }}>
-        Already have an account?{" "}
+        {t("auth.haveAccount")}{" "}
         <Link to="/login" style={{ color: "var(--emerald-400)", fontWeight: 600 }}>
-          Sign in
+          {t("auth.signIn")}
         </Link>
       </p>
     </AuthShell>

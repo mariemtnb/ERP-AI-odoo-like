@@ -1,5 +1,7 @@
 import { type ReactNode } from "react";
 import { BrandMark } from "@/components/BrandMark";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useI18n } from "@/lib/i18n";
 
 /**
  * Split-screen auth layout — port of ui_kits/erp-app Login().
@@ -7,11 +9,16 @@ import { BrandMark } from "@/components/BrandMark";
  * footer. Right: the form column (children).
  */
 export function AuthShell({ children }: { children: ReactNode }) {
+  const { t } = useI18n();
   return (
     <div
-      className="grid min-h-dvh lg:grid-cols-2"
+      className="relative grid min-h-dvh lg:grid-cols-2"
       style={{ background: "var(--bg-app)" }}
     >
+      {/* Language picker, reachable before signing in */}
+      <div style={{ position: "absolute", top: 16, insetInlineEnd: 16, zIndex: 10 }}>
+        <LanguageSwitcher />
+      </div>
       {/* Left hero */}
       <div
         className="relative hidden flex-col justify-between overflow-hidden p-14 lg:flex"
@@ -33,7 +40,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
               maxWidth: 440,
             }}
           >
-            The ERP that thinks alongside you.
+            {t("auth.heroTitle")}
           </h1>
           <p
             style={{
@@ -43,8 +50,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
               maxWidth: 400,
             }}
           >
-            Inventory, sales, purchasing and CRM — with a conversational AI agent
-            that queries your data and acts, with your approval.
+            {t("auth.heroSub")}
           </p>
         </div>
         <div
@@ -55,7 +61,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
             className="rounded-full"
             style={{ width: 7, height: 7, background: "var(--emerald-400)" }}
           />
-          Local model online · your data never leaves your servers
+          {t("auth.heroFooter")}
         </div>
       </div>
 

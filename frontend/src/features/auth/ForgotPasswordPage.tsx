@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { forgotPassword } from "@/api/auth";
+import { useI18n } from "@/lib/i18n";
 
 export default function ForgotPasswordPage() {
+  const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [devToken, setDevToken] = useState<string | null>(null);
@@ -25,33 +27,33 @@ export default function ForgotPasswordPage() {
   return (
     <AuthShell>
       <h2 style={{ margin: 0, font: "600 26px/1 var(--font-sans)", letterSpacing: "-0.02em", color: "var(--text-strong)" }}>
-        Reset your password
+        {t("auth.resetTitle")}
       </h2>
       <p style={{ margin: "8px 0 28px", font: "400 14px/1.5 var(--font-sans)", color: "var(--text-muted)" }}>
-        Enter your email and we'll send you a link to set a new password.
+        {t("auth.resetSub")}
       </p>
 
       {!sent ? (
         <form onSubmit={onSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("field.email")}</Label>
             <Input id="email" type="email" placeholder="you@company.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
-          <Button type="submit" size="lg" className="mt-1.5 w-full" loading={req.isPending}>Send reset link</Button>
+          <Button type="submit" size="lg" className="mt-1.5 w-full" loading={req.isPending}>{t("auth.sendLink")}</Button>
         </form>
       ) : (
         <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 16, fontSize: 14, color: "var(--text-body)" }}>
-          If an account exists for <b>{email}</b>, a reset link has been sent.
+          {t("auth.sentIfExists")} <b>{email}</b>, {t("auth.sentSuffix")}
           {devToken && (
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
               <div style={{ fontSize: 12, color: "var(--amber-400,#d99a2b)", marginBottom: 6 }}>
-                Dev mode (no mail provider): use this reset link directly —
+                {t("auth.devMode")}
               </div>
               <Link
                 to={`/reset-password?email=${encodeURIComponent(email)}&token=${encodeURIComponent(devToken)}`}
                 style={{ color: "var(--emerald-400)", fontWeight: 600, wordBreak: "break-all" }}
               >
-                Reset my password →
+                {t("auth.resetMyPw")}
               </Link>
             </div>
           )}
@@ -59,7 +61,7 @@ export default function ForgotPasswordPage() {
       )}
 
       <p style={{ margin: "22px 0 0", font: "400 14px/1 var(--font-sans)", color: "var(--text-muted)" }}>
-        <Link to="/login" style={{ color: "var(--emerald-400)", fontWeight: 600 }}>← Back to sign in</Link>
+        <Link to="/login" style={{ color: "var(--emerald-400)", fontWeight: 600 }}>{t("auth.backToSignIn")}</Link>
       </p>
     </AuthShell>
   );
