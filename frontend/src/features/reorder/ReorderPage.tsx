@@ -14,8 +14,10 @@ import {
   type RunResult,
 } from "@/api/reorder";
 import type { Product } from "@/types";
+import { useI18n } from "@/lib/i18n";
 
 export default function ReorderPage() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const rulesQ = useQuery({ queryKey: ["reorder-rules"], queryFn: listRules });
   const suggQ = useQuery({ queryKey: ["reorder-suggestions"], queryFn: getSuggestions });
@@ -37,30 +39,30 @@ export default function ReorderPage() {
 
   return (
     <div>
-      <PageHead title="Reordering" sub="Set reorder points and turn low stock into draft purchase orders in one click.">
-        <Button onClick={() => setAdding((v) => !v)} variant="outline">{adding ? "Close" : "Add rule"}</Button>
+      <PageHead title={t("nav.reordering")} sub={t("ro.sub")}>
+        <Button onClick={() => setAdding((v) => !v)} variant="outline">{adding ? t("common.close") : t("ro.addRule")}</Button>
         <Button loading={run.isPending} disabled={suggestions.length === 0} onClick={() => run.mutate()}>
-          Generate draft POs ({suggestions.filter((s) => s.supplier).length})
+          {t("ro.generatePOs")} ({suggestions.filter((s) => s.supplier).length})
         </Button>
       </PageHead>
 
       {runResult && (
         <div style={{ background: "color-mix(in oklab, var(--emerald-500) 10%, transparent)", border: "1px solid var(--emerald-500)", borderRadius: 12, padding: "12px 16px", marginBottom: 16, fontSize: 14, color: "var(--text-strong)" }}>
-          Created {runResult.created.length} draft PO{runResult.created.length !== 1 ? "s" : ""}
+          {t("ro.created")} {runResult.created.length} {t("ro.draftPOs")}
           {runResult.created.length > 0 && ": " + runResult.created.map((c) => c.number).join(", ")}.
-          {runResult.unassigned.length > 0 && ` ${runResult.unassigned.length} product(s) below point have no supplier — assign one on their rule.`}
+          {runResult.unassigned.length > 0 && ` ${runResult.unassigned.length} ${t("ro.noSupplierMsg")}`}
         </div>
       )}
 
       {adding && <AddRule onDone={() => { setAdding(false); refresh(); }} onCancel={() => setAdding(false)} />}
 
       <h3 style={{ font: "600 15px var(--font-sans)", color: "var(--text-strong)", margin: "4px 0 10px" }}>
-        Below reorder point ({suggestions.length})
+        {t("ro.belowPoint")} ({suggestions.length})
       </h3>
       <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden", marginBottom: 24 }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
           <thead><tr style={{ background: "var(--surface-hover)", color: "var(--text-muted)", textAlign: "left" }}>
-            <Th>Product</Th><Th right>On hand</Th><Th right>Reorder point</Th><Th right>Suggested order</Th><Th>Supplier</Th>
+            <Th>{t("field.product")}</Th><Th right>{t("ro.onHand")}</Th><Th right>{t("ro.reorderPoint")}</Th><Th right>{t("ro.suggestedOrder")}</Th><Th>{t("field.supplier")}</Th>
           </tr></thead>
           <tbody>
             {suggestions.map((s) => (
@@ -69,19 +71,19 @@ export default function ReorderPage() {
                 <Td right mono style={{ color: "var(--rose-400)" }}>{s.current_stock}</Td>
                 <Td right mono>{s.min_qty}</Td>
                 <Td right mono>{s.reorder_qty}</Td>
-                <Td>{s.supplier_name ?? <span style={{ color: "var(--amber-400,#d99a2b)" }}>— none —</span>}</Td>
+                <Td>{s.supplier_name ?? <span style={{ color: "var(--amber-400,#d99a2b)" }}>{t("common.none")}</span>}</Td>
               </tr>
             ))}
-            {suggestions.length === 0 && <tr><Td colSpan={5} muted>Everything is above its reorder point.</Td></tr>}
+            {suggestions.length === 0 && <tr><Td colSpan={5} muted>{t("ro.allAbove")}</Td></tr>}
           </tbody>
         </table>
       </div>
 
-      <h3 style={{ font: "600 15px var(--font-sans)", color: "var(--text-strong)", margin: "4px 0 10px" }}>Rules</h3>
+      <h3 style={{ font: "600 15px var(--font-sans)", color: "var(--text-strong)", margin: "4px 0 10px" }}>{t("ro.rules")}</h3>
       <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
           <thead><tr style={{ background: "var(--surface-hover)", color: "var(--text-muted)", textAlign: "left" }}>
-            <Th>Product</Th><Th right>Reorder point</Th><Th right>Order qty</Th><Th>Supplier</Th><Th>Active</Th><Th></Th>
+            <Th>{t("field.product")}</Th><Th right>{t("ro.reorderPoint")}</Th><Th right>{t("ro.orderQty")}</Th><Th>{t("field.supplier")}</Th><Th>{t("ro.activeCol")}</Th><Th></Th>
           </tr></thead>
           <tbody>
             {(rulesQ.data ?? []).map((r) => (
@@ -90,11 +92,11 @@ export default function ReorderPage() {
                 <Td right mono>{r.min_qty}</Td>
                 <Td right mono>{r.reorder_qty}</Td>
                 <Td>{r.supplier_name ?? "—"}</Td>
-                <Td>{r.is_active ? "Yes" : "No"}</Td>
-                <Td right><button onClick={() => del.mutate(r.id)} style={{ color: "var(--rose-400)", background: "none", border: 0, cursor: "pointer", fontSize: 13 }}>Delete</button></Td>
+                <Td>{r.is_active ? t("common.yes") : t("common.no")}</Td>
+                <Td right><button onClick={() => del.mutate(r.id)} style={{ color: "var(--rose-400)", background: "none", border: 0, cursor: "pointer", fontSize: 13 }}>{t("common.delete")}</button></Td>
               </tr>
             ))}
-            {rulesQ.data?.length === 0 && <tr><Td colSpan={6} muted>No reorder rules yet. Add one to start.</Td></tr>}
+            {rulesQ.data?.length === 0 && <tr><Td colSpan={6} muted>{t("ro.noRules")}</Td></tr>}
           </tbody>
         </table>
       </div>
@@ -103,6 +105,7 @@ export default function ReorderPage() {
 }
 
 function AddRule({ onDone, onCancel }: { onDone: () => void; onCancel: () => void }) {
+  const { t } = useI18n();
   const [search, setSearch] = useState("");
   const [product, setProduct] = useState<Product | null>(null);
   const [supplier, setSupplier] = useState<string>("");
@@ -116,7 +119,7 @@ function AddRule({ onDone, onCancel }: { onDone: () => void; onCancel: () => voi
   const submit = useMutation({
     mutationFn: () => createRule({ product: product!.id, supplier: supplier ? Number(supplier) : null, min_qty: Number(min), reorder_qty: Number(qty) }),
     onSuccess: onDone,
-    onError: (e: any) => setError(e?.response?.data?.detail ?? "Could not create the rule (already has one?)."),
+    onError: (e: any) => setError(e?.response?.data?.detail ?? t("ro.createError")),
   });
 
   const canSubmit = product && Number(qty) > 0 && min !== "" && !submit.isPending;
@@ -124,12 +127,12 @@ function AddRule({ onDone, onCancel }: { onDone: () => void; onCancel: () => voi
   return (
     <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: 20, marginBottom: 18 }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-        <strong style={{ color: "var(--text-strong)" }}>New reorder rule</strong>
-        <Button variant="ghost" size="sm" onClick={onCancel}>Cancel</Button>
+        <strong style={{ color: "var(--text-strong)" }}>{t("ro.newRule")}</strong>
+        <Button variant="ghost" size="sm" onClick={onCancel}>{t("common.cancel")}</Button>
       </div>
       {!product ? (
         <>
-          <Input placeholder="Search product…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input placeholder={t("lots.searchProduct")} value={search} onChange={(e) => setSearch(e.target.value)} />
           <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 10 }}>
             {(productsQ.data?.results ?? []).map((p) => (
               <button key={p.id} onClick={() => setProduct(p)} style={{ textAlign: "left", background: "var(--surface-hover)", border: "1px solid var(--border)", borderRadius: 10, padding: "8px 12px", cursor: "pointer", color: "var(--text-strong)" }}>
@@ -140,16 +143,16 @@ function AddRule({ onDone, onCancel }: { onDone: () => void; onCancel: () => voi
         </>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, alignItems: "end" }}>
-          <Field label="Product"><div style={{ padding: "9px 0", color: "var(--text-strong)" }}>{product.name} <button onClick={() => setProduct(null)} style={{ marginLeft: 6, color: "var(--emerald-400)", background: "none", border: 0, cursor: "pointer", fontSize: 12 }}>change</button></div></Field>
-          <Field label="Reorder point"><Input type="number" min={0} step="0.001" value={min} onChange={(e) => setMin(e.target.value)} /></Field>
-          <Field label="Order quantity"><Input type="number" min={0} step="0.001" value={qty} onChange={(e) => setQty(e.target.value)} /></Field>
-          <Field label="Preferred supplier">
+          <Field label={t("field.product")}><div style={{ padding: "9px 0", color: "var(--text-strong)" }}>{product.name} <button onClick={() => setProduct(null)} style={{ marginInlineStart: 6, color: "var(--emerald-400)", background: "none", border: 0, cursor: "pointer", fontSize: 12 }}>{t("lots.change")}</button></div></Field>
+          <Field label={t("ro.reorderPoint")}><Input type="number" min={0} step="0.001" value={min} onChange={(e) => setMin(e.target.value)} /></Field>
+          <Field label={t("ro.orderQuantity")}><Input type="number" min={0} step="0.001" value={qty} onChange={(e) => setQty(e.target.value)} /></Field>
+          <Field label={t("ro.preferredSupplier")}>
             <select value={supplier} onChange={(e) => setSupplier(e.target.value)} style={{ width: "100%", height: 38, background: "var(--surface-hover)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-strong)", padding: "0 8px" }}>
-              <option value="">— none —</option>
+              <option value="">{t("common.none")}</option>
               {(suppliersQ.data ?? []).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
           </Field>
-          <Button loading={submit.isPending} disabled={!canSubmit} onClick={() => submit.mutate()}>Add rule</Button>
+          <Button loading={submit.isPending} disabled={!canSubmit} onClick={() => submit.mutate()}>{t("ro.addRule")}</Button>
         </div>
       )}
       {error && <p style={{ color: "var(--rose-400)", fontSize: 13, marginTop: 10 }}>{error}</p>}
