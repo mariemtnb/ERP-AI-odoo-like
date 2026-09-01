@@ -45,6 +45,59 @@ final class Modules
         'ai'            => 'AI Assistant',
     ];
 
+    /**
+     * First API path segment → module key.
+     *
+     * This is the server-side twin of the frontend `MODULE_BY_PATH`: it maps a
+     * REST resource ("tickets", "pos", "boms") to the module it belongs to, so
+     * a request can be checked against a role's allowlist. Segments absent here
+     * (auth, me, notifications, dashboard, the admin console, …) carry no module
+     * and are never restricted by this map — they are gated elsewhere.
+     */
+    public const SEGMENT_MODULE = [
+        // inventory & catalogue
+        'products' => 'inventory', 'categories' => 'inventory', 'stock' => 'inventory',
+        'warehouses' => 'inventory',
+        'lots' => 'lots',
+        'boms' => 'manufacturing', 'work-orders' => 'manufacturing',
+        // purchasing
+        'suppliers' => 'purchasing', 'purchases' => 'purchasing',
+        'reorder-rules' => 'reordering', 'reorder-run' => 'reordering', 'reorder-suggestions' => 'reordering',
+        'rfqs' => 'rfq',
+        // sales
+        'customers' => 'sales', 'sales' => 'sales',
+        'pos' => 'pos',
+        'subscriptions' => 'subscriptions',
+        'credit-notes' => 'returns',
+        'shipments' => 'shipping',
+        'campaigns' => 'marketing',
+        'leads' => 'crm',
+        // services
+        'projects' => 'projects',
+        'tickets' => 'helpdesk',
+        // finance
+        'owner' => 'profit',
+        'accounting' => 'accounting',
+        'assets' => 'assets',
+        // people
+        'payroll' => 'payroll', 'advances' => 'payroll',
+        'attendance' => 'hr', 'leave' => 'hr', 'expenses' => 'hr', 'employees' => 'hr',
+        // treasury
+        'instruments' => 'treasury', 'installment-plans' => 'treasury', 'installments' => 'treasury',
+        'banks' => 'banking', 'bank-accounts' => 'banking', 'bank-transactions' => 'banking',
+        'reconciliation' => 'banking',
+        // insights
+        'reports' => 'reports',
+        'bi' => 'bi',
+        'agent' => 'ai',
+    ];
+
+    /** The module a top-level API segment belongs to, or null when it has none. */
+    public static function forSegment(string $segment): ?string
+    {
+        return self::SEGMENT_MODULE[$segment] ?? null;
+    }
+
     /** @return list<string> every valid module key */
     public static function keys(): array
     {

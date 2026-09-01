@@ -52,7 +52,7 @@ Route::prefix('v1')->group(function () {
     | to revoke access immediately, not whenever the current token happens to
     | expire. `throttle:api` is a blanket ceiling so no endpoint is unbounded.
     */
-    Route::middleware(['auth:api', 'active', 'throttle:api'])->group(function () {
+    Route::middleware(['auth:api', 'active', 'throttle:api', 'module.access'])->group(function () {
         Route::get('auth/me', [AuthController::class, 'me']);
         // Self-service profile edit (name, email). Role/active stay admin-only.
         Route::match(['put', 'patch'], 'auth/profile', [AuthController::class, 'updateProfile'])

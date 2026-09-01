@@ -103,6 +103,22 @@ class CustomRoleTest extends TestCase
             ->assertStatus(422);
     }
 
+    public function test_custom_role_is_blocked_from_modules_outside_its_allowlist(): void
+    {
+        $this->actingAs($this->super(), 'api')
+            ->postJson('/api/v1/roles', ['name' => 'Cashier', 'modules' => ['pos', 'inventory']])
+            ->assertCreated();
+
+        $cashier = User::create(['email' => 'c@t.t', 'password' => 'x', 'role' => 'cashier']);
+
+        // Products belong to "inventory" — on the allowlist, so reachable.
+        $this->actingAs($cashier, 'api')->getJson('/api/v1/products')->assertOk();
+
+        // Customers belong to "sales" — not on the allowlist, so refused even
+        // though the route itself is open to any authenticated user.
+        $this->actingAs($cashier, 'api')->getJson('/api/v1/customers')->assertStatus(403);
+    }
+
     public function test_updating_a_custom_role_resyncs_modules(): void
     {
         $super = $this->super();

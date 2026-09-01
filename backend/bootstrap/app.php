@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureActiveUser;
 use App\Http\Middleware\EnsureFeature;
+use App\Http\Middleware\EnsureModuleAccess;
 use App\Http\Middleware\EnsurePermission;
 use App\Http\Middleware\EnsureRole;
 use App\Http\Middleware\SecurityHeaders;
@@ -28,6 +29,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'can.perm' => EnsurePermission::class,
             'feature' => EnsureFeature::class,
             'active' => EnsureActiveUser::class,
+            // Enforces a custom role's module allowlist; a no-op for built-ins.
+            'module.access' => EnsureModuleAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
