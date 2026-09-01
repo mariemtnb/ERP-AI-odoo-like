@@ -11,6 +11,7 @@ import { PageHead } from "@/components/ui/page-head";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sparkline } from "@/components/ui/sparkline";
 import { useNavigate } from "react-router-dom";
+import { useI18n } from "@/lib/i18n";
 
 function monthRange() {
   const d = new Date();
@@ -41,15 +42,16 @@ function microSeries(value: number, up: boolean): number[] {
   });
 }
 
-function greeting() {
+function greetingKey() {
   const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 18) return "Good afternoon";
-  return "Good evening";
+  if (h < 12) return "dash.morning";
+  if (h < 18) return "dash.afternoon";
+  return "dash.evening";
 }
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const range = useMemo(monthRange, []);
   const prev = useMemo(() => previousRange(range.from, range.to), [range]);
@@ -78,10 +80,10 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <PageHead title={`${greeting()}, ${firstName}`} sub="Here's what's moving across your business today.">
-        <Button variant="outline" size="md" icon={<Calendar size={16} />}>This month</Button>
+      <PageHead title={`${t(greetingKey())}, ${firstName}`} sub={t("dash.sub")}>
+        <Button variant="outline" size="md" icon={<Calendar size={16} />}>{t("dash.thisMonth")}</Button>
         <Button variant="primary" size="md" icon={<Sparkles size={16} />} onClick={() => navigate("/assistant")}>
-          Ask AI
+          {t("top.askAI")}
         </Button>
       </PageHead>
 
@@ -95,7 +97,7 @@ export default function DashboardPage() {
               const d = pctDelta(data.revenue, prevData?.revenue ?? 0);
               return (
                 <KpiCard
-                  label="Revenue"
+                  label={t("dash.revenue")}
                   value={Math.round(data.revenue).toLocaleString("en-US")}
                   unit="TND"
                   delta={d}
@@ -106,19 +108,19 @@ export default function DashboardPage() {
             {(() => {
               const d = pctDelta(data.sales_count, prevData?.sales_count ?? 0);
               return (
-                <KpiCard label="Sales orders" value={data.sales_count.toLocaleString("en-US")} delta={d} spark={microSeries(data.sales_count, d >= 0)} />
+                <KpiCard label={t("dash.salesOrders")} value={data.sales_count.toLocaleString("en-US")} delta={d} spark={microSeries(data.sales_count, d >= 0)} />
               );
             })()}
             {(() => {
               const d = pctDelta(data.purchases_count, prevData?.purchases_count ?? 0);
               return (
-                <KpiCard label="Purchase orders" value={data.purchases_count.toLocaleString("en-US")} delta={d} spark={microSeries(data.purchases_count, d >= 0)} />
+                <KpiCard label={t("dash.purchaseOrders")} value={data.purchases_count.toLocaleString("en-US")} delta={d} spark={microSeries(data.purchases_count, d >= 0)} />
               );
             })()}
             {(() => {
               const d = pctDelta(data.purchases_amount, prevData?.purchases_amount ?? 0);
               return (
-                <KpiCard label="Purchases" value={Math.round(data.purchases_amount).toLocaleString("en-US")} unit="TND" delta={d} spark={microSeries(data.purchases_amount, d >= 0)} />
+                <KpiCard label={t("dash.purchases")} value={Math.round(data.purchases_amount).toLocaleString("en-US")} unit="TND" delta={d} spark={microSeries(data.purchases_amount, d >= 0)} />
               );
             })()}
           </>
@@ -132,7 +134,7 @@ export default function DashboardPage() {
         <div className="erp-card" style={{ padding: 22 }}>
           <div className="mb-4 flex items-start justify-between">
             <div>
-              <span className="eyebrow">Revenue trend</span>
+              <span className="eyebrow">{t("dash.revenueTrend")}</span>
               <div className="tnum" style={{ font: "600 26px/1 var(--font-sans)", letterSpacing: "-0.03em", color: "var(--text-strong)", marginTop: 8 }}>
                 {Math.round(data?.revenue ?? 0).toLocaleString("en-US")}{" "}
                 <span style={{ font: "500 14px/1 var(--font-sans)", color: "var(--text-muted)" }}>TND</span>
@@ -141,7 +143,7 @@ export default function DashboardPage() {
             {forecast && (
               <Badge tone="emerald" dot>
                 {forecast.trend_per_day >= 0 ? "+" : ""}
-                {forecast.trend_per_day.toFixed(1)}/day
+                {forecast.trend_per_day.toFixed(1)}{t("dash.perDay")}
               </Badge>
             )}
           </div>
@@ -149,7 +151,7 @@ export default function DashboardPage() {
             <Sparkline data={revenueSeries} up fill w={640} h={150} className="w-full" />
           ) : (
             <div style={{ height: 150 }} className="grid place-items-center text-sm" >
-              <span style={{ color: "var(--text-faint)" }}>Not enough sales yet to chart a trend.</span>
+              <span style={{ color: "var(--text-faint)" }}>{t("dash.notEnough")}</span>
             </div>
           )}
         </div>
@@ -163,14 +165,14 @@ export default function DashboardPage() {
               <div className="grid place-items-center rounded-[10px]" style={{ width: 34, height: 34, background: "var(--emerald-glow)", color: "var(--emerald-400)" }}>
                 <Sparkles size={18} />
               </div>
-              <span style={{ font: "600 15px/1 var(--font-sans)", color: "var(--text-strong)" }}>AI insight</span>
+              <span style={{ font: "600 15px/1 var(--font-sans)", color: "var(--text-strong)" }}>{t("dash.aiInsight")}</span>
             </div>
             <p style={{ margin: 0, font: "400 14px/1.55 var(--font-sans)", color: "var(--text-body)" }}>{insight}</p>
             <div className="mt-auto flex gap-2">
               <Button variant="primary" size="sm" icon={<Check size={14} />} onClick={() => navigate("/purchases")}>
-                Draft PO
+                {t("dash.draftPO")}
               </Button>
-              <Button variant="ghost" size="sm">Dismiss</Button>
+              <Button variant="ghost" size="sm">{t("dash.dismiss")}</Button>
             </div>
           </div>
         </div>
@@ -179,22 +181,22 @@ export default function DashboardPage() {
       {/* Top products + Low stock */}
       <div className="grid gap-4" style={{ gridTemplateColumns: "1fr 1fr" }}>
         <SectionCard
-          title="Top products"
+          title={t("dash.topProducts")}
           action={
             <Button variant="ghost" size="sm" iconRight={<span aria-hidden>→</span>} onClick={() => navigate("/products")}>
-              View all
+              {t("dash.viewAll")}
             </Button>
           }
         >
           {(data?.top_products ?? []).length === 0 ? (
-            <EmptyRow text="No confirmed sales in this period." />
+            <EmptyRow text={t("dash.noSales")} />
           ) : (
             data!.top_products.map((p) => (
               <div key={p.product__id} className="flex items-center justify-between" style={{ padding: "12px 0", borderBottom: "1px solid var(--border-subtle)" }}>
                 <div className="flex flex-col gap-1">
                   <span style={{ font: "500 14px/1 var(--font-sans)", color: "var(--text-strong)" }}>{p.product__name}</span>
                   <span style={{ font: "400 12px/1 var(--font-mono)", color: "var(--text-faint)" }}>
-                    {p.product__sku} · {Number(p.quantity_sold)} sold
+                    {p.product__sku} · {Number(p.quantity_sold)} {t("dash.sold")}
                   </span>
                 </div>
                 <span style={{ font: "500 14px/1 var(--font-mono)", color: "var(--emerald-400)" }}>
@@ -206,11 +208,11 @@ export default function DashboardPage() {
         </SectionCard>
 
         <SectionCard
-          title="Low stock"
-          action={<Badge tone="rose">{data?.low_stock.length ?? 0} items</Badge>}
+          title={t("dash.lowStock")}
+          action={<Badge tone="rose">{data?.low_stock.length ?? 0} {t("dash.items")}</Badge>}
         >
           {(data?.low_stock ?? []).length === 0 ? (
-            <EmptyRow text="All products above their minimum level." />
+            <EmptyRow text={t("dash.allAbove")} />
           ) : (
             data!.low_stock.map((p) => {
               const qty = Number(p.quantity_in_stock);

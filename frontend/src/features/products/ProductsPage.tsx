@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { TableSkeleton } from "@/components/ui/skeleton";
 import { Table, TBody, Td, Th, THead } from "@/components/ui/table";
 import { useAuth } from "@/features/auth/AuthContext";
+import { useI18n } from "@/lib/i18n";
 import type { Product } from "@/types";
 import { ProductForm, type ProductFormValues } from "./ProductForm";
 
@@ -33,6 +34,7 @@ function apiError(err: any): string {
 
 export default function ProductsPage() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const canWrite = user!.role !== "employee";
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
@@ -73,14 +75,14 @@ export default function ProductsPage() {
         <div />
         {canWrite && (
           <Button onClick={() => { setError(""); setDialog("create"); }}>
-            <Plus className="h-4 w-4" /> New product
+            <Plus className="h-4 w-4" /> {t("products.new")}
           </Button>
         )}
       </div>
 
       <div className="flex gap-3">
         <Input
-          placeholder="Search by SKU or name…"
+          placeholder={t("products.search")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-xs"
@@ -93,16 +95,12 @@ export default function ProductsPage() {
       ) : data!.results.length === 0 ? (
         <EmptyState
           icon={Package}
-          title={search ? "No products match your search" : "No products yet"}
-          hint={
-            search
-              ? "Try a different SKU or name."
-              : "Create your first product to start tracking stock and sales."
-          }
+          title={search ? t("products.emptySearch") : t("products.empty")}
+          hint={search ? t("products.searchHint") : t("products.emptyHint")}
           action={
             canWrite && !search ? (
               <Button onClick={() => { setError(""); setDialog("create"); }}>
-                <Plus className="h-4 w-4" /> New product
+                <Plus className="h-4 w-4" /> {t("products.new")}
               </Button>
             ) : undefined
           }
@@ -111,12 +109,12 @@ export default function ProductsPage() {
         <Table>
           <THead>
             <tr>
-              <Th>SKU</Th>
-              <Th>Name</Th>
-              <Th>Category</Th>
-              <Th className="text-right">Stock</Th>
-              <Th className="text-right">Sale price</Th>
-              <Th>Status</Th>
+              <Th>{t("products.sku")}</Th>
+              <Th>{t("field.name")}</Th>
+              <Th>{t("products.category")}</Th>
+              <Th className="text-right">{t("products.stock")}</Th>
+              <Th className="text-right">{t("products.salePrice")}</Th>
+              <Th>{t("common.status")}</Th>
               {canWrite && <Th />}
             </tr>
           </THead>
@@ -129,33 +127,33 @@ export default function ProductsPage() {
                 <Td className="text-right">
                   {Number(p.quantity_in_stock)} {p.unit}
                   {p.is_low_stock && p.is_active && (
-                    <Badge tone="red" className="ml-2">low</Badge>
+                    <Badge tone="red" className="ml-2">{t("products.low")}</Badge>
                   )}
                 </Td>
                 <Td className="text-right">{Number(p.sale_price).toFixed(2)}</Td>
                 <Td>
                   <Badge tone={p.is_active ? "green" : "red"}>
-                    {p.is_active ? "active" : "inactive"}
+                    {p.is_active ? t("common.active") : t("common.inactive")}
                   </Badge>
                 </Td>
                 {canWrite && (
                   <Td className="text-right">
-                    <Tooltip label="Change this product's name, price or details">
+                    <Tooltip label={t("products.editTip")}>
                       <Button
                         variant="ghost"
                         size="icon"
-                        aria-label="Edit product"
+                        aria-label={t("products.edit")}
                         onClick={() => { setError(""); setDialog(p); }}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
                     </Tooltip>
                     {p.is_active && (
-                      <Tooltip label="Hide this product from the catalog (its history is kept)">
+                      <Tooltip label={t("products.hideTip")}>
                         <Button
                           variant="ghost"
                           size="icon"
-                          aria-label="Deactivate product"
+                          aria-label={t("common.deactivate")}
                           onClick={() => deactivateMutation.mutate(p.id)}
                         >
                           <Trash2 className="h-4 w-4 text-danger" />
@@ -173,7 +171,7 @@ export default function ProductsPage() {
       <Dialog
         open={dialog !== null}
         onClose={() => setDialog(null)}
-        title={dialog === "create" ? "New product" : "Edit product"}
+        title={dialog === "create" ? t("products.new") : t("products.edit")}
       >
         {dialog !== null && (
           <ProductForm
@@ -189,6 +187,7 @@ export default function ProductsPage() {
 }
 
 function CategoriesManager({ canWrite }: { canWrite: boolean }) {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -218,9 +217,9 @@ function CategoriesManager({ canWrite }: { canWrite: boolean }) {
   return (
     <>
       <Button variant="outline" onClick={() => setOpen(true)}>
-        Categories ({categories.length})
+        {t("products.categories")} ({categories.length})
       </Button>
-      <Dialog open={open} onClose={() => setOpen(false)} title="Categories">
+      <Dialog open={open} onClose={() => setOpen(false)} title={t("products.categories")}>
         <div className="space-y-4">
           {canWrite && (
             <form
@@ -231,12 +230,12 @@ function CategoriesManager({ canWrite }: { canWrite: boolean }) {
               }}
             >
               <Input
-                placeholder="New category name"
+                placeholder={t("products.newCategory")}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
               <Button type="submit" disabled={addMutation.isPending}>
-                Add
+                {t("common.add")}
               </Button>
             </form>
           )}
@@ -247,7 +246,7 @@ function CategoriesManager({ canWrite }: { canWrite: boolean }) {
                 <span>
                   {c.name}{" "}
                   <span className="text-xs text-text-3">
-                    ({c.product_count} products)
+                    ({c.product_count} {t("products.productsWord")})
                   </span>
                 </span>
                 {canWrite && c.product_count === 0 && (

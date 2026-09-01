@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Table, TBody, Td, Th, THead } from "@/components/ui/table";
 import { useAuth } from "@/features/auth/AuthContext";
+import { useI18n } from "@/lib/i18n";
 
 const typeTone: Record<string, string> = { in: "green", out: "red", adjustment: "manager" };
 
@@ -24,6 +25,7 @@ function TransferCard({
   warehouses: import("@/types").Warehouse[];
   products: import("@/types").Product[];
 }) {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [form, setForm] = useState({ product: "", from: "", to: "", quantity: "" });
   const [error, setError] = useState("");
@@ -43,7 +45,7 @@ function TransferCard({
       setError("");
     },
     onError: (e: any) =>
-      setError(e?.response?.data?.detail ?? "Transfer failed."),
+      setError(e?.response?.data?.detail ?? t("inv.transferFailed")),
   });
 
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) =>
@@ -52,7 +54,7 @@ function TransferCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Warehouse transfer</CardTitle>
+        <CardTitle>{t("inv.transfer")}</CardTitle>
       </CardHeader>
       <CardContent>
         <form
@@ -63,20 +65,20 @@ function TransferCard({
           }}
         >
           <Select value={form.product} onChange={set("product")} required aria-label="transfer-product">
-            <option value="">Product…</option>
+            <option value="">{t("docs.productPlaceholder")}</option>
             {products.map((p) => (
               <option key={p.id} value={p.id}>{p.sku} — {p.name}</option>
             ))}
           </Select>
           <div className="grid grid-cols-2 gap-3">
             <Select value={form.from} onChange={set("from")} required aria-label="transfer-from">
-              <option value="">From…</option>
+              <option value="">{t("inv.from")}</option>
               {warehouses.map((w) => (
                 <option key={w.id} value={w.id}>{w.name}</option>
               ))}
             </Select>
             <Select value={form.to} onChange={set("to")} required aria-label="transfer-to">
-              <option value="">To…</option>
+              <option value="">{t("inv.to")}</option>
               {warehouses.map((w) => (
                 <option key={w.id} value={w.id}>{w.name}</option>
               ))}
@@ -86,7 +88,7 @@ function TransferCard({
             type="number"
             step="0.001"
             min="0.001"
-            placeholder="Quantity"
+            placeholder={t("inv.quantity")}
             value={form.quantity}
             onChange={set("quantity")}
             required
@@ -94,7 +96,7 @@ function TransferCard({
           />
           {error && <p className="text-sm text-danger">{error}</p>}
           <Button type="submit" className="w-full" disabled={mutation.isPending}>
-            {mutation.isPending ? "Transferring…" : "Transfer"}
+            {mutation.isPending ? t("inv.transferring") : t("inv.transferBtn")}
           </Button>
         </form>
       </CardContent>
@@ -104,6 +106,7 @@ function TransferCard({
 
 export default function InventoryPage() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const canWrite = user!.role !== "employee";
   const qc = useQueryClient();
 
@@ -145,7 +148,7 @@ export default function InventoryPage() {
     onError: (err: any) => {
       const data = err?.response?.data;
       setError(
-        data ? Object.values(data).flat().join(" ") : "Failed to record movement."
+        data ? Object.values(data).flat().join(" ") : t("inv.recordFailed")
       );
     },
   });
@@ -158,27 +161,26 @@ export default function InventoryPage() {
   return (
     <div className="space-y-6">
       <p className="text-sm text-text-3">
-        Every time stock goes up or down it is written here — nothing is ever erased,
-        so you can always see who changed what, and why.
+        {t("inv.intro")}
       </p>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {canWrite && (
           <Card>
             <CardHeader>
-              <CardTitle>Record movement</CardTitle>
+              <CardTitle>{t("inv.record")}</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={submit} className="space-y-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="product">Product</Label>
+                  <Label htmlFor="product">{t("field.product")}</Label>
                   <Select
                     id="product"
                     value={form.product}
                     onChange={(e) => setForm((f) => ({ ...f, product: e.target.value }))}
                     required
                   >
-                    <option value="">Select product…</option>
+                    <option value="">{t("inv.selectProduct")}</option>
                     {products?.results.map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.sku} — {p.name} (stock: {Number(p.quantity_in_stock)})
@@ -188,7 +190,7 @@ export default function InventoryPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label htmlFor="movement_type">Type</Label>
+                    <Label htmlFor="movement_type">{t("inv.type")}</Label>
                     <Select
                       id="movement_type"
                       value={form.movement_type}
@@ -196,13 +198,13 @@ export default function InventoryPage() {
                         setForm((f) => ({ ...f, movement_type: e.target.value }))
                       }
                     >
-                      <option value="in">Add stock (goods arrived)</option>
-                      <option value="out">Remove stock (goods left)</option>
-                      <option value="adjustment">Fix a counting mistake (±)</option>
+                      <option value="in">{t("inv.typeIn")}</option>
+                      <option value="out">{t("inv.typeOut")}</option>
+                      <option value="adjustment">{t("inv.typeAdj")}</option>
                     </Select>
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="quantity">Quantity</Label>
+                    <Label htmlFor="quantity">{t("inv.quantity")}</Label>
                     <Input
                       id="quantity"
                       type="number"
@@ -214,7 +216,7 @@ export default function InventoryPage() {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="warehouse">Warehouse</Label>
+                  <Label htmlFor="warehouse">{t("inv.warehouse")}</Label>
                   <Select
                     id="warehouse"
                     value={form.warehouse}
@@ -222,23 +224,23 @@ export default function InventoryPage() {
                   >
                     {warehouses.filter((w) => w.is_active).map((w) => (
                       <option key={w.id} value={w.is_default ? "" : w.id}>
-                        {w.name}{w.is_default ? " (default)" : ""}
+                        {w.name}{w.is_default ? ` ${t("inv.default")}` : ""}
                       </option>
                     ))}
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="reason">Reason</Label>
+                  <Label htmlFor="reason">{t("inv.reason")}</Label>
                   <Input
                     id="reason"
                     value={form.reason}
                     onChange={(e) => setForm((f) => ({ ...f, reason: e.target.value }))}
-                    placeholder="Why? e.g. delivery arrived, item damaged…"
+                    placeholder={t("inv.reasonPlaceholder")}
                   />
                 </div>
                 {error && <p className="text-sm text-danger">{error}</p>}
                 <Button type="submit" className="w-full" disabled={mutation.isPending}>
-                  {mutation.isPending ? "Saving…" : "Record"}
+                  {mutation.isPending ? t("common.saving") : t("inv.recordBtn")}
                 </Button>
               </form>
             </CardContent>
@@ -252,7 +254,7 @@ export default function InventoryPage() {
         <Card className={canWrite ? (warehouses.length > 1 ? "" : "lg:col-span-2") : "lg:col-span-3"}>
           <CardHeader>
             <CardTitle>
-              Low stock alerts{" "}
+              {t("inv.lowStock")}{" "}
               {lowStock && lowStock.count > 0 && (
                 <Badge tone="red" className="ml-1">{lowStock.count}</Badge>
               )}
@@ -260,7 +262,7 @@ export default function InventoryPage() {
           </CardHeader>
           <CardContent>
             {!lowStock || lowStock.count === 0 ? (
-              <p className="text-sm text-text-2">No products below their minimum level.</p>
+              <p className="text-sm text-text-2">{t("inv.noLow")}</p>
             ) : (
               <ul className="divide-y divide-stroke-soft text-sm">
                 {lowStock.results.map((p) => (
@@ -270,7 +272,7 @@ export default function InventoryPage() {
                       {p.name}
                     </span>
                     <span className="text-danger">
-                      {Number(p.quantity_in_stock)} / min {Number(p.min_stock_level)}
+                      {Number(p.quantity_in_stock)} / {t("inv.min")} {Number(p.min_stock_level)}
                     </span>
                   </li>
                 ))}
@@ -281,27 +283,27 @@ export default function InventoryPage() {
       </div>
 
       <div>
-        <h2 className="mb-3 text-lg font-semibold">Movement history</h2>
+        <h2 className="mb-3 text-lg font-semibold">{t("inv.history")}</h2>
         {isLoading ? (
           <TableSkeleton rows={6} />
         ) : movements!.results.length === 0 ? (
           <EmptyState
             icon={History}
-            title="No movements yet"
-            hint="Record a stock-in, receive a purchase order, or confirm a sale — every change lands here, permanently."
+            title={t("inv.noMovements")}
+            hint={t("inv.noMovementsHint")}
           />
         ) : (
           <Table>
             <THead>
               <tr>
-                <Th>Date</Th>
-                <Th>Product</Th>
-                <Th>Type</Th>
-                <Th className="text-right">Qty</Th>
-                <Th>Warehouse</Th>
-                <Th>Reason</Th>
-                <Th>Source</Th>
-                <Th>By</Th>
+                <Th>{t("common.date")}</Th>
+                <Th>{t("field.product")}</Th>
+                <Th>{t("inv.type")}</Th>
+                <Th className="text-right">{t("docs.qty")}</Th>
+                <Th>{t("inv.warehouse")}</Th>
+                <Th>{t("inv.reason")}</Th>
+                <Th>{t("inv.source")}</Th>
+                <Th>{t("docs.col.by")}</Th>
               </tr>
             </THead>
             <TBody>
@@ -315,7 +317,7 @@ export default function InventoryPage() {
                     {m.product_name}
                   </Td>
                   <Td>
-                    <Badge tone={typeTone[m.movement_type]}>{m.movement_type}</Badge>
+                    <Badge tone={typeTone[m.movement_type]}>{t(`inv.mt.${m.movement_type}`)}</Badge>
                   </Td>
                   <Td className="text-right">{Number(m.quantity)}</Td>
                   <Td className="text-text-2">{m.warehouse_name ?? "—"}</Td>

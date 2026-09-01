@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { useI18n } from "@/lib/i18n";
 import type { Product } from "@/types";
 
 export interface ProductFormValues {
@@ -29,6 +30,7 @@ export function ProductForm({
   busy: boolean;
   error?: string;
 }) {
+  const { t } = useI18n();
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
     queryFn: listCategories,
@@ -57,15 +59,15 @@ export function ProductForm({
     <form onSubmit={submit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
-          <Label htmlFor="sku">SKU</Label>
+          <Label htmlFor="sku">{t("products.sku")}</Label>
           <Input id="sku" value={values.sku} onChange={set("sku")} required />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="name">Name</Label>
+          <Label htmlFor="name">{t("field.name")}</Label>
           <Input id="name" value={values.name} onChange={set("name")} required />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="category">Category</Label>
+          <Label htmlFor="category">{t("products.category")}</Label>
           <Select
             id="category"
             value={values.category ?? ""}
@@ -76,7 +78,7 @@ export function ProductForm({
               }))
             }
           >
-            <option value="">— none —</option>
+            <option value="">{t("products.none")}</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
@@ -85,11 +87,11 @@ export function ProductForm({
           </Select>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="unit">Unit</Label>
+          <Label htmlFor="unit">{t("products.unit")}</Label>
           <Input id="unit" value={values.unit} onChange={set("unit")} />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="cost_price">Cost price</Label>
+          <Label htmlFor="cost_price">{t("products.costPrice")}</Label>
           <Input
             id="cost_price"
             type="number"
@@ -100,7 +102,7 @@ export function ProductForm({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="sale_price">Sale price</Label>
+          <Label htmlFor="sale_price">{t("products.salePrice")}</Label>
           <Input
             id="sale_price"
             type="number"
@@ -111,7 +113,7 @@ export function ProductForm({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="min_stock_level">Alert me when stock falls below</Label>
+          <Label htmlFor="min_stock_level">{t("products.minStock")}</Label>
           <Input
             id="min_stock_level"
             type="number"
@@ -123,12 +125,12 @@ export function ProductForm({
         </div>
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="description">{t("field.description")}</Label>
         <Input id="description" value={values.description} onChange={set("description")} />
       </div>
       {error && <p className="text-sm text-danger">{error}</p>}
       <Button type="submit" className="w-full" disabled={busy}>
-        {busy ? "Saving…" : "Save product"}
+        {busy ? t("common.saving") : t("products.save")}
       </Button>
     </form>
   );
