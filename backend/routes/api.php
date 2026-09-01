@@ -136,6 +136,16 @@ Route::prefix('v1')->group(function () {
             Route::post('purchases/{purchase}/reject', [PurchaseOrderController::class, 'reject']);
         });
 
+        // --- vendor bills (3-way match): managers/admins record and clear ---
+        Route::middleware('feature:vendor_bills')->group(function () {
+            Route::get('vendor-bills', [\App\Http\Controllers\VendorBillController::class, 'index']);
+            Route::get('vendor-bills/{vendorBill}', [\App\Http\Controllers\VendorBillController::class, 'show']);
+            Route::middleware('role:admin,manager')->group(function () {
+                Route::post('vendor-bills', [\App\Http\Controllers\VendorBillController::class, 'store']);
+                Route::post('vendor-bills/{vendorBill}/approve', [\App\Http\Controllers\VendorBillController::class, 'approve']);
+            });
+        });
+
         // --- CRM: whole sales team works leads; deletion manager/admin ---
         Route::get('leads', [\App\Http\Controllers\LeadController::class, 'index']);
         Route::post('leads', [\App\Http\Controllers\LeadController::class, 'store']);

@@ -22,6 +22,7 @@ final class Modules
         'lots'          => 'Lots & Expiry',
         'manufacturing' => 'Manufacturing',
         'purchasing'    => 'Suppliers & Purchases',
+        'vendor_bills'  => 'Vendor Bills',
         'reordering'    => 'Reordering',
         'rfq'           => 'RFQs',
         'sales'         => 'Customers & Sales',
@@ -63,6 +64,7 @@ final class Modules
         'boms' => 'manufacturing', 'work-orders' => 'manufacturing',
         // purchasing
         'suppliers' => 'purchasing', 'purchases' => 'purchasing',
+        'vendor-bills' => 'vendor_bills',
         'reorder-rules' => 'reordering', 'reorder-run' => 'reordering', 'reorder-suggestions' => 'reordering',
         'rfqs' => 'rfq',
         // sales

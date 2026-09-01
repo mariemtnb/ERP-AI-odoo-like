@@ -56,6 +56,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { to: "/suppliers", label: "nav.suppliers", icon: Truck, feature: "purchasing" },
       { to: "/purchases", label: "nav.purchases", icon: ShoppingBag, feature: "purchasing" },
+      { to: "/vendor-bills", label: "nav.vendorBills", icon: ReceiptText, roles: ["admin", "manager"], feature: "vendor_bills" },
       { to: "/reordering", label: "nav.reordering", icon: RefreshCw, roles: ["admin", "manager"], feature: "reordering" },
       { to: "/rfqs", label: "nav.rfqs", icon: ClipboardList, roles: ["admin", "manager"], feature: "rfq" },
     ],

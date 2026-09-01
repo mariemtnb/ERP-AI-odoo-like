@@ -47,6 +47,7 @@ import ProductsPage from "@/features/products/ProductsPage";
 import UsersPage from "@/features/users/UsersPage";
 import RolesPage from "@/features/roles/RolesPage";
 import PricelistsPage from "@/features/pricelists/PricelistsPage";
+import VendorBillsPage from "@/features/vendorbills/VendorBillsPage";
 import PortalSalePage from "@/features/portal/PortalSalePage";
 import PortalPayPage from "@/features/portal/PortalPayPage";
 
@@ -120,6 +121,9 @@ export default function App() {
                   path="purchases"
                   element={<DocumentsPage kind="purchases" title="Purchases" />}
                 />
+                <Route element={<ProtectedRoute roles={["admin", "manager"]} />}>
+                  <Route path="vendor-bills" element={<VendorBillsPage />} />
+                </Route>
                 <Route
                   path="sales"
                   element={<DocumentsPage kind="sales" title="Sales" />}
