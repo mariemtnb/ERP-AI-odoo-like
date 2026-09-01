@@ -498,6 +498,7 @@ Route::prefix('v1')->group(function () {
             Route::get('reports/sales', [ReportingController::class, 'salesReport']);
             Route::get('reports/purchases', [ReportingController::class, 'purchasesReport']);
             Route::get('reports/stock', [ReportingController::class, 'stockReport']);
+            Route::get('reports/vat', [ReportingController::class, 'vatReturn']);
         });
 
         // --- OCR: invoice image → structured data (managers/admins) ---

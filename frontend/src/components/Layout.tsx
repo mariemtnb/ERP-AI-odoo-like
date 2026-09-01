@@ -110,6 +110,7 @@ const NAV_SECTIONS: NavSection[] = [
     title: "section.insights",
     items: [
       { to: "/reports", label: "nav.reports", icon: FileText, roles: ["admin", "manager"], feature: "reports" },
+      { to: "/reports/vat", label: "nav.vatReturn", icon: Scale, roles: ["admin", "manager"], feature: "reports" },
       { to: "/report-builder", label: "nav.reportBuilder", icon: BarChart3, roles: ["admin", "manager"], feature: "bi" },
       { to: "/assistant", label: "nav.assistant", icon: Sparkles, live: true, feature: "ai" },
     ],

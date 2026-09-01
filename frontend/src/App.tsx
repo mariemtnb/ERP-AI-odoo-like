@@ -48,6 +48,7 @@ import UsersPage from "@/features/users/UsersPage";
 import RolesPage from "@/features/roles/RolesPage";
 import PricelistsPage from "@/features/pricelists/PricelistsPage";
 import VendorBillsPage from "@/features/vendorbills/VendorBillsPage";
+import VatReturnPage from "@/features/reports/VatReturnPage";
 import PortalSalePage from "@/features/portal/PortalSalePage";
 import PortalPayPage from "@/features/portal/PortalPayPage";
 
@@ -90,6 +91,7 @@ export default function App() {
                 <Route path="settings/profile" element={<ProfilePage />} />
                 <Route element={<ProtectedRoute roles={["admin", "manager"]} />}>
                   <Route path="reports" element={<ReportsPage />} />
+                  <Route path="reports/vat" element={<VatReturnPage />} />
                   <Route path="report-builder" element={<BiPage />} />
                   <Route path="accounting" element={<AccountingPage />} />
                   <Route path="instruments" element={<InstrumentsPage />} />

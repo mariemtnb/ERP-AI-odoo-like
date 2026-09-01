@@ -97,3 +97,22 @@ export async function emailSale(saleId: number) {
   const { data } = await api.post<{ sent: boolean; emailed_to: string; portal_url: string }>(`/sales/${saleId}/email`);
   return data;
 }
+
+export interface VatReturn {
+  date_from: string;
+  date_to: string;
+  rate: number;
+  sales_gross: number;
+  sales_net: number;
+  output_vat: number;
+  purchases_gross: number;
+  purchases_net: number;
+  input_vat: number;
+  net_vat_due: number;
+  vat_credit: number;
+}
+
+export async function vatReturn(from: string, to: string) {
+  const { data } = await api.get<VatReturn>("/reports/vat", { params: { from, to } });
+  return data;
+}

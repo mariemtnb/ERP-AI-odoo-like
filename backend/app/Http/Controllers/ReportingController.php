@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CompanyProfile;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\Sale;
@@ -135,6 +136,53 @@ class ReportingController extends Controller
             'rows' => $rows->values()->all(),
             'count' => $active->count(),
             'total' => (float) $active->sum('total'),
+        ]);
+    }
+
+    /**
+     * VAT declaration for a period.
+     *
+     * Output VAT is what was collected on sales; input VAT is what was paid
+     * (and is deductible) on purchases received in the period; the difference
+     * is what is owed to the treasury (or a credit carried forward). Document
+     * totals are treated as VAT-inclusive at the company's configured rate —
+     * the usual case for a Tunisian SME, where the price on the invoice already
+     * includes the TVA. The rate is a setting, so it moves with the law.
+     */
+    public function vatReturn(Request $request)
+    {
+        [$from, $to] = self::range($request);
+        $rate = (float) (CompanyProfile::current()->default_vat_rate ?? 19);
+        $r = $rate / 100;
+
+        $salesGross = (float) Sale::where('status', Sale::STATUS_CONFIRMED)
+            ->whereBetween('sale_date', [$from, $to])->sum('total_amount');
+
+        // A purchase counts once the goods are received; use the receipt date
+        // when we have it, otherwise the order date.
+        $purchasesGross = (float) PurchaseOrder::where('status', PurchaseOrder::STATUS_RECEIVED)
+            ->whereBetween(DB::raw('COALESCE(received_date, order_date)'), [$from, $to])
+            ->sum('total_amount');
+
+        $salesNet = $r > 0 ? round($salesGross / (1 + $r), 2) : $salesGross;
+        $purchasesNet = $r > 0 ? round($purchasesGross / (1 + $r), 2) : $purchasesGross;
+        $outputVat = round($salesGross - $salesNet, 2);
+        $inputVat = round($purchasesGross - $purchasesNet, 2);
+        $net = round($outputVat - $inputVat, 2);
+
+        return response()->json([
+            'title' => 'VAT return',
+            'date_from' => $from,
+            'date_to' => $to,
+            'rate' => $rate,
+            'sales_gross' => round($salesGross, 2),
+            'sales_net' => $salesNet,
+            'output_vat' => $outputVat,
+            'purchases_gross' => round($purchasesGross, 2),
+            'purchases_net' => $purchasesNet,
+            'input_vat' => $inputVat,
+            'net_vat_due' => max(0.0, $net),
+            'vat_credit' => max(0.0, -$net),
         ]);
     }
 
