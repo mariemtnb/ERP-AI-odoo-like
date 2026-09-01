@@ -11,6 +11,7 @@ import {
   openSession as apiOpen,
   type PosSession,
 } from "@/api/pos";
+import { useI18n } from "@/lib/i18n";
 import type { Product } from "@/types";
 
 type BasketLine = { product: Product; quantity: number };
@@ -19,6 +20,7 @@ type Method = "cash" | "card" | "cheque";
 const money = (n: number) => n.toFixed(2);
 
 export default function PosPage() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const sessionQ = useQuery({ queryKey: ["pos-session"], queryFn: getCurrentSession });
   const session = sessionQ.data ?? null;
@@ -26,7 +28,7 @@ export default function PosPage() {
   if (sessionQ.isLoading) {
     return (
       <div>
-        <PageHead title="Point of Sale" sub="Loading the till…" />
+        <PageHead title={t("nav.pos")} sub={t("pos.loading")} />
       </div>
     );
   }
@@ -40,17 +42,18 @@ export default function PosPage() {
 
 /* ---------- opening the till ---------- */
 function OpenTill({ onOpened }: { onOpened: () => void }) {
+  const { t } = useI18n();
   const [float, setFloat] = useState("0");
   const [error, setError] = useState<string | null>(null);
   const open = useMutation({
     mutationFn: () => apiOpen(Number(float) || 0),
     onSuccess: onOpened,
-    onError: (e: any) => setError(e?.response?.data?.detail ?? "Could not open the till."),
+    onError: (e: any) => setError(e?.response?.data?.detail ?? t("pos.couldNotOpen")),
   });
 
   return (
     <div>
-      <PageHead title="Point of Sale" sub="Open a till to start ringing up sales." />
+      <PageHead title={t("nav.pos")} sub={t("pos.openSub")} />
       <div
         style={{
           maxWidth: 380,
@@ -61,7 +64,7 @@ function OpenTill({ onOpened }: { onOpened: () => void }) {
         }}
       >
         <label style={{ font: "500 13px var(--font-sans)", color: "var(--text-muted)" }}>
-          Opening cash float (TND)
+          {t("pos.openingFloat")}
         </label>
         <Input
           type="number"
@@ -73,7 +76,7 @@ function OpenTill({ onOpened }: { onOpened: () => void }) {
         />
         {error && <p style={{ color: "var(--rose-400)", fontSize: 13, marginTop: 10 }}>{error}</p>}
         <Button style={{ marginTop: 16, width: "100%" }} loading={open.isPending} onClick={() => open.mutate()}>
-          Open till
+          {t("pos.openTill")}
         </Button>
       </div>
     </div>
@@ -82,6 +85,7 @@ function OpenTill({ onOpened }: { onOpened: () => void }) {
 
 /* ---------- the register ---------- */
 function Register({ session, onChanged }: { session: PosSession; onChanged: () => void }) {
+  const { t } = useI18n();
   const [search, setSearch] = useState("");
   const [basket, setBasket] = useState<BasketLine[]>([]);
   const [method, setMethod] = useState<Method>("cash");
@@ -122,13 +126,13 @@ function Register({ session, onChanged }: { session: PosSession; onChanged: () =
         payments: [{ method, amount: method === "cash" ? Number(tendered) || total : total }],
       }),
     onSuccess: (order) => {
-      setFlash(`${order.number} charged — change ${money(Number(order.change_due))} TND`);
+      setFlash(`${order.number} ${t("pos.chargedChange")} ${money(Number(order.change_due))} TND`);
       setBasket([]);
       setTendered("");
       setError(null);
       onChanged();
     },
-    onError: (e: any) => setError(e?.response?.data?.detail ?? "Checkout failed."),
+    onError: (e: any) => setError(e?.response?.data?.detail ?? t("pos.checkoutFailed")),
   });
 
   const canCharge =
@@ -136,9 +140,9 @@ function Register({ session, onChanged }: { session: PosSession; onChanged: () =
 
   return (
     <div>
-      <PageHead title="Point of Sale" sub={`Till open · ${session.orders_count} sales · float ${session.opening_float} TND`}>
+      <PageHead title={t("nav.pos")} sub={`${t("pos.tillOpen")} · ${session.orders_count} ${t("pos.sales")} · ${t("pos.float")} ${session.opening_float} TND`}>
         <Button variant="outline" onClick={() => setClosing(true)}>
-          Close till
+          {t("pos.closeTill")}
         </Button>
       </PageHead>
 
@@ -161,7 +165,7 @@ function Register({ session, onChanged }: { session: PosSession; onChanged: () =
       <div style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr", gap: 18, alignItems: "start" }}>
         {/* catalog */}
         <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: 16 }}>
-          <Input placeholder="Search product by name or SKU…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input placeholder={t("pos.searchProduct")} value={search} onChange={(e) => setSearch(e.target.value)} />
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 14 }}>
             {(productsQ.data?.results ?? []).map((p) => (
               <button
@@ -178,25 +182,25 @@ function Register({ session, onChanged }: { session: PosSession; onChanged: () =
               >
                 <div style={{ font: "600 14px var(--font-sans)", color: "var(--text-strong)" }}>{p.name}</div>
                 <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                  {p.sku} · {money(Number(p.sale_price))} TND · stock {p.quantity_in_stock}
+                  {p.sku} · {money(Number(p.sale_price))} TND · {t("pos.stock")} {p.quantity_in_stock}
                 </div>
               </button>
             ))}
             {productsQ.data?.results.length === 0 && (
-              <p style={{ color: "var(--text-muted)", fontSize: 13 }}>No products match “{search}”.</p>
+              <p style={{ color: "var(--text-muted)", fontSize: 13 }}>{t("pos.noProductMatch")} “{search}”.</p>
             )}
           </div>
         </div>
 
         {/* basket */}
         <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: 16 }}>
-          <h3 style={{ margin: "0 0 10px", font: "600 15px var(--font-sans)", color: "var(--text-strong)" }}>Basket</h3>
-          {basket.length === 0 && <p style={{ color: "var(--text-muted)", fontSize: 13 }}>Tap products to add them.</p>}
+          <h3 style={{ margin: "0 0 10px", font: "600 15px var(--font-sans)", color: "var(--text-strong)" }}>{t("pos.basket")}</h3>
+          {basket.length === 0 && <p style={{ color: "var(--text-muted)", fontSize: 13 }}>{t("pos.tapToAdd")}</p>}
           {basket.map((l) => (
             <div key={l.product.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0" }}>
               <div style={{ flex: 1 }}>
                 <div style={{ font: "500 14px var(--font-sans)", color: "var(--text-strong)" }}>{l.product.name}</div>
-                <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{money(Number(l.product.sale_price))} TND each</div>
+                <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{money(Number(l.product.sale_price))} TND / {t("pos.each")}</div>
               </div>
               <input
                 type="number"
@@ -212,7 +216,7 @@ function Register({ session, onChanged }: { session: PosSession; onChanged: () =
           ))}
 
           <div style={{ borderTop: "1px solid var(--border)", margin: "12px 0", paddingTop: 12, display: "flex", justifyContent: "space-between", font: "700 18px var(--font-sans)", color: "var(--text-strong)" }}>
-            <span>Total</span>
+            <span>{t("common.total")}</span>
             <span style={{ fontVariantNumeric: "tabular-nums" }}>{money(total)} TND</span>
           </div>
 
@@ -233,14 +237,14 @@ function Register({ session, onChanged }: { session: PosSession; onChanged: () =
                   fontSize: 13,
                 }}
               >
-                {m}
+                {t(`pos.${m}`)}
               </button>
             ))}
           </div>
 
           {method === "cash" && (
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-              <span style={{ fontSize: 13, color: "var(--text-muted)" }}>Cash tendered</span>
+              <span style={{ fontSize: 13, color: "var(--text-muted)" }}>{t("pos.cashTendered")}</span>
               <input
                 type="number"
                 min={0}
@@ -254,14 +258,14 @@ function Register({ session, onChanged }: { session: PosSession; onChanged: () =
           )}
           {method === "cash" && Number(tendered) > 0 && (
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, color: "var(--text-strong)", marginBottom: 10 }}>
-              <span>Change</span>
+              <span>{t("pos.change")}</span>
               <span style={{ fontVariantNumeric: "tabular-nums" }}>{money(change)} TND</span>
             </div>
           )}
 
           {error && <p style={{ color: "var(--rose-400)", fontSize: 13, marginBottom: 8 }}>{error}</p>}
           <Button style={{ width: "100%" }} disabled={!canCharge} loading={charge.isPending} onClick={() => charge.mutate()}>
-            Charge {money(total)} TND
+            {t("pos.charge")} {money(total)} TND
           </Button>
         </div>
       </div>
@@ -273,6 +277,7 @@ function Register({ session, onChanged }: { session: PosSession; onChanged: () =
 
 /* ---------- closing the till ---------- */
 function CloseDialog({ session, onDone, onClose }: { session: PosSession; onDone: () => void; onClose: () => void }) {
+  const { t } = useI18n();
   const [counted, setCounted] = useState("");
   const [result, setResult] = useState<PosSession | null>(null);
   const close = useMutation({
@@ -292,23 +297,23 @@ function CloseDialog({ session, onDone, onClose }: { session: PosSession; onDone
       >
         {result ? (
           <>
-            <h3 style={{ margin: "0 0 12px", color: "var(--text-strong)" }}>Till closed</h3>
-            <Row label="Expected in drawer" value={`${result.expected_cash} TND`} />
-            <Row label="Counted" value={`${result.closing_counted} TND`} />
+            <h3 style={{ margin: "0 0 12px", color: "var(--text-strong)" }}>{t("pos.tillClosed")}</h3>
+            <Row label={t("pos.expected")} value={`${result.expected_cash} TND`} />
+            <Row label={t("pos.counted")} value={`${result.closing_counted} TND`} />
             <Row
-              label="Variance"
+              label={t("pos.variance")}
               value={`${(result.variance ?? 0) >= 0 ? "+" : ""}${(result.variance ?? 0).toFixed(2)} TND`}
               strong
             />
             <Button style={{ marginTop: 16, width: "100%" }} onClick={() => { onDone(); onClose(); }}>
-              Done
+              {t("common.done")}
             </Button>
           </>
         ) : (
           <>
-            <h3 style={{ margin: "0 0 6px", color: "var(--text-strong)" }}>Close till</h3>
+            <h3 style={{ margin: "0 0 6px", color: "var(--text-strong)" }}>{t("pos.closeTill")}</h3>
             <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 0 }}>
-              Count the cash in the drawer and enter it. We compare against the opening float plus cash takings.
+              {t("pos.closeSub")}
             </p>
             <input
               type="number"
@@ -316,12 +321,12 @@ function CloseDialog({ session, onDone, onClose }: { session: PosSession; onDone
               step="0.01"
               value={counted}
               onChange={(e) => setCounted(e.target.value)}
-              placeholder="Counted cash (TND)"
+              placeholder={t("pos.countedPlaceholder")}
               style={{ width: "100%", background: "var(--surface-hover)", border: "1px solid var(--border)", borderRadius: 8, padding: "9px 10px", marginBottom: 14 }}
             />
             <div style={{ display: "flex", gap: 8 }}>
-              <Button variant="outline" style={{ flex: 1 }} onClick={onClose}>Cancel</Button>
-              <Button style={{ flex: 1 }} loading={close.isPending} onClick={() => close.mutate()}>Close</Button>
+              <Button variant="outline" style={{ flex: 1 }} onClick={onClose}>{t("common.cancel")}</Button>
+              <Button style={{ flex: 1 }} loading={close.isPending} onClick={() => close.mutate()}>{t("pos.close")}</Button>
             </div>
           </>
         )}

@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Table, TBody, Td, Th, THead } from "@/components/ui/table";
 import { useAuth } from "@/features/auth/AuthContext";
+import { useI18n } from "@/lib/i18n";
 import type { BusinessDoc } from "@/types";
 
 const statusTone: Record<string, string> = {
@@ -33,12 +34,14 @@ interface LineDraft {
 
 export default function DocumentsPage({
   kind,
-  title,
 }: {
   kind: "purchases" | "sales";
-  title: string;
+  title?: string;
 }) {
+  const { t } = useI18n();
   const isPurchase = kind === "purchases";
+  const partnerLabel = isPurchase ? t("field.supplier") : t("field.customer");
+  const statusLabel = (s: string) => t(`status.${s}`);
   const partnerKind = isPurchase ? "suppliers" : "customers";
   const partnerField = isPurchase ? "supplier" : "customer";
   const dateField = isPurchase ? "order_date" : "sale_date";
@@ -102,7 +105,7 @@ export default function DocumentsPage({
     } catch (e: any) {
       setScanNote("");
       setError(
-        e?.response?.data?.detail ?? e?.message ?? "Invoice extraction failed."
+        e?.response?.data?.detail ?? e?.message ?? t("docs.extractFailed")
       );
       setCreateOpen(true);
     } finally {
@@ -148,7 +151,7 @@ export default function DocumentsPage({
       setActionError("");
     },
     onError: (err: any) =>
-      setActionError(err?.response?.data?.detail ?? "Action failed."),
+      setActionError(err?.response?.data?.detail ?? t("docs.actionFailed")),
   });
 
   function submit(e: FormEvent) {
@@ -178,9 +181,7 @@ export default function DocumentsPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <p className="text-sm text-text-3">
-          {isPurchase
-            ? "Order, receive and approve supplier deliveries."
-            : `Record ${title.toLowerCase()}, confirm to move stock, invoice in one click.`}
+          {t(`docs.sub.${kind}`)}
         </p>
         {canWrite && (
           <div className="flex gap-2">
@@ -203,12 +204,12 @@ export default function DocumentsPage({
                   onClick={() => fileRef.current?.click()}
                 >
                   <ScanLine className="h-4 w-4" />
-                  {scanning ? "Reading invoice…" : "Import from invoice"}
+                  {scanning ? t("docs.readingInvoice") : t("docs.importInvoice")}
                 </Button>
               </>
             )}
             <Button onClick={() => { setError(""); setScanNote(""); setCreateOpen(true); }}>
-              <Plus className="h-4 w-4" /> New {isPurchase ? "purchase order" : "sale"}
+              <Plus className="h-4 w-4" /> {t(`docs.new.${kind}`)}
             </Button>
           </div>
         )}
@@ -219,16 +220,12 @@ export default function DocumentsPage({
       ) : data!.results.length === 0 ? (
         <EmptyState
           icon={isPurchase ? ScanLine : FileText}
-          title={`No ${title.toLowerCase()} yet`}
-          hint={
-            isPurchase
-              ? "Create a purchase order — or import one straight from an invoice photo."
-              : "Record your first sale; confirming it moves stock automatically."
-          }
+          title={t(`docs.empty.${kind}`)}
+          hint={t(`docs.emptyHint.${kind}`)}
           action={
             canWrite ? (
               <Button onClick={() => { setError(""); setScanNote(""); setCreateOpen(true); }}>
-                <Plus className="h-4 w-4" /> New {isPurchase ? "purchase order" : "sale"}
+                <Plus className="h-4 w-4" /> {t(`docs.new.${kind}`)}
               </Button>
             ) : undefined
           }
@@ -237,12 +234,12 @@ export default function DocumentsPage({
         <Table>
           <THead>
             <tr>
-              <Th>Number</Th>
-              <Th>{isPurchase ? "Supplier" : "Customer"}</Th>
-              <Th>Date</Th>
-              <Th>Status</Th>
-              <Th className="text-right">Total</Th>
-              <Th>By</Th>
+              <Th>{t("docs.col.number")}</Th>
+              <Th>{partnerLabel}</Th>
+              <Th>{t("common.date")}</Th>
+              <Th>{t("common.status")}</Th>
+              <Th className="text-right">{t("common.total")}</Th>
+              <Th>{t("docs.col.by")}</Th>
             </tr>
           </THead>
           <TBody>
@@ -258,7 +255,7 @@ export default function DocumentsPage({
                   {isPurchase ? d.order_date : d.sale_date}
                 </Td>
                 <Td>
-                  <Badge tone={statusTone[d.status]}>{d.status}</Badge>
+                  <Badge tone={statusTone[d.status]}>{statusLabel(d.status)}</Badge>
                 </Td>
                 <Td className="text-right">{Number(d.total_amount).toFixed(2)}</Td>
                 <Td className="text-xs text-text-2">{d.created_by_email}</Td>
@@ -272,7 +269,7 @@ export default function DocumentsPage({
       <Dialog
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        title={isPurchase ? "New purchase order" : "New sale"}
+        title={t(`docs.new.${kind}`)}
         className="max-w-2xl"
       >
         <form onSubmit={submit} className="space-y-4">
@@ -282,14 +279,14 @@ export default function DocumentsPage({
             </p>
           )}
           <div className="space-y-1.5">
-            <Label htmlFor="doc-partner">{isPurchase ? "Supplier" : "Customer"}</Label>
+            <Label htmlFor="doc-partner">{partnerLabel}</Label>
             <Select
               id="doc-partner"
               value={partner}
               onChange={(e) => setPartner(e.target.value)}
               required
             >
-              <option value="">Select…</option>
+              <option value="">{t("docs.select")}</option>
               {partnerList?.results.map((p) => (
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
@@ -297,7 +294,7 @@ export default function DocumentsPage({
           </div>
 
           <div className="space-y-2">
-            <Label>Lines</Label>
+            <Label>{t("docs.lines")}</Label>
             {lines.map((line, i) => (
               <div key={i} className="flex items-center gap-2">
                 <Select
@@ -307,7 +304,7 @@ export default function DocumentsPage({
                   required
                   className="flex-1"
                 >
-                  <option value="">Product…</option>
+                  <option value="">{t("docs.productPlaceholder")}</option>
                   {products?.results.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.sku} — {p.name} (stock: {Number(p.quantity_in_stock)})
@@ -332,7 +329,7 @@ export default function DocumentsPage({
                   value={line.unit_price}
                   onChange={(e) => setLine(i, "unit_price", e.target.value)}
                   className="w-28"
-                  placeholder="Price"
+                  placeholder={t("docs.price")}
                   required
                 />
                 <Button
@@ -354,16 +351,16 @@ export default function DocumentsPage({
                 setLines((ls) => [...ls, { product: "", quantity: "1", unit_price: "" }])
               }
             >
-              <Plus className="h-4 w-4" /> Add line
+              <Plus className="h-4 w-4" /> {t("docs.addLine")}
             </Button>
           </div>
 
           <p className="text-right text-sm text-text-2">
-            Total: <span className="font-semibold">{total.toFixed(2)}</span>
+            {t("common.total")}: <span className="font-semibold">{total.toFixed(2)}</span>
           </p>
           {error && <p className="break-all text-sm text-danger">{error}</p>}
           <Button type="submit" className="w-full" disabled={createMutation.isPending}>
-            {createMutation.isPending ? "Saving…" : "Create draft"}
+            {createMutation.isPending ? t("common.saving") : t("docs.createDraft")}
           </Button>
         </form>
       </Dialog>
@@ -380,19 +377,19 @@ export default function DocumentsPage({
             <div className="flex items-center justify-between text-sm">
               <span>
                 {isPurchase ? viewDoc.supplier_name : viewDoc.customer_name} —{" "}
-                <Badge tone={statusTone[viewDoc.status]}>{viewDoc.status}</Badge>
+                <Badge tone={statusTone[viewDoc.status]}>{statusLabel(viewDoc.status)}</Badge>
               </span>
               <span className="text-text-2">
-                by {viewDoc.created_by_email}
+                {t("docs.by")} {viewDoc.created_by_email}
               </span>
             </div>
             <Table>
               <THead>
                 <tr>
-                  <Th>Product</Th>
-                  <Th className="text-right">Qty</Th>
-                  <Th className="text-right">Unit price</Th>
-                  <Th className="text-right">Subtotal</Th>
+                  <Th>{t("field.product")}</Th>
+                  <Th className="text-right">{t("docs.qty")}</Th>
+                  <Th className="text-right">{t("docs.unitPrice")}</Th>
+                  <Th className="text-right">{t("docs.subtotal")}</Th>
                 </tr>
               </THead>
               <TBody>
@@ -410,7 +407,7 @@ export default function DocumentsPage({
               </TBody>
             </Table>
             <p className="text-right font-semibold">
-              Total: {Number(viewDoc.total_amount).toFixed(2)}
+              {t("common.total")}: {Number(viewDoc.total_amount).toFixed(2)}
             </p>
             {actionError && <p className="text-sm text-danger">{actionError}</p>}
             {canWrite && (
@@ -423,7 +420,7 @@ export default function DocumentsPage({
                       await downloadInvoice(viewDoc.id, inv.number);
                     }}
                   >
-                    <FileText className="h-4 w-4" /> Invoice PDF
+                    <FileText className="h-4 w-4" /> {t("docs.invoicePdf")}
                   </Button>
                 )}
                 {viewDoc.status === "draft" && (
@@ -431,7 +428,7 @@ export default function DocumentsPage({
                     onClick={() => actionMutation.mutate({ id: viewDoc.id, name: "confirm" })}
                     disabled={actionMutation.isPending}
                   >
-                    Confirm
+                    {t("docs.confirm")}
                   </Button>
                 )}
                 {isPurchase && viewDoc.status === "pending_approval" && user!.role === "admin" && (
@@ -440,20 +437,20 @@ export default function DocumentsPage({
                       onClick={() => actionMutation.mutate({ id: viewDoc.id, name: "approve" })}
                       disabled={actionMutation.isPending}
                     >
-                      Approve order
+                      {t("docs.approve")}
                     </Button>
                     <Button
                       variant="outline"
                       onClick={() => actionMutation.mutate({ id: viewDoc.id, name: "reject" })}
                       disabled={actionMutation.isPending}
                     >
-                      Send back to draft
+                      {t("docs.sendBack")}
                     </Button>
                   </>
                 )}
                 {isPurchase && viewDoc.status === "pending_approval" && user!.role !== "admin" && (
                   <p className="self-center text-sm text-warning">
-                    Awaiting admin approval (large order)
+                    {t("docs.awaiting")}
                   </p>
                 )}
                 {isPurchase && viewDoc.status === "confirmed" && (
@@ -461,7 +458,7 @@ export default function DocumentsPage({
                     onClick={() => actionMutation.mutate({ id: viewDoc.id, name: "receive" })}
                     disabled={actionMutation.isPending}
                   >
-                    Receive goods
+                    {t("docs.receive")}
                   </Button>
                 )}
                 {(viewDoc.status === "draft" || viewDoc.status === "confirmed") && (
@@ -470,7 +467,7 @@ export default function DocumentsPage({
                     onClick={() => actionMutation.mutate({ id: viewDoc.id, name: "cancel" })}
                     disabled={actionMutation.isPending}
                   >
-                    Cancel {isPurchase ? "order" : "sale"}
+                    {t(`docs.cancel.${kind}`)}
                   </Button>
                 )}
               </div>

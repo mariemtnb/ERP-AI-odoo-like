@@ -12,18 +12,19 @@ import { Label } from "@/components/ui/label";
 import { TableSkeleton } from "@/components/ui/skeleton";
 import { Table, TBody, Td, Th, THead } from "@/components/ui/table";
 import { useAuth } from "@/features/auth/AuthContext";
+import { useI18n } from "@/lib/i18n";
 import type { Partner } from "@/types";
 
 const empty = { name: "", email: "", phone: "", address: "", notes: "" };
 
 export default function PartnersPage({
   kind,
-  title,
 }: {
   kind: "customers" | "suppliers";
-  title: string;
+  title?: string;
 }) {
   const { user } = useAuth();
+  const { t } = useI18n();
   const isEmployee = user!.role === "employee";
   // Employees may create customers but not edit; suppliers are read-only for them.
   const canCreate = kind === "customers" || !isEmployee;
@@ -54,7 +55,7 @@ export default function PartnersPage({
     },
     onError: (err: any) => {
       const data = err?.response?.data;
-      setError(data ? Object.values(data).flat().join(" ") : "Request failed.");
+      setError(data ? Object.values(data).flat().join(" ") : t("common.requestFailed"));
     },
   });
 
@@ -93,13 +94,13 @@ export default function PartnersPage({
         <div />
         {canCreate && (
           <Button onClick={() => openDialog("create")}>
-            <Plus className="h-4 w-4" /> New {title.slice(0, -1).toLowerCase()}
+            <Plus className="h-4 w-4" /> {t(`partners.new.${kind}`)}
           </Button>
         )}
       </div>
 
       <Input
-        placeholder="Search by name, email or phone…"
+        placeholder={t("partners.search")}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="max-w-xs"
@@ -110,16 +111,12 @@ export default function PartnersPage({
       ) : data!.results.length === 0 ? (
         <EmptyState
           icon={kind === "customers" ? UserSquare2 : Truck}
-          title={search ? "No matches" : `No ${title.toLowerCase()} yet`}
-          hint={
-            search
-              ? "Try a different name, email or phone."
-              : `Add your first ${title.slice(0, -1).toLowerCase()} to start building history.`
-          }
+          title={search ? t("partners.noMatches") : t(`partners.empty.${kind}`)}
+          hint={search ? t("partners.searchHint") : t(`partners.emptyHint.${kind}`)}
           action={
             canCreate && !search ? (
               <Button onClick={() => openDialog("create")}>
-                <Plus className="h-4 w-4" /> New {title.slice(0, -1).toLowerCase()}
+                <Plus className="h-4 w-4" /> {t(`partners.new.${kind}`)}
               </Button>
             ) : undefined
           }
@@ -128,10 +125,10 @@ export default function PartnersPage({
         <Table>
           <THead>
             <tr>
-              <Th>Name</Th>
-              <Th>Email</Th>
-              <Th>Phone</Th>
-              <Th>Status</Th>
+              <Th>{t("field.name")}</Th>
+              <Th>{t("field.email")}</Th>
+              <Th>{t("field.phone")}</Th>
+              <Th>{t("common.status")}</Th>
               {canModify && <Th />}
             </tr>
           </THead>
@@ -143,22 +140,22 @@ export default function PartnersPage({
                 <Td className="text-text-2">{p.phone || "—"}</Td>
                 <Td>
                   <Badge tone={p.is_active ? "green" : "red"}>
-                    {p.is_active ? "active" : "inactive"}
+                    {p.is_active ? t("common.active") : t("common.inactive")}
                   </Badge>
                 </Td>
                 {canModify && (
                   <Td className="text-right">
-                    <Tooltip label="Change the contact details">
-                      <Button variant="ghost" size="icon" aria-label="Edit" onClick={() => openDialog(p)}>
+                    <Tooltip label={t("partners.editDetails")}>
+                      <Button variant="ghost" size="icon" aria-label={t("common.edit")} onClick={() => openDialog(p)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
                     </Tooltip>
                     {p.is_active && (
-                      <Tooltip label="Hide this contact (their history is kept)">
+                      <Tooltip label={t("partners.hideContact")}>
                         <Button
                           variant="ghost"
                           size="icon"
-                          aria-label="Deactivate"
+                          aria-label={t("common.deactivate")}
                           onClick={() => deactivateMutation.mutate(p.id)}
                         >
                           <Trash2 className="h-4 w-4 text-danger" />
@@ -176,34 +173,34 @@ export default function PartnersPage({
       <Dialog
         open={dialog !== null}
         onClose={() => setDialog(null)}
-        title={dialog === "create" ? `New ${title.slice(0, -1).toLowerCase()}` : `Edit ${title.slice(0, -1).toLowerCase()}`}
+        title={dialog === "create" ? t(`partners.new.${kind}`) : t(`partners.edit.${kind}`)}
       >
         <form onSubmit={submit} className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="p-name">Name</Label>
+            <Label htmlFor="p-name">{t("field.name")}</Label>
             <Input id="p-name" value={form.name} onChange={set("name")} required />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="p-email">Email</Label>
+              <Label htmlFor="p-email">{t("field.email")}</Label>
               <Input id="p-email" type="email" value={form.email} onChange={set("email")} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="p-phone">Phone</Label>
+              <Label htmlFor="p-phone">{t("field.phone")}</Label>
               <Input id="p-phone" value={form.phone} onChange={set("phone")} />
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="p-address">Address</Label>
+            <Label htmlFor="p-address">{t("field.address")}</Label>
             <Input id="p-address" value={form.address} onChange={set("address")} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="p-notes">Notes</Label>
+            <Label htmlFor="p-notes">{t("field.notes")}</Label>
             <Input id="p-notes" value={form.notes} onChange={set("notes")} />
           </div>
           {error && <p className="text-sm text-danger">{error}</p>}
           <Button type="submit" className="w-full" disabled={saveMutation.isPending}>
-            {saveMutation.isPending ? "Saving…" : "Save"}
+            {saveMutation.isPending ? t("common.saving") : t("common.save")}
           </Button>
         </form>
       </Dialog>
