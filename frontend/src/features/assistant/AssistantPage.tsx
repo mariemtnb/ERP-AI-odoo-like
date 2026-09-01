@@ -11,6 +11,7 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { describeAction, detectLang, t } from "./approval";
+import { useI18n } from "@/lib/i18n";
 
 let nextLocalId = -1;
 
@@ -45,6 +46,7 @@ function useSpeech(onResult: (text: string) => void) {
 }
 
 export default function AssistantPage() {
+  const { t: tr } = useI18n();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [conversationId, setConversationId] = useState<number | undefined>();
   const [input, setInput] = useState("");
@@ -76,7 +78,7 @@ export default function AssistantPage() {
       setConversationId(res.conversation_id);
       push(res.message);
     } catch (err: any) {
-      setError(err?.response?.data?.detail ?? "The assistant is unavailable.");
+      setError(err?.response?.data?.detail ?? tr("asst.unavailable"));
     } finally {
       setBusy(false);
     }
@@ -103,7 +105,7 @@ export default function AssistantPage() {
     push({
       id: nextLocalId--,
       role: "user",
-      content: approve ? "✔ Approved" : "✘ Rejected",
+      content: approve ? `✔ ${tr("asst.approved")}` : `✘ ${tr("asst.rejected")}`,
       tool_calls: null,
       pending_action: null,
       created_at: new Date().toISOString(),
@@ -112,10 +114,10 @@ export default function AssistantPage() {
   }
 
   const SUGGESTIONS = [
-    "Which products are low on stock?",
-    "Quel est le chiffre d'affaires de ce mois ?",
-    "Create a customer named Ahmed Ben Ali",
-    "How many days do customers have to return a product?",
+    tr("asst.sug1"),
+    tr("asst.sug2"),
+    tr("asst.sug3"),
+    tr("asst.sug4"),
   ];
 
   function sendSuggestion(text: string) {
@@ -145,11 +147,10 @@ export default function AssistantPage() {
             </div>
             <div>
               <h2 className="text-xl font-semibold tracking-tight">
-                What can I do for your business today?
+                {tr("asst.heading")}
               </h2>
               <p className="mt-1.5 max-w-md text-sm leading-relaxed text-text-3">
-                I can read your data, run analyses, and execute actions — every
-                write waits for your approval and respects your role.
+                {tr("asst.sub")}
               </p>
             </div>
             <div className="grid w-full max-w-lg gap-2 sm:grid-cols-2">
@@ -226,7 +227,7 @@ export default function AssistantPage() {
                 />
               ))}
             </span>
-            Thinking — local model, this can take a moment
+            {tr("asst.thinking")}
           </div>
         )}
         {error && <p className="ml-11 text-sm text-danger">{error}</p>}
@@ -242,25 +243,25 @@ export default function AssistantPage() {
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask anything about your business…"
+          placeholder={tr("asst.placeholder")}
           disabled={busy}
           className="border-0 bg-transparent shadow-none hover:shadow-none focus:shadow-none"
         />
         {speech.supported && (
-          <Tooltip label={speech.listening ? "Stop listening" : "Talk instead of typing — click, then speak"}>
+          <Tooltip label={speech.listening ? tr("asst.stopListening") : tr("asst.talkTip")}>
             <Button
               type="button"
               size="icon"
               variant={speech.listening ? "destructive" : "ghost"}
               onClick={speech.toggle}
-              aria-label={speech.listening ? "Stop listening" : "Speak your request"}
+              aria-label={speech.listening ? tr("asst.stopListening") : tr("asst.speakAria")}
             >
               {speech.listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
             </Button>
           </Tooltip>
         )}
-        <Tooltip label="Send your question">
-          <Button type="submit" size="icon" disabled={busy || !input.trim()} aria-label="Send">
+        <Tooltip label={tr("asst.sendTip")}>
+          <Button type="submit" size="icon" disabled={busy || !input.trim()} aria-label={tr("asst.sendAria")}>
             <Send className="h-4 w-4" />
           </Button>
         </Tooltip>
