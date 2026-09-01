@@ -4,12 +4,13 @@ import { PageHead } from "@/components/ui/page-head";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import * as bi from "@/api/bi";
-
-const GROUP_LABEL: Record<string, string> = { month: "Month", customer: "Customer", product: "Product" };
-const MEASURE_LABEL: Record<string, string> = { total: "Revenue (TND)", count: "Count" };
+import { useI18n } from "@/lib/i18n";
 
 export default function BiPage() {
+  const { t } = useI18n();
   const qc = useQueryClient();
+  const groupLabel = (k: string) => t(`bi.group.${k}`);
+  const measureFull = (k: string) => t(`bi.measureFull.${k}`);
   const [groupBy, setGroupBy] = useState("month");
   const [measure, setMeasure] = useState("total");
   const [result, setResult] = useState<bi.ReportResult | null>(null);
@@ -32,32 +33,32 @@ export default function BiPage() {
 
   return (
     <div>
-      <PageHead title="Report Builder" sub="Build, run and save cross-sections of your sales data." />
+      <PageHead title={t("nav.reportBuilder")} sub={t("bi.sub")} />
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 18, alignItems: "start" }}>
         <div>
           <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: 18, marginBottom: 18, display: "flex", gap: 12, alignItems: "end", flexWrap: "wrap" }}>
-            <Field label="Source"><div style={{ padding: "9px 0", color: "var(--text-strong)" }}>Sales</div></Field>
-            <Field label="Group by">
+            <Field label={t("bi.source")}><div style={{ padding: "9px 0", color: "var(--text-strong)" }}>{t("bi.sourceSales")}</div></Field>
+            <Field label={t("bi.groupBy")}>
               <select value={groupBy} onChange={(e) => setGroupBy(e.target.value)} style={selectStyle}>
-                <option value="month">Month</option><option value="customer">Customer</option><option value="product">Product</option>
+                <option value="month">{t("bi.group.month")}</option><option value="customer">{t("bi.group.customer")}</option><option value="product">{t("bi.group.product")}</option>
               </select>
             </Field>
-            <Field label="Measure">
+            <Field label={t("bi.measure")}>
               <select value={measure} onChange={(e) => setMeasure(e.target.value)} style={selectStyle}>
-                <option value="total">Revenue</option><option value="count">Count</option>
+                <option value="total">{t("bi.measure.total")}</option><option value="count">{t("bi.measure.count")}</option>
               </select>
             </Field>
-            <Button loading={run.isPending} onClick={() => run.mutate()}>Run</Button>
+            <Button loading={run.isPending} onClick={() => run.mutate()}>{t("bi.run")}</Button>
           </div>
 
           {result && (
             <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: 18 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                <strong style={{ color: "var(--text-strong)" }}>{MEASURE_LABEL[result.measure]} by {GROUP_LABEL[result.group_by].toLowerCase()}</strong>
-                <span style={{ fontSize: 13, color: "var(--text-muted)" }}>Total: <span style={{ color: "var(--text-strong)", fontWeight: 600 }}>{fmt(result.total)}</span></span>
+                <strong style={{ color: "var(--text-strong)" }}>{measureFull(result.measure)} {t("bi.byWord")} {groupLabel(result.group_by).toLowerCase()}</strong>
+                <span style={{ fontSize: 13, color: "var(--text-muted)" }}>{t("common.total")}: <span style={{ color: "var(--text-strong)", fontWeight: 600 }}>{fmt(result.total)}</span></span>
               </div>
-              {result.rows.length === 0 && <p style={{ color: "var(--text-muted)", fontSize: 14 }}>No data for this query.</p>}
+              {result.rows.length === 0 && <p style={{ color: "var(--text-muted)", fontSize: 14 }}>{t("bi.noData")}</p>}
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {result.rows.map((r) => (
                   <div key={r.label} style={{ display: "grid", gridTemplateColumns: "140px 1fr 90px", gap: 10, alignItems: "center" }}>
@@ -70,25 +71,25 @@ export default function BiPage() {
                 ))}
               </div>
               <div style={{ display: "flex", gap: 8, marginTop: 18, borderTop: "1px solid var(--border)", paddingTop: 14 }}>
-                <Input placeholder="Name to save this report…" value={name} onChange={(e) => setName(e.target.value)} style={{ maxWidth: 260 }} />
-                <Button size="sm" variant="outline" loading={save.isPending} disabled={!name.trim()} onClick={() => save.mutate()}>Save report</Button>
+                <Input placeholder={t("bi.saveNamePlaceholder")} value={name} onChange={(e) => setName(e.target.value)} style={{ maxWidth: 260 }} />
+                <Button size="sm" variant="outline" loading={save.isPending} disabled={!name.trim()} onClick={() => save.mutate()}>{t("bi.saveReport")}</Button>
               </div>
             </div>
           )}
         </div>
 
         <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" }}>
-          <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--border)", fontWeight: 600, color: "var(--text-strong)" }}>Saved reports</div>
+          <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--border)", fontWeight: 600, color: "var(--text-strong)" }}>{t("bi.savedReports")}</div>
           {(reportsQ.data ?? []).map((r) => (
             <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", borderBottom: "1px solid var(--border)" }}>
               <button onClick={() => runSaved.mutate(r.id)} style={{ textAlign: "left", background: "none", border: 0, cursor: "pointer", color: "var(--text-strong)" }}>
                 <div style={{ fontWeight: 600 }}>{r.name}</div>
-                <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{MEASURE_LABEL[r.measure]} · by {GROUP_LABEL[r.group_by].toLowerCase()}</div>
+                <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{measureFull(r.measure)} · {t("bi.byWord")} {groupLabel(r.group_by).toLowerCase()}</div>
               </button>
-              <button onClick={() => del.mutate(r.id)} style={{ color: "var(--rose-400)", background: "none", border: 0, cursor: "pointer", fontSize: 12 }}>Delete</button>
+              <button onClick={() => del.mutate(r.id)} style={{ color: "var(--rose-400)", background: "none", border: 0, cursor: "pointer", fontSize: 12 }}>{t("common.delete")}</button>
             </div>
           ))}
-          {reportsQ.data?.length === 0 && <p style={{ padding: 14, color: "var(--text-muted)", fontSize: 13 }}>No saved reports yet.</p>}
+          {reportsQ.data?.length === 0 && <p style={{ padding: 14, color: "var(--text-muted)", fontSize: 13 }}>{t("bi.noSaved")}</p>}
         </div>
       </div>
     </div>

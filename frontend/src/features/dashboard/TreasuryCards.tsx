@@ -7,6 +7,7 @@ import {
 import { getTreasuryDashboard } from "@/api/tunisia";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatTnd } from "@/lib/tnLabels";
+import { useI18n } from "@/lib/i18n";
 
 /**
  * Treasury row on the dashboard: the six figures a Tunisian SME owner checks
@@ -15,6 +16,7 @@ import { formatTnd } from "@/lib/tnLabels";
  */
 export function TreasuryCards() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const { data, isLoading } = useQuery({
     queryKey: ["treasury"],
     queryFn: () => getTreasuryDashboard(),
@@ -42,45 +44,45 @@ export function TreasuryCards() {
     to: string;
   }[] = [
     {
-      label: "Cheques to collect",
-      sub: `${data.instruments.outstanding_incoming_count} chèques / effets en portefeuille`,
+      label: t("tc.chequesToCollect"),
+      sub: `${data.instruments.outstanding_incoming_count} ${t("tc.chequesSub")}`,
       value: formatTnd(data.instruments.outstanding_incoming_amount),
       icon: ReceiptText,
       to: "/instruments",
     },
     {
-      label: "Bounced instruments",
-      sub: `${data.instruments.bounced_count} impayés à régulariser`,
+      label: t("tc.bounced"),
+      sub: `${data.instruments.bounced_count} ${t("tc.bouncedSub")}`,
       value: formatTnd(data.instruments.bounced_amount),
       icon: AlertTriangle,
       tone: data.instruments.bounced_count > 0 ? "danger" : undefined,
       to: "/instruments",
     },
     {
-      label: "Overdue instalments",
-      sub: `${data.installments.overdue_count} échéances en retard`,
+      label: t("tc.overdue"),
+      sub: `${data.installments.overdue_count} ${t("tc.overdueSub")}`,
       value: formatTnd(data.installments.overdue_amount),
       icon: CalendarClock,
       tone: data.installments.overdue_count > 0 ? "warning" : undefined,
       to: "/installments",
     },
     {
-      label: "To reconcile",
-      sub: `${data.reconciliation.pending_count} lignes bancaires en attente`,
+      label: t("tc.toReconcile"),
+      sub: `${data.reconciliation.pending_count} ${t("tc.toReconcileSub")}`,
       value: formatTnd(data.reconciliation.pending_amount),
       icon: Landmark,
       to: "/reconciliation",
     },
     {
-      label: "Cash collected",
-      sub: "Encaissements en espèces",
+      label: t("tc.cashCollected"),
+      sub: t("tc.cashSub"),
       value: formatTnd(data.collections.cash_collected),
       icon: Wallet,
       to: "/banking",
     },
     {
-      label: "Bank collections",
-      sub: "Virements et versements",
+      label: t("tc.bankCollections"),
+      sub: t("tc.bankSub"),
       value: formatTnd(data.collections.bank_collected),
       icon: Banknote,
       to: "/banking",

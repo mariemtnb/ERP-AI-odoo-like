@@ -8,6 +8,7 @@ import { Segmented } from "@/components/ui/segmented";
 import { TableSkeleton } from "@/components/ui/skeleton";
 import { Table, TBody, Td, Th, THead } from "@/components/ui/table";
 import { formatTnd } from "@/lib/tnLabels";
+import { useI18n } from "@/lib/i18n";
 
 /** Preset date ranges the owner is likely to want. */
 function range(kind: string): { from?: string; to?: string } {
@@ -23,6 +24,7 @@ function range(kind: string): { from?: string; to?: string } {
 }
 
 export default function OwnerProfitPage() {
+  const { t } = useI18n();
   const [period, setPeriod] = useState("month");
   const params = useMemo(() => range(period), [period]);
 
@@ -38,16 +40,16 @@ export default function OwnerProfitPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-text-3">
-          Your money at a glance — what came in, what went out, and what you kept.
+          {t("own.sub")}
         </p>
         <Segmented
           id="profit-period"
           value={period}
           onChange={setPeriod}
           options={[
-            { value: "month", label: "This month" },
-            { value: "year", label: "This year" },
-            { value: "all", label: "All time" },
+            { value: "month", label: t("own.thisMonth") },
+            { value: "year", label: t("own.thisYear") },
+            { value: "all", label: t("own.allTime") },
           ]}
         />
       </div>
@@ -59,14 +61,14 @@ export default function OwnerProfitPage() {
           {/* headline profit */}
           <div className="erp-card p-5">
             <div className="flex items-center justify-between">
-              <span className="eyebrow">Net profit</span>
+              <span className="eyebrow">{t("own.netProfit")}</span>
               <Badge tone={profitPositive ? "emerald" : "red"} dot>
                 {profitPositive ? (
                   <TrendingUp className="h-3.5 w-3.5" />
                 ) : (
                   <TrendingDown className="h-3.5 w-3.5" />
                 )}
-                {s.net_margin_pct}% margin
+                {s.net_margin_pct}% {t("own.margin")}
               </Badge>
             </div>
             <p
@@ -83,34 +85,34 @@ export default function OwnerProfitPage() {
 
           {/* the money flow */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Tile label="Revenue" value={formatTnd(s.revenue)} />
-            <Tile label="Cost of goods" value={formatTnd(s.cost_of_goods_sold)} muted />
+            <Tile label={t("own.revenue")} value={formatTnd(s.revenue)} />
+            <Tile label={t("own.cogs")} value={formatTnd(s.cost_of_goods_sold)} muted />
             <Tile
-              label="Gross profit"
+              label={t("own.grossProfit")}
               value={formatTnd(s.gross_profit)}
-              hint={`${s.gross_margin_pct}% of sales`}
+              hint={`${s.gross_margin_pct}% ${t("own.ofSales")}`}
             />
-            <Tile label="Total expenses" value={formatTnd(s.total_expenses)} muted />
+            <Tile label={t("own.totalExpenses")} value={formatTnd(s.total_expenses)} muted />
           </div>
 
           {/* best products */}
           <section className="space-y-2">
-            <h3 className="text-sm font-semibold">Best products by profit</h3>
+            <h3 className="text-sm font-semibold">{t("own.bestProducts")}</h3>
             {(data?.best_products ?? []).length === 0 ? (
               <EmptyState
                 icon={TrendingUp}
-                title="No sales in this period yet"
-                hint="Once you confirm some sales, the products that earn you the most will show here."
+                title={t("own.noSales")}
+                hint={t("own.noSalesHint")}
               />
             ) : (
               <Table>
                 <THead>
                   <tr>
-                    <Th>Product</Th>
-                    <Th className="text-right">Sold</Th>
-                    <Th className="text-right">Revenue</Th>
-                    <Th className="text-right">Profit</Th>
-                    <Th className="text-right">Margin</Th>
+                    <Th>{t("field.product")}</Th>
+                    <Th className="text-right">{t("own.sold")}</Th>
+                    <Th className="text-right">{t("own.revenue")}</Th>
+                    <Th className="text-right">{t("own.profit")}</Th>
+                    <Th className="text-right">{t("own.marginCol")}</Th>
                   </tr>
                 </THead>
                 <TBody>
@@ -134,12 +136,12 @@ export default function OwnerProfitPage() {
           {/* where the money went */}
           {s.expense_breakdown.length > 0 && (
             <section className="space-y-2">
-              <h3 className="text-sm font-semibold">Where the money went</h3>
+              <h3 className="text-sm font-semibold">{t("own.whereMoney")}</h3>
               <Table>
                 <THead>
                   <tr>
-                    <Th>Expense</Th>
-                    <Th className="text-right">Amount</Th>
+                    <Th>{t("own.expense")}</Th>
+                    <Th className="text-right">{t("own.amount")}</Th>
                   </tr>
                 </THead>
                 <TBody>
@@ -155,7 +157,7 @@ export default function OwnerProfitPage() {
           )}
 
           <p className="text-xs text-text-3">
-            These figures come straight from your accounting, so they always match your books.
+            {t("own.footnote")}
           </p>
         </>
       )}

@@ -10,13 +10,9 @@ import { Segmented } from "@/components/ui/segmented";
 import { TableSkeleton } from "@/components/ui/skeleton";
 import { Table, TBody, Td, Th, THead } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n";
 
 type Kind = "sales" | "purchases" | "stock";
-const kinds: { key: Kind; label: string }[] = [
-  { key: "sales", label: "Sales" },
-  { key: "purchases", label: "Purchases" },
-  { key: "stock", label: "Stock" },
-];
 
 function firstOfMonth() {
   const d = new Date();
@@ -25,6 +21,12 @@ function firstOfMonth() {
 const today = () => new Date().toISOString().slice(0, 10);
 
 export default function ReportsPage() {
+  const { t } = useI18n();
+  const kinds: { key: Kind; label: string }[] = [
+    { key: "sales", label: t("rep.kind.sales") },
+    { key: "purchases", label: t("rep.kind.purchases") },
+    { key: "stock", label: t("rep.kind.stock") },
+  ];
   const [kind, setKind] = useState<Kind>("sales");
   const [from, setFrom] = useState(firstOfMonth());
   const [to, setTo] = useState(today());
@@ -49,18 +51,18 @@ export default function ReportsPage() {
           {dated && (
             <>
               <div className="space-y-1.5">
-                <Label htmlFor="r-from">From</Label>
+                <Label htmlFor="r-from">{t("common.from")}</Label>
                 <Input id="r-from" type="date" className="w-40" value={from} onChange={(e) => setFrom(e.target.value)} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="r-to">To</Label>
+                <Label htmlFor="r-to">{t("common.to")}</Label>
                 <Input id="r-to" type="date" className="w-40" value={to} onChange={(e) => setTo(e.target.value)} />
               </div>
             </>
           )}
         </div>
         <Button onClick={() => downloadReportPdf(kind, params)}>
-          <Download className="h-4 w-4" /> Export PDF
+          <Download className="h-4 w-4" /> {t("rep.exportPdf")}
         </Button>
       </div>
 
@@ -69,18 +71,18 @@ export default function ReportsPage() {
       ) : data.rows.length === 0 ? (
         <EmptyState
           icon={FileSearch}
-          title="Nothing in this period"
-          hint="Widen the date range, or come back once documents exist for this report."
+          title={t("rep.empty")}
+          hint={t("rep.emptyHint")}
         />
       ) : kind === "stock" ? (
         <>
           <Table>
             <THead>
               <tr>
-                <Th>SKU</Th><Th>Product</Th><Th>Category</Th>
-                <Th className="text-right">Quantity</Th>
-                <Th className="text-right">Min level</Th>
-                <Th className="text-right">Stock value</Th>
+                <Th>{t("products.sku")}</Th><Th>{t("field.product")}</Th><Th>{t("products.category")}</Th>
+                <Th className="text-right">{t("rep.quantity")}</Th>
+                <Th className="text-right">{t("rep.minLevel")}</Th>
+                <Th className="text-right">{t("rep.stockValue")}</Th>
               </tr>
             </THead>
             <TBody>
@@ -97,7 +99,7 @@ export default function ReportsPage() {
             </TBody>
           </Table>
           <p className="text-right text-sm text-text-2">
-            {data.count} products · Total stock value:{" "}
+            {data.count} {t("rep.productsSuffix")} · {t("rep.totalStockValue")}{" "}
             <span className="font-semibold">{Number(data.total).toFixed(2)}</span>
           </p>
         </>
@@ -106,8 +108,8 @@ export default function ReportsPage() {
           <Table>
             <THead>
               <tr>
-                <Th>Number</Th><Th>Date</Th><Th>Partner</Th><Th>Status</Th>
-                <Th className="text-right">Total</Th>
+                <Th>{t("docs.col.number")}</Th><Th>{t("common.date")}</Th><Th>{t("rep.partner")}</Th><Th>{t("common.status")}</Th>
+                <Th className="text-right">{t("common.total")}</Th>
               </tr>
             </THead>
             <TBody>
@@ -116,14 +118,14 @@ export default function ReportsPage() {
                   <Td className="font-mono text-xs">{r.number}</Td>
                   <Td className="text-text-2">{r.date}</Td>
                   <Td>{r.customer}</Td>
-                  <Td className="text-text-2">{r.status}</Td>
+                  <Td className="text-text-2">{t(`status.${r.status}`)}</Td>
                   <Td className="text-right">{Number(r.total).toFixed(2)}</Td>
                 </tr>
               ))}
             </TBody>
           </Table>
           <p className="text-right text-sm text-text-2">
-            {data.count} documents · Total:{" "}
+            {data.count} {t("rep.docsSuffix")} · {t("rep.totalLabel")}{" "}
             <span className="font-semibold">{Number(data.total).toFixed(2)}</span>
           </p>
         </>
