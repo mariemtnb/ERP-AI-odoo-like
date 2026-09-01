@@ -17,6 +17,7 @@ import { TableSkeleton } from "@/components/ui/skeleton";
 import { Table, TBody, Td, Th, THead } from "@/components/ui/table";
 import { Tooltip } from "@/components/ui/tooltip";
 import { formatTnd } from "@/lib/tnLabels";
+import { useI18n } from "@/lib/i18n";
 
 const emptyAccount = {
   bank_id: "",
@@ -32,6 +33,7 @@ const emptyAccount = {
 };
 
 export default function BankingPage() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -65,7 +67,7 @@ export default function BankingPage() {
       setError("");
     },
     onError: (e: any) =>
-      setError(e?.response?.data?.detail ?? "Could not save this account."),
+      setError(e?.response?.data?.detail ?? t("bnk.couldNotSaveAccount")),
   });
 
   const set = (k: keyof typeof emptyAccount) => (e: { target: { value: string } }) =>
@@ -82,15 +84,14 @@ export default function BankingPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-text-3">
-          Comptes bancaires — your accounts, their RIB, and the statement lines you import
-          for reconciliation.
+          {t("bnk.sub")}
         </p>
         <div className="flex gap-2">
           <Button variant="secondary" onClick={() => setImportOpen(true)}>
-            <Upload className="h-4 w-4" /> Import statement
+            <Upload className="h-4 w-4" /> {t("bnk.importStatement")}
           </Button>
           <Button onClick={() => { setError(""); setCreateOpen(true); }}>
-            <Plus className="h-4 w-4" /> New account
+            <Plus className="h-4 w-4" /> {t("bnk.newAccount")}
           </Button>
         </div>
       </div>
@@ -101,7 +102,7 @@ export default function BankingPage() {
             <p key={w}>⚠ {w}</p>
           ))}
           <p className="text-xs text-text-3">
-            Saved anyway — these are format hints, not blocking rules.
+            {t("bnk.savedAnyway")}
           </p>
         </div>
       )}
@@ -111,11 +112,11 @@ export default function BankingPage() {
       ) : rows.length === 0 ? (
         <EmptyState
           icon={Landmark}
-          title="No bank account yet"
-          hint="Add the account your cheques are deposited into — you can then import its statements and reconcile them."
+          title={t("bnk.noAccount")}
+          hint={t("bnk.noAccountHint")}
           action={
             <Button onClick={() => { setError(""); setCreateOpen(true); }}>
-              <Plus className="h-4 w-4" /> New account
+              <Plus className="h-4 w-4" /> {t("bnk.newAccount")}
             </Button>
           }
         />
@@ -123,12 +124,12 @@ export default function BankingPage() {
         <Table>
           <THead>
             <tr>
-              <Th>Account</Th>
-              <Th>Bank</Th>
-              <Th>RIB</Th>
-              <Th>GL account</Th>
-              <Th>Last reconciled</Th>
-              <Th className="text-right">Balance</Th>
+              <Th>{t("bnk.account")}</Th>
+              <Th>{t("bnk.bank")}</Th>
+              <Th>{t("bnk.rib")}</Th>
+              <Th>{t("bnk.glAccount")}</Th>
+              <Th>{t("bnk.lastReconciled")}</Th>
+              <Th className="text-right">{t("acc.balance")}</Th>
             </tr>
           </THead>
           <TBody>
@@ -136,13 +137,13 @@ export default function BankingPage() {
               <tr key={a.id}>
                 <Td>
                   <span className="font-medium">{a.label}</span>
-                  {a.is_default && <Badge tone="emerald" className="ml-2">default</Badge>}
+                  {a.is_default && <Badge tone="emerald" className="ml-2">{t("bnk.default")}</Badge>}
                   {a.branch && <p className="text-xs text-text-3">{a.branch}</p>}
                 </Td>
                 <Td>{a.bank_name ?? "—"}</Td>
                 <Td className="font-mono text-xs">{a.rib || "—"}</Td>
-                <Td>{a.gl_account_code ?? "— (uses default mapping)"}</Td>
-                <Td>{a.last_reconciled_at ?? "never"}</Td>
+                <Td>{a.gl_account_code ?? t("bnk.usesDefaultMapping")}</Td>
+                <Td>{a.last_reconciled_at ?? t("bnk.never")}</Td>
                 <Td className="text-right font-medium">
                   {formatTnd(a.current_balance, a.currency)}
                 </Td>
@@ -153,51 +154,51 @@ export default function BankingPage() {
       )}
 
       {/* ── create account ── */}
-      <Dialog open={createOpen} onClose={() => setCreateOpen(false)} title="New bank account">
+      <Dialog open={createOpen} onClose={() => setCreateOpen(false)} title={t("bnk.newBankAccount")}>
         <form onSubmit={submit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="b-bank">Bank</Label>
+              <Label htmlFor="b-bank">{t("bnk.bank")}</Label>
               <Select id="b-bank" value={form.bank_id} onChange={set("bank_id")} required>
-                <option value="">— choose —</option>
+                <option value="">{t("pay.choose")}</option>
                 {(banks ?? []).map((b) => (
                   <option key={b.id} value={b.id}>{b.name}</option>
                 ))}
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="b-label">Label</Label>
-              <Input id="b-label" value={form.label} onChange={set("label")} required placeholder="Compte courant" />
+              <Label htmlFor="b-label">{t("bnk.label")}</Label>
+              <Input id="b-label" value={form.label} onChange={set("label")} required placeholder={t("bnk.labelPlaceholder")} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="b-branch">Branch (agence)</Label>
+              <Label htmlFor="b-branch">{t("bnk.branch")}</Label>
               <Input id="b-branch" value={form.branch} onChange={set("branch")} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="b-rib">RIB</Label>
-              <Input id="b-rib" value={form.rib} onChange={set("rib")} placeholder="20 digits" />
+              <Label htmlFor="b-rib">{t("bnk.rib")}</Label>
+              <Input id="b-rib" value={form.rib} onChange={set("rib")} placeholder={t("bnk.ribPlaceholder")} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="b-iban">IBAN</Label>
+              <Label htmlFor="b-iban">{t("bnk.iban")}</Label>
               <Input id="b-iban" value={form.iban} onChange={set("iban")} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="b-currency">Currency</Label>
+              <Label htmlFor="b-currency">{t("bnk.currency")}</Label>
               <Input id="b-currency" value={form.currency} onChange={set("currency")} maxLength={3} />
             </div>
             <div className="space-y-1.5">
-              <Tooltip label="Which ledger account this bank posts to. Leave empty to use the mapped default.">
-                <Label htmlFor="b-gl">GL account</Label>
+              <Tooltip label={t("bnk.glTip")}>
+                <Label htmlFor="b-gl">{t("bnk.glAccount")}</Label>
               </Tooltip>
               <Select id="b-gl" value={form.gl_account_id} onChange={set("gl_account_id")}>
-                <option value="">— use the mapped default —</option>
+                <option value="">{t("bnk.useMappedDefault")}</option>
                 {(glAccounts ?? []).map((a) => (
                   <option key={a.id} value={a.id}>{a.code} · {a.name}</option>
                 ))}
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="b-opening">Opening balance</Label>
+              <Label htmlFor="b-opening">{t("bnk.openingBalance")}</Label>
               <Input
                 id="b-opening"
                 type="number"
@@ -207,7 +208,7 @@ export default function BankingPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="b-date">Opening date</Label>
+              <Label htmlFor="b-date">{t("bnk.openingDate")}</Label>
               <Input id="b-date" type="date" value={form.opening_date} onChange={set("opening_date")} />
             </div>
           </div>
@@ -217,11 +218,11 @@ export default function BankingPage() {
               checked={form.is_default}
               onChange={(e) => setForm((f) => ({ ...f, is_default: e.target.checked }))}
             />
-            Use as the default account for deposits
+            {t("bnk.useDefault")}
           </label>
           {error && <p className="text-sm text-danger">{error}</p>}
           <Button type="submit" className="w-full" disabled={createMutation.isPending}>
-            {createMutation.isPending ? "Saving…" : "Create account"}
+            {createMutation.isPending ? t("common.saving") : t("bnk.createAccount")}
           </Button>
         </form>
       </Dialog>
@@ -251,6 +252,7 @@ function ImportDialog({
   accounts: { id: number; label: string }[];
   onImported: () => void;
 }) {
+  const { t } = useI18n();
   const [accountId, setAccountId] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<{ count: number; rows: any[] } | null>(null);
@@ -266,7 +268,7 @@ function ImportDialog({
     },
     onError: (e: any) => {
       setPreview(null);
-      setError(e?.response?.data?.detail ?? "Could not read this file.");
+      setError(e?.response?.data?.detail ?? t("bnk.couldNotRead"));
     },
   });
 
@@ -277,16 +279,16 @@ function ImportDialog({
       setError("");
       onImported();
     },
-    onError: (e: any) => setError(e?.response?.data?.detail ?? "Import failed."),
+    onError: (e: any) => setError(e?.response?.data?.detail ?? t("bnk.importFailed")),
   });
 
   return (
-    <Dialog open={open} onClose={onClose} title="Import a bank statement" className="max-w-2xl">
+    <Dialog open={open} onClose={onClose} title={t("bnk.importTitle")} className="max-w-2xl">
       <div className="space-y-4">
         <div className="space-y-1.5">
-          <Label htmlFor="im-account">Bank account</Label>
+          <Label htmlFor="im-account">{t("bnk.bankAccount")}</Label>
           <Select id="im-account" value={accountId} onChange={(e) => setAccountId(e.target.value)}>
-            <option value="">— choose —</option>
+            <option value="">{t("pay.choose")}</option>
             {accounts.map((a) => (
               <option key={a.id} value={a.id}>{a.label}</option>
             ))}
@@ -294,7 +296,7 @@ function ImportDialog({
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="im-file">CSV file</Label>
+          <Label htmlFor="im-file">{t("bnk.csvFile")}</Label>
           <input
             ref={inputRef}
             id="im-file"
@@ -309,23 +311,22 @@ function ImportDialog({
             }}
           />
           <p className="text-xs text-text-3">
-            Comma or semicolon separated. Recognised columns: date / date opération, libellé,
-            référence, montant (or débit and crédit), solde. Dates in JJ/MM/AAAA or ISO.
+            {t("bnk.csvHint")}
           </p>
         </div>
 
         {preview && (
           <div className="space-y-2">
             <p className="text-sm text-text-2">
-              {preview.count} line{preview.count === 1 ? "" : "s"} found — first few:
+              {preview.count} {t("bnk.linesFound")}
             </p>
             <Table>
               <THead>
                 <tr>
-                  <Th>Date</Th>
-                  <Th>Label</Th>
-                  <Th>Reference</Th>
-                  <Th className="text-right">Amount</Th>
+                  <Th>{t("common.date")}</Th>
+                  <Th>{t("bnk.labelCol")}</Th>
+                  <Th>{t("bnk.reference")}</Th>
+                  <Th className="text-right">{t("subs.amount")}</Th>
                 </tr>
               </THead>
               <TBody>
@@ -344,8 +345,8 @@ function ImportDialog({
 
         {result && (
           <p className="rounded-md bg-surface-2 p-3 text-sm text-positive">
-            Imported {result.imported} line{result.imported === 1 ? "" : "s"}
-            {result.skipped > 0 && ` · skipped ${result.skipped} already present`}.
+            {t("bnk.importedPrefix")} {result.imported} {t("bnk.linesWord")}
+            {result.skipped > 0 && ` · ${result.skipped} ${t("bnk.skippedWord")}`}.
           </p>
         )}
         {error && <p className="text-sm text-danger">{error}</p>}
@@ -355,10 +356,10 @@ function ImportDialog({
           disabled={!accountId || !file || importMutation.isPending}
           onClick={() => importMutation.mutate()}
         >
-          {importMutation.isPending ? "Importing…" : "Import"}
+          {importMutation.isPending ? t("bnk.importing") : t("bnk.import")}
         </Button>
         <p className="text-xs text-text-3">
-          Re-importing an overlapping statement is safe — identical lines are skipped.
+          {t("bnk.reimportSafe")}
         </p>
       </div>
     </Dialog>
