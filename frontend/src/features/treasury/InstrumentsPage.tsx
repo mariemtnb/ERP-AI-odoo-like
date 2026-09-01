@@ -23,6 +23,7 @@ import {
   INSTRUMENT_KIND, INSTRUMENT_STATUS, STATUS_TONE, formatTnd, frLabel, label,
 } from "@/lib/tnLabels";
 import type { InstrumentKind } from "@/types";
+import { useI18n } from "@/lib/i18n";
 
 const emptyForm = {
   kind: "cheque" as InstrumentKind,
@@ -42,6 +43,7 @@ const emptyForm = {
 };
 
 export default function InstrumentsPage() {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const [kind, setKind] = useState<InstrumentKind>("cheque");
   const [scope, setScope] = useState("outstanding");
@@ -111,7 +113,7 @@ export default function InstrumentsPage() {
       setError("");
     },
     onError: (e: any) =>
-      setError(e?.response?.data?.detail ?? "Could not register this instrument."),
+      setError(e?.response?.data?.detail ?? t("inst.createError")),
   });
 
   const set = (k: keyof typeof emptyForm) => (e: { target: { value: string } }) =>
@@ -131,8 +133,7 @@ export default function InstrumentsPage() {
         <div>
           <p className="text-sm text-text-3">
             {kindLabel.fr}
-            {kindLabel.local ? ` · ${kindLabel.local}` : ""} — track what you hold, what you
-            owe, and what came back unpaid.
+            {kindLabel.local ? ` · ${kindLabel.local}` : ""} {t("inst.introSuffix")}
           </p>
         </div>
         <Button
@@ -142,7 +143,7 @@ export default function InstrumentsPage() {
             setCreateOpen(true);
           }}
         >
-          <Plus className="h-4 w-4" /> New {kind === "cheque" ? "cheque" : "traite"}
+          <Plus className="h-4 w-4" /> {t(`inst.new.${kind}`)}
         </Button>
       </div>
 
@@ -152,8 +153,8 @@ export default function InstrumentsPage() {
           value={kind}
           onChange={(v) => setKind(v as InstrumentKind)}
           options={[
-            { value: "cheque", label: "Cheques" },
-            { value: "traite", label: "Traites / Kembyelet" },
+            { value: "cheque", label: t("inst.tab.cheques") },
+            { value: "traite", label: t("inst.tab.traites") },
           ]}
         />
         <Segmented
@@ -161,10 +162,10 @@ export default function InstrumentsPage() {
           value={scope}
           onChange={setScope}
           options={[
-            { value: "outstanding", label: "Outstanding" },
-            { value: "overdue", label: "Overdue" },
-            { value: "bounced", label: "Bounced" },
-            { value: "all", label: "All" },
+            { value: "outstanding", label: t("inst.scope.outstanding") },
+            { value: "overdue", label: t("inst.scope.overdue") },
+            { value: "bounced", label: t("inst.scope.bounced") },
+            { value: "all", label: t("common.all") },
           ]}
         />
       </div>
@@ -174,15 +175,15 @@ export default function InstrumentsPage() {
       ) : rows.length === 0 ? (
         <EmptyState
           icon={ReceiptText}
-          title={`No ${kind === "cheque" ? "cheques" : "traites"} here`}
+          title={kind === "cheque" ? t("inst.noneCheque") : t("inst.noneTraite")}
           hint={
             scope === "outstanding"
-              ? "Nothing is waiting to be collected or paid right now."
-              : "Nothing matches this filter."
+              ? t("inst.noneOutstanding")
+              : t("inst.noneFilter")
           }
           action={
             <Button onClick={() => { setError(""); setForm({ ...emptyForm, kind }); setCreateOpen(true); }}>
-              <Plus className="h-4 w-4" /> Register one
+              <Plus className="h-4 w-4" /> {t("inst.registerOne")}
             </Button>
           }
         />
@@ -190,12 +191,12 @@ export default function InstrumentsPage() {
         <Table>
           <THead>
             <tr>
-              <Th>Number</Th>
-              <Th>Reference</Th>
-              <Th>Counterparty</Th>
-              <Th>Due date</Th>
-              <Th>Status</Th>
-              <Th className="text-right">Amount</Th>
+              <Th>{t("docs.col.number")}</Th>
+              <Th>{t("bnk.reference")}</Th>
+              <Th>{t("inst.counterparty")}</Th>
+              <Th>{t("inst.dueDate")}</Th>
+              <Th>{t("common.status")}</Th>
+              <Th className="text-right">{t("subs.amount")}</Th>
             </tr>
           </THead>
           <TBody>
@@ -208,7 +209,7 @@ export default function InstrumentsPage() {
                 <Td>
                   <span className="font-medium">{i.number}</span>
                   <span className="ml-2 text-xs text-text-3">
-                    {i.direction === "incoming" ? "received" : "issued"}
+                    {i.direction === "incoming" ? t("inst.received") : t("inst.issued")}
                   </span>
                 </Td>
                 <Td>{i.instrument_reference || "—"}</Td>
@@ -237,36 +238,36 @@ export default function InstrumentsPage() {
       <Dialog
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        title={`New ${form.kind === "cheque" ? "cheque" : "traite / kembya"}`}
+        title={form.kind === "cheque" ? t("inst.newTitleCheque") : t("inst.newTitleTraite")}
         className="max-w-2xl"
       >
         <form onSubmit={submit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="i-kind">Type</Label>
+              <Label htmlFor="i-kind">{t("inst.type")}</Label>
               <Select id="i-kind" value={form.kind} onChange={set("kind")}>
-                <option value="cheque">Chèque</option>
-                <option value="traite">Traite / Kembya</option>
+                <option value="cheque">{t("inst.chequeOpt")}</option>
+                <option value="traite">{t("inst.traiteOpt")}</option>
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="i-direction">Direction</Label>
+              <Label htmlFor="i-direction">{t("inst.direction")}</Label>
               <Select id="i-direction" value={form.direction} onChange={set("direction")}>
-                <option value="incoming">Received from a customer</option>
-                <option value="outgoing">Issued to a supplier</option>
+                <option value="incoming">{t("inst.dirIn")}</option>
+                <option value="outgoing">{t("inst.dirOut")}</option>
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="i-ref">Instrument number</Label>
+              <Label htmlFor="i-ref">{t("inst.instrumentNumber")}</Label>
               <Input
                 id="i-ref"
                 value={form.instrument_reference}
                 onChange={set("instrument_reference")}
-                placeholder="Number printed on the cheque"
+                placeholder={t("inst.numberPlaceholder")}
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="i-amount">Amount</Label>
+              <Label htmlFor="i-amount">{t("subs.amount")}</Label>
               <Input
                 id="i-amount"
                 type="number"
@@ -278,12 +279,12 @@ export default function InstrumentsPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="i-issue">Issue date</Label>
+              <Label htmlFor="i-issue">{t("inst.issueDate")}</Label>
               <Input id="i-issue" type="date" value={form.issue_date} onChange={set("issue_date")} required />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="i-due">
-                Due date {form.kind === "traite" && <span className="text-danger">*</span>}
+                {t("inst.dueDate")} {form.kind === "traite" && <span className="text-danger">*</span>}
               </Label>
               <Input
                 id="i-due"
@@ -296,9 +297,9 @@ export default function InstrumentsPage() {
 
             {form.direction === "incoming" ? (
               <div className="space-y-1.5">
-                <Label htmlFor="i-customer">Customer</Label>
+                <Label htmlFor="i-customer">{t("field.customer")}</Label>
                 <Select id="i-customer" value={form.customer_id} onChange={set("customer_id")}>
-                  <option value="">— not in the list —</option>
+                  <option value="">{t("inst.notInList")}</option>
                   {(customers?.results ?? []).map((c) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
@@ -306,9 +307,9 @@ export default function InstrumentsPage() {
               </div>
             ) : (
               <div className="space-y-1.5">
-                <Label htmlFor="i-supplier">Supplier</Label>
+                <Label htmlFor="i-supplier">{t("field.supplier")}</Label>
                 <Select id="i-supplier" value={form.supplier_id} onChange={set("supplier_id")}>
-                  <option value="">— not in the list —</option>
+                  <option value="">{t("inst.notInList")}</option>
                   {(suppliers?.results ?? []).map((s) => (
                     <option key={s.id} value={s.id}>{s.name}</option>
                   ))}
@@ -317,52 +318,51 @@ export default function InstrumentsPage() {
             )}
 
             <div className="space-y-1.5">
-              <Label htmlFor="i-name">Counterparty name</Label>
+              <Label htmlFor="i-name">{t("inst.counterpartyName")}</Label>
               <Input
                 id="i-name"
                 value={form.counterparty_name}
                 onChange={set("counterparty_name")}
-                placeholder="If not linked above"
+                placeholder={t("inst.ifNotLinked")}
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="i-bank">Our bank account</Label>
+              <Label htmlFor="i-bank">{t("inst.ourBank")}</Label>
               <Select id="i-bank" value={form.bank_account_id} onChange={set("bank_account_id")}>
-                <option value="">— choose later —</option>
+                <option value="">{t("inst.chooseLater")}</option>
                 {(bankAccounts ?? []).map((a) => (
                   <option key={a.id} value={a.id}>{a.label} · {a.bank_name}</option>
                 ))}
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="i-drawee">Counterparty's bank</Label>
+              <Label htmlFor="i-drawee">{t("inst.counterpartyBank")}</Label>
               <Select id="i-drawee" value={form.drawee_bank_id} onChange={set("drawee_bank_id")}>
-                <option value="">— unknown —</option>
+                <option value="">{t("inst.unknown")}</option>
                 {(banks ?? []).map((b) => (
                   <option key={b.id} value={b.id}>{b.short_name}</option>
                 ))}
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="i-rib">Drawee RIB</Label>
-              <Input id="i-rib" value={form.drawee_rib} onChange={set("drawee_rib")} placeholder="20 digits" />
+              <Label htmlFor="i-rib">{t("inst.draweeRib")}</Label>
+              <Input id="i-rib" value={form.drawee_rib} onChange={set("drawee_rib")} placeholder={t("bnk.ribPlaceholder")} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="i-place">Place of issue</Label>
+              <Label htmlFor="i-place">{t("inst.placeOfIssue")}</Label>
               <Input id="i-place" value={form.place_of_issue} onChange={set("place_of_issue")} />
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="i-notes">Notes</Label>
+            <Label htmlFor="i-notes">{t("field.notes")}</Label>
             <Input id="i-notes" value={form.notes} onChange={set("notes")} />
           </div>
           <p className="text-xs text-text-3">
-            Registering it posts the entry straight away: the customer's debt becomes a
-            cheque in hand (or, for a supplier, what you owe becomes a cheque issued).
+            {t("inst.registerNote")}
           </p>
           {error && <p className="text-sm text-danger">{error}</p>}
           <Button type="submit" className="w-full" disabled={createMutation.isPending}>
-            {createMutation.isPending ? "Saving…" : "Register"}
+            {createMutation.isPending ? t("common.saving") : t("inst.register")}
           </Button>
         </form>
       </Dialog>
@@ -388,6 +388,7 @@ function InstrumentDetail({
   onChanged: () => void;
   bankAccounts: { id: number; label: string; bank_name: string | null }[];
 }) {
+  const { t } = useI18n();
   const [error, setError] = useState("");
   const [bankAccountId, setBankAccountId] = useState("");
   const [fees, setFees] = useState("");
@@ -409,18 +410,18 @@ function InstrumentDetail({
       setFees("");
       onChanged();
     },
-    onError: (e: any) => setError(e?.response?.data?.detail ?? "That step is not allowed."),
+    onError: (e: any) => setError(e?.response?.data?.detail ?? t("inst.stepNotAllowed")),
   });
 
   const attach = useMutation({
     mutationFn: (file: File) => attachToInstrument(id!, file),
     onSuccess: onChanged,
-    onError: (e: any) => setError(e?.response?.data?.detail ?? "Upload failed."),
+    onError: (e: any) => setError(e?.response?.data?.detail ?? t("inst.uploadFailed")),
   });
 
   if (!instrument) {
     return (
-      <Dialog open={id !== null} onClose={onClose} title="Instrument">
+      <Dialog open={id !== null} onClose={onClose} title={t("inst.instrument")}>
         <TableSkeleton rows={3} />
       </Dialog>
     );
@@ -457,19 +458,19 @@ function InstrumentDetail({
         </div>
 
         <div className="grid grid-cols-2 gap-2 text-sm text-text-2">
-          <p>Reference: {instrument.instrument_reference || "—"}</p>
-          <p>Issued: {instrument.issue_date}</p>
-          <p>Due: {instrument.due_date ?? "—"}</p>
-          <p>Bank: {instrument.bank_account_label ?? "—"}</p>
-          <p>Drawee bank: {instrument.drawee_bank_name ?? "—"}</p>
-          <p>Place: {instrument.place_of_issue || "—"}</p>
+          <p>{t("inst.referenceLabel")} {instrument.instrument_reference || "—"}</p>
+          <p>{t("inst.issuedLabel")} {instrument.issue_date}</p>
+          <p>{t("inst.dueLabel")} {instrument.due_date ?? "—"}</p>
+          <p>{t("inst.bankLabel")} {instrument.bank_account_label ?? "—"}</p>
+          <p>{t("inst.draweeBankLabel")} {instrument.drawee_bank_name ?? "—"}</p>
+          <p>{t("inst.placeLabel")} {instrument.place_of_issue || "—"}</p>
           {instrument.bounce_reason && (
             <p className="col-span-2 text-danger">
-              Returned: {instrument.bounce_reason}
+              {t("inst.returnedLabel")} {instrument.bounce_reason}
             </p>
           )}
           {Number(instrument.bank_fees) > 0 && (
-            <p>Bank fees: {formatTnd(instrument.bank_fees)}</p>
+            <p>{t("inst.bankFeesLabel")} {formatTnd(instrument.bank_fees)}</p>
           )}
         </div>
         {instrument.notes && <p className="text-sm text-text-2">{instrument.notes}</p>}
@@ -479,19 +480,19 @@ function InstrumentDetail({
           {canDeposit && (
             <div className="flex flex-wrap items-end gap-2">
               <div className="min-w-40 flex-1 space-y-1.5">
-                <Label htmlFor="d-bank">Deposit into</Label>
+                <Label htmlFor="d-bank">{t("inst.depositInto")}</Label>
                 <Select
                   id="d-bank"
                   value={bankAccountId || String(instrument.bank_account_id ?? "")}
                   onChange={(e) => setBankAccountId(e.target.value)}
                 >
-                  <option value="">— choose —</option>
+                  <option value="">{t("pay.choose")}</option>
                   {bankAccounts.map((a) => (
                     <option key={a.id} value={a.id}>{a.label} · {a.bank_name}</option>
                   ))}
                 </Select>
               </div>
-              <Tooltip label="Remise à l'encaissement — hand it to the bank">
+              <Tooltip label={t("inst.depositTip")}>
                 <Button
                   size="sm"
                   onClick={() =>
@@ -504,7 +505,7 @@ function InstrumentDetail({
                   }
                   disabled={act.isPending}
                 >
-                  <Landmark className="h-4 w-4" /> Deposit
+                  <Landmark className="h-4 w-4" /> {t("inst.deposit")}
                 </Button>
               </Tooltip>
             </div>
@@ -513,7 +514,7 @@ function InstrumentDetail({
           {(canClear || canBounce) && (
             <div className="flex flex-wrap items-end gap-2">
               <div className="w-32 space-y-1.5">
-                <Label htmlFor="d-fees">Bank fees</Label>
+                <Label htmlFor="d-fees">{t("inst.bankFees")}</Label>
                 <Input
                   id="d-fees"
                   type="number"
@@ -524,18 +525,18 @@ function InstrumentDetail({
                 />
               </div>
               {canClear && (
-                <Tooltip label="Encaissé — the money is in the account">
+                <Tooltip label={t("inst.clearTip")}>
                   <Button
                     size="sm"
                     onClick={() => act.mutate({ action: "clear", payload: { fees: Number(fees || 0) } })}
                     disabled={act.isPending}
                   >
-                    <Banknote className="h-4 w-4" /> Mark cleared
+                    <Banknote className="h-4 w-4" /> {t("inst.markCleared")}
                   </Button>
                 </Tooltip>
               )}
               {canBounce && (
-                <Tooltip label="Impayé — the bank returned it unpaid">
+                <Tooltip label={t("inst.bounceTip")}>
                   <Button
                     size="sm"
                     variant="destructive"
@@ -551,7 +552,7 @@ function InstrumentDetail({
                     }
                     disabled={act.isPending}
                   >
-                    <AlertTriangle className="h-4 w-4" /> Bounced
+                    <AlertTriangle className="h-4 w-4" /> {t("inst.bounced")}
                   </Button>
                 </Tooltip>
               )}
@@ -560,12 +561,12 @@ function InstrumentDetail({
 
           {canBounce && (
             <div className="space-y-1.5">
-              <Label htmlFor="d-reason">Reason if returned</Label>
+              <Label htmlFor="d-reason">{t("inst.reasonIfReturned")}</Label>
               <Input
                 id="d-reason"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                placeholder="Provision insuffisante, compte clôturé…"
+                placeholder={t("inst.reasonPlaceholder")}
               />
               {incoming && (
                 <label className="flex items-center gap-2 text-xs text-text-3">
@@ -574,7 +575,7 @@ function InstrumentDetail({
                     checked={doubtful}
                     onChange={(e) => setDoubtful(e.target.checked)}
                   />
-                  Move the debt to doubtful receivables (clients douteux)
+                  {t("inst.moveDoubtful")}
                 </label>
               )}
             </div>
@@ -582,9 +583,9 @@ function InstrumentDetail({
 
           <div className="flex flex-wrap gap-2">
             {canSettle && (
-              <Tooltip label="The customer paid another way — close this instrument">
+              <Tooltip label={t("inst.settleTip")}>
                 <Button size="sm" variant="secondary" onClick={() => act.mutate({ action: "settle" })}>
-                  Mark settled
+                  {t("inst.markSettled")}
                 </Button>
               </Tooltip>
             )}
@@ -594,12 +595,12 @@ function InstrumentDetail({
                 variant="ghost"
                 onClick={() => act.mutate({ action: "cancel", payload: { reason } })}
               >
-                Cancel
+                {t("common.cancel")}
               </Button>
             )}
             <label className="ml-auto inline-flex cursor-pointer items-center gap-1 text-sm text-text-2">
               <Paperclip className="h-4 w-4" />
-              Attach scan
+              {t("inst.attachScan")}
               <input
                 type="file"
                 className="hidden"
@@ -628,7 +629,7 @@ function InstrumentDetail({
 
         {/* lifecycle history */}
         <div className="space-y-2">
-          <Label>History</Label>
+          <Label>{t("inst.history")}</Label>
           <ul className="max-h-52 space-y-2 overflow-y-auto text-sm">
             {(instrument.events ?? []).map((e) => (
               <li key={e.id} className="rounded-md bg-surface-2 p-2">
@@ -637,7 +638,7 @@ function InstrumentDetail({
                 {e.to_status}
                 {e.journal_entry_number && (
                   <span className="ml-2 text-xs text-text-3">
-                    posted as {e.journal_entry_number}
+                    {t("inst.postedAs")} {e.journal_entry_number}
                   </span>
                 )}
                 <span className="ml-2 text-xs text-text-3">
