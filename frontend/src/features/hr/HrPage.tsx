@@ -4,6 +4,7 @@ import { PageHead } from "@/components/ui/page-head";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import * as hr from "@/api/hr";
+import { useI18n } from "@/lib/i18n";
 
 type Tab = "leave" | "attendance" | "expenses";
 const money = (n: string | number) => Number(n).toFixed(2);
@@ -14,6 +15,7 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 export default function HrPage() {
+  const { t } = useI18n();
   const [tab, setTab] = useState<Tab>("leave");
   const [employee, setEmployee] = useState<number | null>(null);
   const employeesQ = useQuery({ queryKey: ["hr-employees"], queryFn: hr.listEmployees });
@@ -24,7 +26,7 @@ export default function HrPage() {
 
   return (
     <div>
-      <PageHead title="Human Resources" sub="Attendance, leave and employee expense claims." >
+      <PageHead title={t("nav.hr")} sub={t("hr.sub")} >
         <select
           value={employee ?? ""}
           onChange={(e) => setEmployee(Number(e.target.value))}
@@ -35,13 +37,13 @@ export default function HrPage() {
       </PageHead>
 
       <div style={{ display: "flex", gap: 6, marginBottom: 18 }}>
-        {(["leave", "attendance", "expenses"] as Tab[]).map((t) => (
-          <button key={t} onClick={() => setTab(t)} style={{
-            textTransform: "capitalize", padding: "8px 16px", borderRadius: 9, cursor: "pointer", fontSize: 14,
-            border: "1px solid " + (tab === t ? "var(--emerald-500)" : "var(--border)"),
-            background: tab === t ? "color-mix(in oklab, var(--emerald-500) 14%, transparent)" : "var(--surface)",
-            color: tab === t ? "var(--text-strong)" : "var(--text-muted)",
-          }}>{t}</button>
+        {(["leave", "attendance", "expenses"] as Tab[]).map((tb) => (
+          <button key={tb} onClick={() => setTab(tb)} style={{
+            padding: "8px 16px", borderRadius: 9, cursor: "pointer", fontSize: 14,
+            border: "1px solid " + (tab === tb ? "var(--emerald-500)" : "var(--border)"),
+            background: tab === tb ? "color-mix(in oklab, var(--emerald-500) 14%, transparent)" : "var(--surface)",
+            color: tab === tb ? "var(--text-strong)" : "var(--text-muted)",
+          }}>{t(`hr.tab.${tb}`)}</button>
         ))}
       </div>
 
@@ -54,6 +56,7 @@ export default function HrPage() {
 
 /* ---------------- LEAVE ---------------- */
 function LeaveTab({ employee }: { employee: number }) {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const listQ = useQuery({ queryKey: ["hr-leave", employee], queryFn: () => hr.listLeave(employee) });
   const balQ = useQuery({ queryKey: ["hr-leave-bal", employee], queryFn: () => hr.leaveBalance(employee) });
@@ -72,38 +75,38 @@ function LeaveTab({ employee }: { employee: number }) {
     <>
       {bal && (
         <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
-          <Stat label={`Annual allowance ${bal.year}`} value={`${bal.allowance} d`} />
-          <Stat label="Used" value={`${bal.used} d`} />
-          <Stat label="Remaining" value={`${bal.remaining} d`} accent />
+          <Stat label={`${t("hr.annualAllowance")} ${bal.year}`} value={`${bal.allowance} ${t("hr.dayUnit")}`} />
+          <Stat label={t("hr.used")} value={`${bal.used} ${t("hr.dayUnit")}`} />
+          <Stat label={t("hr.remaining")} value={`${bal.remaining} ${t("hr.dayUnit")}`} accent />
         </div>
       )}
       <Panel>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))", gap: 10, alignItems: "end" }}>
-          <Field label="Type">
+          <Field label={t("hr.type")}>
             <select value={type} onChange={(e) => setType(e.target.value)} style={selectStyle}>
-              <option value="annual">Annual</option><option value="sick">Sick</option><option value="unpaid">Unpaid</option>
+              <option value="annual">{t("hr.leaveType.annual")}</option><option value="sick">{t("hr.leaveType.sick")}</option><option value="unpaid">{t("hr.leaveType.unpaid")}</option>
             </select>
           </Field>
-          <Field label="From"><Input type="date" value={start} onChange={(e) => setStart(e.target.value)} /></Field>
-          <Field label="To"><Input type="date" value={end} onChange={(e) => setEnd(e.target.value)} /></Field>
-          <Field label="Reason"><Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="optional" /></Field>
-          <Button loading={create.isPending} disabled={!start || !end} onClick={() => create.mutate()}>Request leave</Button>
+          <Field label={t("hr.from")}><Input type="date" value={start} onChange={(e) => setStart(e.target.value)} /></Field>
+          <Field label={t("hr.to")}><Input type="date" value={end} onChange={(e) => setEnd(e.target.value)} /></Field>
+          <Field label={t("hr.reason")}><Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t("prj.optional")} /></Field>
+          <Button loading={create.isPending} disabled={!start || !end} onClick={() => create.mutate()}>{t("hr.requestLeave")}</Button>
         </div>
       </Panel>
-      <Table head={["Type", "From", "To", "Days", "Status", ""]}>
+      <Table head={[t("hr.type"), t("hr.from"), t("hr.to"), t("hr.days"), t("common.status"), ""]}>
         {(listQ.data ?? []).map((l) => (
           <tr key={l.id} style={rowStyle}>
-            <Td cap>{l.type}</Td><Td mono>{l.start_date}</Td><Td mono>{l.end_date}</Td><Td mono right>{l.days}</Td>
-            <Td><Badge status={l.status} /></Td>
+            <Td>{t(`hr.leaveType.${l.type}`)}</Td><Td mono>{l.start_date}</Td><Td mono>{l.end_date}</Td><Td mono right>{l.days}</Td>
+            <Td><Badge status={l.status} label={t(`hr.status.${l.status}`)} /></Td>
             <Td right>{l.status === "pending" && (
               <span style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
-                <Button size="sm" onClick={() => decide.mutate({ id: l.id, d: "approve" })}>Approve</Button>
-                <Button size="sm" variant="outline" onClick={() => decide.mutate({ id: l.id, d: "reject" })}>Reject</Button>
+                <Button size="sm" onClick={() => decide.mutate({ id: l.id, d: "approve" })}>{t("hr.approve")}</Button>
+                <Button size="sm" variant="outline" onClick={() => decide.mutate({ id: l.id, d: "reject" })}>{t("hr.reject")}</Button>
               </span>
             )}</Td>
           </tr>
         ))}
-        {listQ.data?.length === 0 && <tr><Td colSpan={6} muted>No leave requests.</Td></tr>}
+        {listQ.data?.length === 0 && <tr><Td colSpan={6} muted>{t("hr.noLeave")}</Td></tr>}
       </Table>
     </>
   );
@@ -111,27 +114,28 @@ function LeaveTab({ employee }: { employee: number }) {
 
 /* ---------------- ATTENDANCE ---------------- */
 function AttendanceTab({ employee }: { employee: number }) {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const listQ = useQuery({ queryKey: ["hr-att", employee], queryFn: () => hr.listAttendance(employee) });
   const refresh = () => qc.invalidateQueries({ queryKey: ["hr-att", employee] });
   const [error, setError] = useState<string | null>(null);
-  const inM = useMutation({ mutationFn: () => hr.clockIn(employee), onSuccess: () => { setError(null); refresh(); }, onError: (e: any) => setError(e?.response?.data?.detail ?? "Failed.") });
-  const outM = useMutation({ mutationFn: () => hr.clockOut(employee), onSuccess: () => { setError(null); refresh(); }, onError: (e: any) => setError(e?.response?.data?.detail ?? "Failed.") });
+  const inM = useMutation({ mutationFn: () => hr.clockIn(employee), onSuccess: () => { setError(null); refresh(); }, onError: (e: any) => setError(e?.response?.data?.detail ?? t("hr.failed")) });
+  const outM = useMutation({ mutationFn: () => hr.clockOut(employee), onSuccess: () => { setError(null); refresh(); }, onError: (e: any) => setError(e?.response?.data?.detail ?? t("hr.failed")) });
 
   return (
     <>
       <Panel>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <Button loading={inM.isPending} onClick={() => inM.mutate()}>Clock in (today)</Button>
-          <Button loading={outM.isPending} variant="outline" onClick={() => outM.mutate()}>Clock out (today)</Button>
+          <Button loading={inM.isPending} onClick={() => inM.mutate()}>{t("hr.clockIn")}</Button>
+          <Button loading={outM.isPending} variant="outline" onClick={() => outM.mutate()}>{t("hr.clockOut")}</Button>
           {error && <span style={{ color: "var(--rose-400)", fontSize: 13 }}>{error}</span>}
         </div>
       </Panel>
-      <Table head={["Date", "In", "Out", "Hours"]}>
+      <Table head={[t("common.date"), t("hr.in"), t("hr.out"), t("hr.hours")]}>
         {(listQ.data ?? []).map((a) => (
           <tr key={a.id} style={rowStyle}><Td mono>{a.work_date}</Td><Td mono>{a.check_in ?? "—"}</Td><Td mono>{a.check_out ?? "—"}</Td><Td mono right>{a.hours}</Td></tr>
         ))}
-        {listQ.data?.length === 0 && <tr><Td colSpan={4} muted>No attendance records.</Td></tr>}
+        {listQ.data?.length === 0 && <tr><Td colSpan={4} muted>{t("hr.noAttendance")}</Td></tr>}
       </Table>
     </>
   );
@@ -139,6 +143,7 @@ function AttendanceTab({ employee }: { employee: number }) {
 
 /* ---------------- EXPENSES ---------------- */
 function ExpensesTab({ employee }: { employee: number }) {
+  const { t } = useI18n();
   const qc = useQueryClient();
   const listQ = useQuery({ queryKey: ["hr-exp", employee], queryFn: () => hr.listExpenses(employee) });
   const refresh = () => qc.invalidateQueries({ queryKey: ["hr-exp", employee] });
@@ -153,30 +158,30 @@ function ExpensesTab({ employee }: { employee: number }) {
     <>
       <Panel>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 10, alignItems: "end" }}>
-          <Field label="Date"><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></Field>
-          <Field label="Category"><Input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="travel" /></Field>
-          <Field label="Amount"><Input type="number" min={0} step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} /></Field>
-          <Field label="Description"><Input value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="optional" /></Field>
-          <Button loading={create.isPending} disabled={!date || !(Number(amount) > 0)} onClick={() => create.mutate()}>Submit claim</Button>
+          <Field label={t("common.date")}><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></Field>
+          <Field label={t("hr.category")}><Input value={category} onChange={(e) => setCategory(e.target.value)} placeholder={t("hr.categoryPlaceholder")} /></Field>
+          <Field label={t("subs.amount")}><Input type="number" min={0} step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} /></Field>
+          <Field label={t("field.description")}><Input value={desc} onChange={(e) => setDesc(e.target.value)} placeholder={t("prj.optional")} /></Field>
+          <Button loading={create.isPending} disabled={!date || !(Number(amount) > 0)} onClick={() => create.mutate()}>{t("hr.submitClaim")}</Button>
         </div>
       </Panel>
-      <Table head={["Date", "Category", "Amount", "Status", ""]}>
+      <Table head={[t("common.date"), t("hr.category"), t("subs.amount"), t("common.status"), ""]}>
         {(listQ.data ?? []).map((c) => (
           <tr key={c.id} style={rowStyle}>
             <Td mono>{c.claim_date}</Td><Td>{c.category || "—"}</Td><Td mono right>{money(c.amount)} TND</Td>
-            <Td><Badge status={c.status} /></Td>
+            <Td><Badge status={c.status} label={t(`hr.status.${c.status}`)} /></Td>
             <Td right>
               <span style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
                 {c.status === "pending" && <>
-                  <Button size="sm" onClick={() => decide.mutate({ id: c.id, d: "approve" })}>Approve</Button>
-                  <Button size="sm" variant="outline" onClick={() => decide.mutate({ id: c.id, d: "reject" })}>Reject</Button>
+                  <Button size="sm" onClick={() => decide.mutate({ id: c.id, d: "approve" })}>{t("hr.approve")}</Button>
+                  <Button size="sm" variant="outline" onClick={() => decide.mutate({ id: c.id, d: "reject" })}>{t("hr.reject")}</Button>
                 </>}
-                {c.status === "approved" && <Button size="sm" onClick={() => decide.mutate({ id: c.id, d: "reimburse" })}>Reimburse</Button>}
+                {c.status === "approved" && <Button size="sm" onClick={() => decide.mutate({ id: c.id, d: "reimburse" })}>{t("hr.reimburse")}</Button>}
               </span>
             </Td>
           </tr>
         ))}
-        {listQ.data?.length === 0 && <tr><Td colSpan={5} muted>No expense claims.</Td></tr>}
+        {listQ.data?.length === 0 && <tr><Td colSpan={5} muted>{t("hr.noExpenses")}</Td></tr>}
       </Table>
     </>
   );
@@ -209,9 +214,9 @@ function Table({ head, children }: { head: string[]; children: React.ReactNode }
     </div>
   );
 }
-function Badge({ status }: { status: string }) {
+function Badge({ status, label }: { status: string; label: string }) {
   const c = STATUS_COLOR[status] ?? "var(--text-muted)";
-  return <span style={{ textTransform: "capitalize", fontSize: 12, fontWeight: 600, color: c, border: `1px solid ${c}`, borderRadius: 999, padding: "2px 10px" }}>{status}</span>;
+  return <span style={{ fontSize: 12, fontWeight: 600, color: c, border: `1px solid ${c}`, borderRadius: 999, padding: "2px 10px" }}>{label}</span>;
 }
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return <label style={{ display: "block" }}><span style={{ display: "block", fontSize: 12, color: "var(--text-muted)", marginBottom: 4 }}>{label}</span>{children}</label>;
