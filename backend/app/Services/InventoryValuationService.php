@@ -41,4 +41,23 @@ class InventoryValuationService
 
         $product->update(['avg_cost' => round($newAvg, 4)]);
     }
+
+    /**
+     * Capitalise an additional cost (e.g. a landed cost) onto stock already on
+     * hand, without changing the quantity. It raises the average by the cost
+     * spread over what is on hand. Returns the amount actually capitalised —
+     * zero when nothing is on hand to carry it.
+     */
+    public static function registerAddedCost(Product $product, float $addedCost): float
+    {
+        $onHand = (float) $product->quantity_in_stock;
+        if ($addedCost == 0.0 || $onHand <= 0) {
+            return 0.0;
+        }
+
+        $newAvg = self::unitCost($product) + $addedCost / $onHand;
+        $product->update(['avg_cost' => round($newAvg, 4)]);
+
+        return round($addedCost, 3);
+    }
 }

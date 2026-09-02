@@ -118,4 +118,15 @@ keeps Tunisian rates and rules in configuration rather than code.
   approval inbox → convert an approved one into a purchase order. Behind the
   `requisitions` flag. *Reusable by design:* other documents adopt it by
   implementing `applyApprovalOutcome()` and registering a workflow.
-- [ ] 15. Landed costs on goods receipts
+- [x] 15. Landed costs on goods receipts — **done.** Freight/duty/insurance on
+  a received purchase order is spread across its received lines (by value or by
+  quantity) and capitalised into inventory: each product's AVCO unit cost rises
+  by its share, and the ledger posts Dr Inventory / Cr the landed-cost payable.
+  Allocations are kept per product and always sum to the landed amount. Behind
+  the `landed_costs` flag; managers/admins. *Simplification:* the whole share is
+  capitalised onto stock still on hand (no split to COGS for units already sold).
+
+**All 7 next-batch items (9–15) are complete.** Each ships behind its own
+feature flag, respects the role model, and keeps Tunisian rates/rules in
+configuration. The *still-to-come* notes above are deliberate follow-up slices,
+not gaps in what was delivered.

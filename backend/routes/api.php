@@ -150,6 +150,12 @@ Route::prefix('v1')->group(function () {
             Route::post('approvals/{approval}/act', [\App\Http\Controllers\ApprovalController::class, 'act']);
         });
 
+        // --- landed costs on receipts: managers/admins, behind the flag ---
+        Route::middleware(['feature:landed_costs', 'role:admin,manager'])->group(function () {
+            Route::get('purchases/{purchase}/landed-costs', [\App\Http\Controllers\LandedCostController::class, 'index']);
+            Route::post('purchases/{purchase}/landed-costs', [\App\Http\Controllers\LandedCostController::class, 'store']);
+        });
+
         // --- vendor bills (3-way match): managers/admins record and clear ---
         Route::middleware('feature:vendor_bills')->group(function () {
             Route::get('vendor-bills', [\App\Http\Controllers\VendorBillController::class, 'index']);
