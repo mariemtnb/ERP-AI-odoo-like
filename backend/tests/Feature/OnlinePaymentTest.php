@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Customer;
+use App\Models\FeatureFlag;
 use App\Models\JournalEntry;
 use App\Models\OnlinePayment;
 use App\Models\Product;
@@ -123,6 +124,20 @@ class OnlinePaymentTest extends TestCase
             $this->assertSame('pending', $payment->refresh()->status);
             $this->assertSame(0, JournalEntry::where('reference_type', 'online_payment')->count());
         }
+    }
+
+    public function test_paying_is_absent_when_the_online_payments_module_is_off(): void
+    {
+        $sale = $this->sharedSale();
+
+        FeatureFlag::updateOrCreate(['key' => 'online_payments'], ['enabled' => false]);
+        FeatureFlag::flush();
+
+        // The document itself stays viewable — only the payment action disappears.
+        $this->getJson("/api/v1/portal/sales/{$sale->portal_token}")->assertOk();
+        $this->postJson("/api/v1/portal/sales/{$sale->portal_token}/pay")->assertStatus(404);
+
+        $this->assertSame(0, OnlinePayment::count());
     }
 
     public function test_confirm_proceeds_once_the_gateway_verifies(): void

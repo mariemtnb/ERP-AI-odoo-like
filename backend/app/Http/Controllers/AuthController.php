@@ -233,8 +233,8 @@ class AuthController extends Controller
                 ['token' => Hash::make($token), 'created_at' => now()]
             );
             Log::info('password reset requested (no mailer wired)', ['email' => $user->email, 'token' => $token]);
-            if (app()->environment('local')) {
-                $devToken = $token; // dev convenience since email isn't sent
+            if (! app()->environment('production')) {
+                $devToken = $token; // dev/test convenience since email isn't sent; never in production
             }
         }
 

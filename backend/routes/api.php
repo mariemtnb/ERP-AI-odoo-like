@@ -52,11 +52,11 @@ Route::prefix('v1')->group(function () {
     Route::get('portal/sales/{token}', [\App\Http\Controllers\PortalController::class, 'sale'])
         ->middleware('throttle:60,1');
     Route::post('portal/sales/{token}/pay', [\App\Http\Controllers\PortalController::class, 'pay'])
-        ->middleware('throttle:20,1');
+        ->middleware(['feature:online_payments', 'throttle:20,1']);
     Route::get('portal/pay/{payToken}', [\App\Http\Controllers\PortalController::class, 'payIntent'])
-        ->middleware('throttle:60,1');
+        ->middleware(['feature:online_payments', 'throttle:60,1']);
     Route::post('portal/pay/{payToken}/confirm', [\App\Http\Controllers\PortalController::class, 'confirmPay'])
-        ->middleware('throttle:20,1');
+        ->middleware(['feature:online_payments', 'throttle:20,1']);
 
     /*
     | `active` runs on every authenticated request: deactivating an account has
