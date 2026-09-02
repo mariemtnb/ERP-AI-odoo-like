@@ -176,6 +176,12 @@ fi
 if [ ! -f .seeded ]; then
   log "Seeding demo data (products, customers, demo accounts)"
   "${DC[@]}" exec -T backend php artisan db:seed --class=DemoSeeder --force
+  # Fill every module with a realistic dataset by driving the app's own API
+  # (needs the backend serving, which it is by now). Best-effort.
+  log "Populating every module with demo data"
+  "${DC[@]}" exec -T backend php artisan erp:seed-showcase \
+    && ok "Every module populated" \
+    || warn "Could not populate showcase data; run later: ${DC[*]} exec backend php artisan erp:seed-showcase"
   touch .seeded
   ok "Demo data seeded"
 else
