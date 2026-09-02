@@ -23,4 +23,10 @@ class MockGateway implements PaymentGateway
 
         return "{$frontend}/portal/pay/{$payment->token}";
     }
+
+    /** The sandbox is confirmed by the customer clicking "Pay now". */
+    public function verify(OnlinePayment $payment): bool
+    {
+        return true;
+    }
 }

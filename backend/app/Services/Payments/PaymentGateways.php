@@ -12,8 +12,8 @@ class PaymentGateways
     public static function current(): PaymentGateway
     {
         return match ((string) config('services.payments.provider', 'mock')) {
-            // 'konnect' => new KonnectGateway(),
-            // 'flouci'  => new FlouciGateway(),
+            'konnect' => new KonnectGateway(),
+            'flouci' => new FlouciGateway(),
             default => new MockGateway(),
         };
     }

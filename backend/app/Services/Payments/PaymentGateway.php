@@ -17,4 +17,11 @@ interface PaymentGateway
 
     /** Start a checkout and return the URL to send the customer to. */
     public function initiate(OnlinePayment $payment): string;
+
+    /**
+     * Confirm with the provider that this payment really succeeded. Called
+     * before we post anything to the ledger, so a spoofed return can never
+     * mark a payment paid. The sandbox trusts its own confirm and returns true.
+     */
+    public function verify(OnlinePayment $payment): bool;
 }

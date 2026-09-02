@@ -68,11 +68,15 @@ class PortalController extends Controller
         ]);
     }
 
-    /** Confirm a payment (the sandbox's success callback). */
+    /** Confirm a payment (the gateway's success return / the sandbox's confirm). */
     public function confirmPay(string $payToken)
     {
         $payment = OnlinePayment::where('token', $payToken)->firstOrFail();
-        $payment = OnlinePaymentService::confirm($payment, gatewayRef: 'sandbox');
+        try {
+            $payment = OnlinePaymentService::confirm($payment, gatewayRef: $payment->gateway_ref ?? 'sandbox');
+        } catch (InvalidTransition $e) {
+            return response()->json(['detail' => $e->getMessage()], 409);
+        }
 
         return response()->json(['status' => $payment->status, 'sale_token' => $payment->sale?->portal_token]);
     }

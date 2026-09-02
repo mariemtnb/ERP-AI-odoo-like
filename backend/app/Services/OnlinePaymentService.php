@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Exceptions\InvalidTransition;
 use App\Models\OnlinePayment;
 use App\Models\Sale;
+use App\Services\Payments\PaymentGateway;
 use App\Services\Payments\PaymentGateways;
 use App\Support\AccountMap;
 use Illuminate\Support\Facades\DB;
@@ -45,13 +46,20 @@ class OnlinePaymentService
     }
 
     /**
-     * Confirm a payment (the gateway's success callback, or the sandbox's own
-     * confirm). Idempotent: confirming an already-paid attempt does nothing.
+     * Confirm a payment. The provider is asked to verify it really succeeded
+     * before anything is posted, so a spoofed return can't mark it paid.
+     * Idempotent: confirming an already-paid attempt does nothing. A gateway
+     * can be injected for testing; otherwise the configured one is used.
      */
-    public static function confirm(OnlinePayment $payment, ?string $gatewayRef = null): OnlinePayment
+    public static function confirm(OnlinePayment $payment, ?string $gatewayRef = null, ?PaymentGateway $gateway = null): OnlinePayment
     {
         if ($payment->isPaid()) {
             return $payment;
+        }
+
+        $gateway ??= PaymentGateways::current();
+        if (! $gateway->verify($payment)) {
+            throw new InvalidTransition('The payment could not be verified with the provider.');
         }
 
         return DB::transaction(function () use ($payment, $gatewayRef) {

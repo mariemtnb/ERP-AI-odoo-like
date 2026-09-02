@@ -36,9 +36,19 @@ return [
     ],
 
     // Online payment provider. 'mock' is a built-in sandbox that moves no real
-    // money; set a real provider (and its credentials) to go live.
+    // money; set 'konnect' or 'flouci' with the credentials below to go live.
     'payments' => [
         'provider' => env('PAYMENT_PROVIDER', 'mock'),
+        'konnect' => [
+            'base_url' => env('KONNECT_BASE_URL', 'https://api.konnect.network/api/v2'),
+            'api_key' => env('KONNECT_API_KEY'),
+            'wallet_id' => env('KONNECT_WALLET_ID'),
+        ],
+        'flouci' => [
+            'base_url' => env('FLOUCI_BASE_URL', 'https://developers.flouci.com/api'),
+            'app_token' => env('FLOUCI_APP_TOKEN'),
+            'app_secret' => env('FLOUCI_APP_SECRET'),
+        ],
     ],
 
 ];

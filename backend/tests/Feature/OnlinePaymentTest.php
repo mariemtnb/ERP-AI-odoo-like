@@ -9,9 +9,23 @@ use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleLine;
 use App\Models\User;
+use App\Services\OnlinePaymentService;
+use App\Services\Payments\PaymentGateway;
 use App\Support\AccountMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+
+/** A gateway double whose verify() result we control. */
+class FakeGateway implements PaymentGateway
+{
+    public function __construct(private bool $ok) {}
+
+    public function key(): string { return 'fake'; }
+
+    public function initiate(OnlinePayment $payment): string { return 'https://pay.test/'.$payment->token; }
+
+    public function verify(OnlinePayment $payment): bool { return $this->ok; }
+}
 
 /** Paying a shared sale online through the sandbox gateway. */
 class OnlinePaymentTest extends TestCase
@@ -94,5 +108,31 @@ class OnlinePaymentTest extends TestCase
         $this->postJson('/api/v1/portal/pay/'.OnlinePayment::first()->token.'/confirm');
 
         $this->postJson("/api/v1/portal/sales/{$sale->portal_token}/pay")->assertStatus(409);
+    }
+
+    public function test_confirm_is_blocked_when_the_gateway_cannot_verify(): void
+    {
+        $sale = $this->sharedSale();
+        [$payment] = OnlinePaymentService::initiate($sale);
+
+        $this->expectException(\App\Exceptions\InvalidTransition::class);
+        try {
+            OnlinePaymentService::confirm($payment, gateway: new FakeGateway(false));
+        } finally {
+            // Nothing was settled or posted.
+            $this->assertSame('pending', $payment->refresh()->status);
+            $this->assertSame(0, JournalEntry::where('reference_type', 'online_payment')->count());
+        }
+    }
+
+    public function test_confirm_proceeds_once_the_gateway_verifies(): void
+    {
+        $sale = $this->sharedSale();
+        [$payment] = OnlinePaymentService::initiate($sale);
+
+        OnlinePaymentService::confirm($payment, gateway: new FakeGateway(true));
+
+        $this->assertSame('paid', $payment->refresh()->status);
+        $this->assertSame(1, JournalEntry::where('reference_type', 'online_payment')->count());
     }
 }
