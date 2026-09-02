@@ -515,6 +515,12 @@ Route::prefix('v1')->group(function () {
             Route::get('reports/vat', [ReportingController::class, 'vatReturn']);
         });
 
+        // --- analytic accounting (cost centres): managers/admins, behind the flag ---
+        Route::middleware(['feature:analytic', 'role:admin,manager'])->group(function () {
+            Route::get('reports/analytic', [\App\Http\Controllers\AnalyticController::class, 'pnl']);
+            Route::post('journal-lines/{line}/analytic', [\App\Http\Controllers\AnalyticController::class, 'tagLine']);
+        });
+
         // --- budgets & budget-vs-actual: managers/admins, behind the flag ---
         Route::middleware(['feature:budgets', 'role:admin,manager'])->group(function () {
             Route::get('budgets', [\App\Http\Controllers\BudgetController::class, 'index']);

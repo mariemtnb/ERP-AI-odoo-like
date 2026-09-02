@@ -92,7 +92,14 @@ keeps Tunisian rates and rules in configuration rather than code.
   Behind the `budgets` flag; managers/admins. *Still to come:* per-analytic
   (cost-centre) budgets once item 12 lands, and optional soft/hard commitment
   checks on POs and expense claims.
-- [ ] 12. Analytic distributions (cost centres)
+- [x] 12. Analytic distributions (cost centres) — **done.** Ledger lines carry
+  an optional business unit (cost/profit centre); `AccountingService::post`
+  persists it, any posted line can be (re)assigned via
+  `POST journal-lines/{line}/analytic`, and a per-dimension P&L
+  (`GET reports/analytic`) rolls income/expense up by unit with everything
+  untagged shown as "unallocated". Behind the `analytic` flag; managers/admins.
+  *Still to come:* capturing the unit at source on sale/PO/expense entry, and
+  per-analytic budgets (feeds item 11).
 - [ ] 13. AR dunning / automated follow-ups
 - [ ] 14. Purchase requisitions + approval workflow
 - [ ] 15. Landed costs on goods receipts

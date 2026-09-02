@@ -10,7 +10,7 @@ class JournalEntryLine extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['journal_entry_id', 'account_id', 'label', 'debit', 'credit'];
+    protected $fillable = ['journal_entry_id', 'account_id', 'business_unit_id', 'label', 'debit', 'credit'];
 
     protected $attributes = ['label' => '', 'debit' => 0, 'credit' => 0];
 
@@ -29,6 +29,11 @@ class JournalEntryLine extends Model
         return $this->belongsTo(Account::class);
     }
 
+    public function businessUnit(): BelongsTo
+    {
+        return $this->belongsTo(BusinessUnit::class);
+    }
+
     public function toApi(): array
     {
         return [
@@ -36,6 +41,8 @@ class JournalEntryLine extends Model
             'account_id' => $this->account_id,
             'account_code' => $this->account?->code,
             'account_name' => $this->account?->name,
+            'business_unit_id' => $this->business_unit_id,
+            'business_unit_code' => $this->businessUnit?->code,
             'label' => $this->label,
             'debit' => $this->debit,
             'credit' => $this->credit,

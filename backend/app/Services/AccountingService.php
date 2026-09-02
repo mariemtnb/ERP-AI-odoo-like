@@ -87,6 +87,7 @@ class AccountingService
                 JournalEntryLine::create([
                     'journal_entry_id' => $entry->id,
                     'account_id' => $accountId,
+                    'business_unit_id' => $line['business_unit'] ?? null,
                     'label' => $line['label'] ?? '',
                     'debit' => round((float) ($line['debit'] ?? 0), 2),
                     'credit' => round((float) ($line['credit'] ?? 0), 2),
