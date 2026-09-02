@@ -181,12 +181,24 @@ see all of them — that depends on your role and which modules are switched on.
   creates) purchase orders when stock runs low, so you never run out.
 - **RFQs** (Requests for Quotation) — ask several suppliers to quote a price,
   compare the bids, and **award** the best one.
+- **Vendor Bills** — record the supplier's invoice and let the app **3-way
+  match** it against the purchase order and what was actually received. If the
+  quantity, price or receipt all agree it's *matched* (ready to pay); if
+  something is off (billed for more than arrived, a price that changed, or no
+  order at all) it's flagged as an *exception* a manager must approve first.
 
 ### Sales
 
-- **Customers** — the people and businesses you sell to.
+- **Customers** — the people and businesses you sell to. A customer can be put
+  on a **pricelist** to get their own prices.
 - **Sales** — sales orders and invoices. Create an order, **confirm** it (which
-  reserves/reduces stock), and turn it into an **invoice**.
+  reserves/reduces stock), and turn it into an **invoice**. From a sale you can
+  **email it to the customer** — they get a link to a private page where they
+  can view it and **pay online**.
+- **Pricelists** — set special prices: a fixed price or a percentage off, for a
+  product, a whole category, or everything, optionally from a minimum quantity
+  (e.g. cheaper when they buy 10+). A customer's pricelist, or the default one,
+  is applied automatically on their sales and at the till.
 - **Point of Sale (POS)** — a fast counter screen for walk-in sales: open a
   till session, add products, take payment, done. Great for a shop.
 - **Subscriptions** — recurring billing (e.g. a monthly service). The app
@@ -216,8 +228,13 @@ see all of them — that depends on your role and which modules are switched on.
 
 ### People
 
-- **Payroll** — employees' pay: run monthly payroll, add pay lines, approve and
-  pay, and record **salary advances**.
+- **Payroll** — employees' pay with a proper Tunisian **gross-to-net**
+  calculation: it works out **CNSS** (social security), **IRPP** (income tax,
+  using the family situation you set on the employee) and the **CSS** solidarity
+  levy automatically, so the net pay and the amounts owed to CNSS and the tax
+  office are all computed for you. The rates and tax brackets are **settings** —
+  update them when the finance law changes. Also handles bonuses and **salary
+  advances**.
 - **Human Resources (HR)** — attendance (clock in/out), **leave** requests, and
   **expense claims**, with manager approval.
 
@@ -235,6 +252,9 @@ see all of them — that depends on your role and which modules are switched on.
 ### Insights
 
 - **Reports** — ready-made reports on sales, stock, money and more.
+- **VAT Return** — the periodic tax declaration for a month: the VAT you
+  collected on sales, minus the VAT you paid on purchases, giving the amount to
+  pay (or a credit to carry forward). Pick a month and read off the figure.
 - **Report Builder** — build your own report by choosing what to measure and
   how to group it.
 - **AI Assistant** — the assistant described in [section 5](#5-the-ai-assistant).
@@ -250,6 +270,16 @@ see all of them — that depends on your role and which modules are switched on.
 - **Administration** — company details, branches, numbering (invoice number
   formats), which **modules are switched on**, feature flags, and the **audit
   trail** (a record of who changed what).
+
+### On every record: notes & activities
+
+Open a record — a sale, a purchase, a customer — and at the bottom you'll find
+**Activity & notes**. You can:
+
+- write a **note** (a comment others on the team can see), and
+- schedule an **activity** — a follow-up with a title and a due date ("Call to
+  confirm payment on Friday"). Tick it off when done; overdue ones show in red,
+  and your open activities gather into your own to-do list.
 
 ---
 
@@ -288,6 +318,32 @@ To sign out, use the **exit icon** at the top-right.
 2. **Confirm** the order (this sends it).
 3. When the goods arrive, open the order and click **Receive** — stock goes up
    and the amount you owe is recorded.
+
+### Email an invoice and get paid online
+
+1. Open a **confirmed sale** and click **Email to customer**.
+2. The customer receives the invoice with a link. A **portal link** also appears
+   for you to copy.
+3. On that page the customer clicks **Pay online**, completes the payment, and
+   the sale shows as **Paid**.
+
+### Set up a pricelist (special prices)
+
+1. Sidebar → **Pricelists** → **New pricelist**; tick **default** if it should
+   apply to everyone.
+2. Open it and **add rules** — e.g. *Product X, fixed 80* or *Category Tools,
+   10% off*, optionally *from quantity 10*.
+3. To give one customer their own prices, edit the customer and choose the
+   pricelist. Prices then apply automatically on their sales and at the till.
+
+### Record a supplier's bill (with 3-way match)
+
+1. Sidebar → **Vendor Bills** → **New bill**; pick the **supplier** and, if
+   there is one, the **purchase order** (its lines fill in for you).
+2. **Record & match**. The bill is checked against the order and receipt: a
+   green **matched** means it's ready to pay; an amber **exception** lists what
+   doesn't line up.
+3. If the exception is acceptable, a manager clicks **Approve** to clear it.
 
 ### Add a new user
 
@@ -390,6 +446,19 @@ docker compose down   # stop it (your data is kept)
 - **Reconciliation** — matching your records to the real bank statement.
 - **Payroll** — calculating and paying staff wages.
 - **Audit trail** — the record of who changed what, and when.
+- **Pricelist** — a set of special-price rules for products or categories.
+- **Vendor bill** — a supplier's invoice recorded in the app.
+- **3-way match** — checking a supplier's bill against the order and the goods
+  received before paying it.
+- **Portal** — the private web page a customer opens (via a link) to view and
+  pay their document, without logging in.
+- **CNSS** — Tunisia's social-security contribution, deducted from pay.
+- **IRPP** — Tunisia's personal income tax, deducted from pay.
+- **CSS** — a small solidarity levy on taxable income.
+- **VAT return** — the periodic declaration of VAT collected minus VAT paid.
+- **Chatter** — the notes-and-activities panel on a record.
+- **Moving-average cost** — the running average price your stock cost, used to
+  value it and work out cost of goods sold.
 - **Feature flag** — a switch that turns a whole module on or off.
 - **JWT / token** — the invisible "pass" your browser holds after you log in so
   you don't retype your password on every click.

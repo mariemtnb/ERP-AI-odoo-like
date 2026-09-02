@@ -38,6 +38,16 @@ package "Stock & documents" #F4FBF6 {
     lifecycle and triggers stock
     and accounting together.
   }
+
+  class InventoryValuationService {
+    registerReceipt()
+    unitCost()
+    --
+    Weighted-average (AVCO) cost.
+    Each receipt blends in; sales
+    relieve stock at that average,
+    so the books track real cost.
+  }
 }
 
 package "Accounting" #FBF4F4 {
@@ -45,11 +55,14 @@ package "Accounting" #FBF4F4 {
     post()
     postSaleConfirmed()
     postPurchaseReceived()
+    postPosSale()
     reverseSale()
     trialBalance()
     --
     Refuses any entry where
     debit does not equal credit.
+    POS, sales and receipts all
+    post here at moving-average cost.
   }
 
   class AccountMap {
@@ -58,6 +71,44 @@ package "Accounting" #FBF4F4 {
     Turns "cheques_receivable"
     into the account the company
     actually configured.
+  }
+}
+
+package "Sales, pricing & sharing" #F7F4FB {
+  class PricingService {
+    priceFor(product, qty, customer)
+    --
+    Resolves the price from the
+    customer's pricelist (or the
+    default): most specific rule,
+    then highest quantity break.
+  }
+
+  class VendorBillService {
+    record()
+    matchReport()
+    approve()
+    --
+    3-way match: bill vs order vs
+    receipt. Anything off is an
+    exception a manager clears.
+  }
+
+  class OnlinePaymentService {
+    initiate()
+    confirm()
+    --
+    Customer pays a shared sale via
+    a pluggable gateway (sandbox by
+    default); confirm posts to bank.
+  }
+
+  class TunisianPayrollTax {
+    compute(gross, family)
+    --
+    CNSS, IRPP (progressive) and
+    CSS from editable settings —
+    real gross-to-net for Tunisia.
   }
 }
 
@@ -158,6 +209,10 @@ InstrumentService --> InstallmentService : settles / reopens
 PaymentService --> AccountingService : posts entries
 PaymentService --> InstallmentService : updates schedule
 ReconciliationService --> InstrumentService : clears on match
+
+DocumentService --> InventoryValuationService : blends receipt cost
+AccountingService --> InventoryValuationService : values COGS
+OnlinePaymentService --> AccountingService : posts on confirm
 
 ' Every posting goes through AccountingService, so one arrow says it all —
 ' drawing one per caller just added long curves across the diagram.

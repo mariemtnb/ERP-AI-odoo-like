@@ -55,3 +55,9 @@ modules a super admin grants them — a rule enforced in the sidebar, the route
 guard and the API alike — and the security hardening (security headers, a
 strict Content-Security-Policy, and account lockout after repeated failed
 logins).
+
+The latest additions are drawn too: **pricelists & discounts**, a customer
+**portal** where a buyer views and **pays** a shared document online, **vendor
+bills with 3-way matching**, statutory **Tunisian payroll** (CNSS / IRPP / CSS),
+the **VAT return**, per-record **chatter** (notes and activities), and
+**moving-average inventory valuation** posting to the ledger.

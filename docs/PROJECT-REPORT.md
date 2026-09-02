@@ -43,12 +43,17 @@ back end (rules + storage), automated tests, and its own screen in the app.
 dates**, and **manufacturing** (bills of materials + work orders).
 
 **Purchasing** — Suppliers, purchase orders, **automatic reordering** rules,
-and **RFQs** (ask several suppliers to quote, then award the best).
+**RFQs** (ask several suppliers to quote, then award the best), and **vendor
+bills with 3-way matching** — a supplier's invoice is checked against the order
+and what was received, and anything that doesn't match is flagged before it can
+be paid.
 
-**Sales** — Customers, sales orders and invoices, **Point of Sale (POS)** for
+**Sales** — Customers, sales orders and invoices, **pricelists & discounts**
+(customer- and quantity-based pricing), **Point of Sale (POS)** for
 over-the-counter selling, **subscriptions** (recurring billing), **returns /
 credit notes**, **shipping**, **marketing campaigns**, and a light **CRM** for
-leads.
+leads. Any quote or invoice can be **emailed to the customer** with a link to a
+public **portal** where they view it and **pay online**.
 
 **Services** — **Projects** (tasks + timesheets) and a **Helpdesk** (support
 tickets).
@@ -56,19 +61,27 @@ tickets).
 **Finance** — Double-entry **accounting**, an owner **profit** view, and
 **fixed assets** (depreciation).
 
-**People** — **Payroll** (with salary advances) and **HR** (attendance, leave,
-expense claims).
+**People** — **Payroll** with a real Tunisian **gross-to-net calculation**
+(CNSS social security, IRPP income tax and the CSS solidarity levy, all from
+editable settings), salary advances, and **HR** (attendance, leave, expense
+claims).
 
 **Treasury (Tunisia)** — Cheques and *traites/kembyelet*, **instalment plans**
 ("khlas bel taqsit"), **banking** and **bank reconciliation**.
 
-**Insights** — **Reports**, a **report builder**, and the **AI assistant**.
+**Insights** — **Reports** (including a periodic **VAT return**), a **report
+builder**, and the **AI assistant**.
+
+**Everywhere** — any record (a sale, a customer, a ticket…) carries **chatter**:
+comments and **follow-up activities** with due dates that roll up into each
+person's own to-do list.
 
 Behind the scenes each module reuses the same trustworthy building blocks: every
-stock change is a recorded movement that refuses to go below zero; every
-accounting entry must balance (debits = credits); every document number comes
-from a controlled sequence; and every important change is written to an audit
-trail (who, when, before, after).
+stock change is a recorded movement that refuses to go below zero; stock is
+valued at a **moving-average cost** so the books track what it really cost;
+every accounting entry must balance (debits = credits); every document number
+comes from a controlled sequence; and every important change is written to an
+audit trail (who, when, before, after).
 
 ---
 
@@ -189,6 +202,7 @@ The [`diagrams/`](../diagrams/README.md) folder has one-page visual maps:
 ## 8. Quality
 
 Every module ships with automated tests. The full back-end test suite currently
-passes at **314 tests / 894 checks, with zero failures**, covering the business
-rules, the role and module-access boundaries, account lockout, and the security
-headers. The front end type-checks cleanly.
+passes at **356 tests / 1,015 checks, with zero failures**, covering the business
+rules, the role and module-access boundaries, statutory payroll, pricing,
+3-way matching, the VAT return, inventory valuation, account lockout, and the
+security headers. The front end type-checks cleanly.

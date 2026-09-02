@@ -22,6 +22,7 @@ actor Manager as manager
 actor Administrator as admin
 actor "Super admin" as superadmin
 actor "Custom role\n(e.g. Cashier)" as custom
+actor "Customer\n(portal, no login)" as buyer
 actor "AI assistant" as agent <<system>>
 
 manager --|> employee
@@ -36,6 +37,7 @@ rectangle "Intelligent ERP" {
     usecase "Add a customer\nor a lead" as UC3
     usecase "Ask the assistant" as UC4
     usecase "Edit own profile,\nchange password" as UC16
+    usecase "Add notes &\nfollow-up activities" as UC21
   }
 
   package "Manager" #F7F4FB {
@@ -46,6 +48,11 @@ rectangle "Intelligent ERP" {
     usecase "Reconcile the bank" as UC9
     usecase "Read reports\nand the books" as UC10
     usecase "Run POS, HR,\nprojects, helpdesk…" as UC17
+    usecase "Set pricelists\n& discounts" as UC22
+    usecase "Record & 3-way\nmatch vendor bills" as UC23
+    usecase "Run payroll\n(CNSS / IRPP)" as UC24
+    usecase "File the VAT return" as UC25
+    usecase "Email an invoice\nto the customer" as UC26
   }
 
   package "Administrator" #F4F8FB {
@@ -64,6 +71,11 @@ rectangle "Intelligent ERP" {
   package "Custom role" #F2FBFA {
     usecase "Reach only the\nmodules granted\nto that role" as UC20
   }
+
+  package "Customer portal" #FBF9F2 {
+    usecase "View a shared\nquote or invoice" as UC27
+    usecase "Pay online" as UC28
+  }
 }
 
 employee --> UC1
@@ -71,6 +83,7 @@ employee --> UC2
 employee --> UC3
 employee --> UC4
 employee --> UC16
+employee --> UC21
 
 manager --> UC5
 manager --> UC6
@@ -79,6 +92,11 @@ manager --> UC8
 manager --> UC9
 manager --> UC10
 manager --> UC17
+manager --> UC22
+manager --> UC23
+manager --> UC24
+manager --> UC25
+manager --> UC26
 
 admin --> UC11
 admin --> UC12
@@ -90,6 +108,9 @@ superadmin --> UC18
 superadmin --> UC19
 
 custom --> UC20
+
+buyer --> UC27
+buyer --> UC28
 
 ' The assistant acts for a person, never beyond that person's rights.
 ' Two arrows, not one per use case — the rule is the same everywhere.
