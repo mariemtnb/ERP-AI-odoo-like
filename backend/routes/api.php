@@ -136,6 +136,20 @@ Route::prefix('v1')->group(function () {
             Route::post('purchases/{purchase}/reject', [PurchaseOrderController::class, 'reject']);
         });
 
+        // --- purchase requisitions + approval engine, behind the flag ---
+        // Anyone raises a requisition; the chain routes it, and only its
+        // configured approver role can sign each step (checked in the engine).
+        Route::middleware('feature:requisitions')->group(function () {
+            Route::get('requisitions', [\App\Http\Controllers\RequisitionController::class, 'index']);
+            Route::post('requisitions', [\App\Http\Controllers\RequisitionController::class, 'store']);
+            Route::get('requisitions/{requisition}', [\App\Http\Controllers\RequisitionController::class, 'show']);
+            Route::post('requisitions/{requisition}/submit', [\App\Http\Controllers\RequisitionController::class, 'submit']);
+            Route::post('requisitions/{requisition}/convert', [\App\Http\Controllers\RequisitionController::class, 'convert'])
+                ->middleware('role:admin,manager');
+            Route::get('approvals/pending', [\App\Http\Controllers\ApprovalController::class, 'pending']);
+            Route::post('approvals/{approval}/act', [\App\Http\Controllers\ApprovalController::class, 'act']);
+        });
+
         // --- vendor bills (3-way match): managers/admins record and clear ---
         Route::middleware('feature:vendor_bills')->group(function () {
             Route::get('vendor-bills', [\App\Http\Controllers\VendorBillController::class, 'index']);

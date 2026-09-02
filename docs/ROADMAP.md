@@ -109,5 +109,13 @@ keeps Tunisian rates and rules in configuration rather than code.
   repeating a level. `GET dunning/candidates` previews; `POST dunning/run`
   sends. Behind the `dunning` flag; managers/admins. *Still to come:* a
   scheduled daily run (today it is triggered on demand).
-- [ ] 14. Purchase requisitions + approval workflow
+- [x] 14. Purchase requisitions + approval workflow — **done.** A reusable,
+  polymorphic approval engine (workflows → ordered steps, each with an approver
+  role and an amount threshold → requests → recorded actions) routes any model
+  through a chain and calls back the consumer on the final decision. Purchase
+  requisitions are the first consumer: raise → submit (routes by estimate:
+  manager for any amount, admin sign-off from 5 000) → approve/reject via an
+  approval inbox → convert an approved one into a purchase order. Behind the
+  `requisitions` flag. *Reusable by design:* other documents adopt it by
+  implementing `applyApprovalOutcome()` and registering a workflow.
 - [ ] 15. Landed costs on goods receipts
