@@ -50,3 +50,31 @@ P2 = later. **Effort:** S ≈ 1 unit · M ≈ 2–3 · L ≈ 4+.
 - [x] **Partial goods receipts** — receive a purchase order in instalments;
   it sits at "partial" until complete, and vendor-bill matching reads the
   actual received quantity.
+
+## Next batch — proposed (not started)
+
+The original eight (and their follow-ups) are shipped. These are the next
+highest-value gaps for a Tunisian-focused ERP, each verified as genuinely
+missing (not already covered by an existing module). Same rules apply: each
+ships behind a feature flag, respects the role / module-access model, and
+keeps Tunisian rates and rules in configuration rather than code.
+
+| #  | Feature | Priority | Effort | Why it matters | Depends on |
+|----|---|---|---|---|---|
+| 9  | **Tunisian e-invoicing (TTN «El Fatoora»)** | P0 | L | Generate, sign and submit the mandated electronic invoice to TTN and track its status. This is a legal requirement moving from B2G to B2B; nothing else on this list is compliance-blocking the way this is. | 3, line-level VAT |
+| 10 | **Foreign-currency transactions + FX gain/loss** | P0 | L | Today currency is only a conversion helper — invoices, bills and payments are base-currency only. Store the currency and rate on the document, book realised FX gain/loss on settlement, and revalue open AR/AP at period end. | existing currency rates, 5, reconciliation |
+| 11 | **Budgets & budget-vs-actual** | P1 | M | GL/analytic budgets per period with a budget-vs-actual report and optional soft/hard checks on POs and expense claims. Only project-level budgets exist today. | accounting, 12 |
+| 12 | **Analytic distributions (cost centres)** | P1 | M | Tag journal, PO and expense lines with a business unit / cost centre and report P&L per dimension. The `BusinessUnit` dimension exists but nothing distributes onto it. | accounting |
+| 13 | **AR dunning / automated follow-ups** | P1 | M | A multi-level reminder schedule on overdue invoices that reuses the email, chatter and scheduled-activity layers already shipped, plus the existing AR aging. | 3, 6, 7 |
+| 14 | **Purchase requisitions + approval workflow** | P1 | M | Requisition → configurable approval chain → PO, built on a reusable approval engine other documents can later adopt. | purchasing |
+| 15 | **Landed costs on goods receipts** | P2 | M | Spread freight, duty and insurance across received goods so the inventory valuation already posting to the ledger reflects true landed cost. | 8, partial receipts |
+
+### Status
+
+- [ ] 9. Tunisian e-invoicing (TTN)
+- [ ] 10. Foreign-currency transactions + FX gain/loss
+- [ ] 11. Budgets & budget-vs-actual
+- [ ] 12. Analytic distributions (cost centres)
+- [ ] 13. AR dunning / automated follow-ups
+- [ ] 14. Purchase requisitions + approval workflow
+- [ ] 15. Landed costs on goods receipts
