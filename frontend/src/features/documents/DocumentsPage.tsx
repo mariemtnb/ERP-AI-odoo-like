@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FileText, Mail, Plus, ScanLine, Trash2 } from "lucide-react";
+import { Chatter } from "@/components/Chatter";
 import { documentsApi, extractInvoice } from "@/api/documents";
 import { downloadInvoice, emailSale, generateInvoice } from "@/api/reports";
 import { listProducts } from "@/api/catalog";
@@ -497,6 +498,7 @@ export default function DocumentsPage({
                 )}
               </div>
             )}
+            <Chatter type={kind} id={viewDoc.id} />
           </div>
         )}
       </Dialog>

@@ -506,6 +506,15 @@ Route::prefix('v1')->group(function () {
             Route::post('ocr/invoice', [\App\Http\Controllers\OcrController::class, 'invoice']);
         });
 
+        // --- chatter: comments & follow-up activities on any record ---
+        Route::middleware('feature:chatter')->group(function () {
+            Route::get('activities/mine', [\App\Http\Controllers\ChatterController::class, 'mine']);
+            Route::post('activities/{activity}/toggle', [\App\Http\Controllers\ChatterController::class, 'toggleActivity']);
+            Route::get('chatter/{type}/{id}', [\App\Http\Controllers\ChatterController::class, 'index'])->whereNumber('id');
+            Route::post('chatter/{type}/{id}/messages', [\App\Http\Controllers\ChatterController::class, 'storeMessage'])->whereNumber('id');
+            Route::post('chatter/{type}/{id}/activities', [\App\Http\Controllers\ChatterController::class, 'storeActivity'])->whereNumber('id');
+        });
+
         // --- documents (RAG): all read/search; managers/admins manage ---
         Route::get('documents', [\App\Http\Controllers\DocumentController::class, 'index']);
         Route::get('documents/search', [\App\Http\Controllers\DocumentController::class, 'search']);

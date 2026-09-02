@@ -36,5 +36,5 @@ P2 = later. **Effort:** S ≈ 1 unit · M ≈ 2–3 · L ≈ 4+.
 - [x] 4. Online payments — **done**
 - [x] 5. Vendor bill 3-way matching — **done**
 - [x] 6. VAT return / fiscal declarations — **done**
-- [ ] 7. Chatter + activities — *in progress*
-- [ ] 8. Inventory valuation to the ledger
+- [x] 7. Chatter + activities — **done**
+- [ ] 8. Inventory valuation to the ledger — *in progress*
