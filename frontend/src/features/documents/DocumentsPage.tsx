@@ -2,7 +2,7 @@ import { useMemo, useRef, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FileText, Mail, Plus, ScanLine, Trash2 } from "lucide-react";
 import { Chatter } from "@/components/Chatter";
-import { documentsApi, extractInvoice } from "@/api/documents";
+import { documentsApi, extractInvoice, receivePurchase } from "@/api/documents";
 import { downloadInvoice, emailSale, generateInvoice } from "@/api/reports";
 import { listProducts } from "@/api/catalog";
 import { partnersApi } from "@/api/partners";
@@ -23,6 +23,7 @@ const statusTone: Record<string, string> = {
   draft: "manager",
   pending_approval: "manager",
   confirmed: "admin",
+  partial: "amber",
   received: "green",
   cancelled: "red",
 };
@@ -159,6 +160,14 @@ export default function DocumentsPage({
   const emailMutation = useMutation({
     mutationFn: (id: number) => emailSale(id),
     onSuccess: (r) => { setPortalLink(r.portal_url); invalidate(); },
+    onError: (err: any) => setActionError(err?.response?.data?.detail ?? t("docs.actionFailed")),
+  });
+
+  // Partial goods receipt: a map of line id -> quantity to receive now.
+  const [receiveQty, setReceiveQty] = useState<Record<number, string> | null>(null);
+  const receiveMutation = useMutation({
+    mutationFn: ({ id, lines }: { id: number; lines: { line: number; quantity: number }[] }) => receivePurchase(id, lines),
+    onSuccess: (doc) => { invalidate(); setViewDoc(doc); setReceiveQty(null); setActionError(""); },
     onError: (err: any) => setActionError(err?.response?.data?.detail ?? t("docs.actionFailed")),
   });
 
@@ -479,10 +488,12 @@ export default function DocumentsPage({
                     {t("docs.awaiting")}
                   </p>
                 )}
-                {isPurchase && viewDoc.status === "confirmed" && (
+                {isPurchase && (viewDoc.status === "confirmed" || viewDoc.status === "partial") && (
                   <Button
-                    onClick={() => actionMutation.mutate({ id: viewDoc.id, name: "receive" })}
-                    disabled={actionMutation.isPending}
+                    onClick={() => setReceiveQty(Object.fromEntries(
+                      (viewDoc.lines ?? []).map((l) => [l.id!, l.remaining ?? l.quantity])
+                    ))}
+                    disabled={receiveMutation.isPending}
                   >
                     {t("docs.receive")}
                   </Button>
@@ -502,6 +513,44 @@ export default function DocumentsPage({
           </div>
         )}
       </Dialog>
+
+      {/* partial goods receipt */}
+      {receiveQty && viewDoc && (
+        <Dialog open onClose={() => setReceiveQty(null)} title={t("docs.receiveGoods")}>
+          <div className="space-y-3">
+            <p className="text-sm text-text-2">{t("docs.receiveHint")}</p>
+            {(viewDoc.lines ?? []).map((l) => {
+              const remaining = Number(l.remaining ?? l.quantity);
+              return (
+                <div key={l.id} className="flex items-center gap-3">
+                  <span className="flex-1 text-sm">{l.product_name}
+                    <span className="ml-2 text-xs text-text-3">{t("docs.remaining")}: {remaining}</span>
+                  </span>
+                  <Input type="number" min="0" max={remaining} step="0.001" className="w-28"
+                    value={receiveQty[l.id!] ?? ""}
+                    onChange={(e) => setReceiveQty((m) => ({ ...m!, [l.id!]: e.target.value }))}
+                    disabled={remaining <= 0} />
+                </div>
+              );
+            })}
+            {actionError && <p className="text-sm text-danger">{actionError}</p>}
+            <div className="flex justify-end gap-2 pt-1">
+              <Button variant="ghost" onClick={() => setReceiveQty(null)}>{t("common.cancel")}</Button>
+              <Button
+                disabled={receiveMutation.isPending}
+                onClick={() => receiveMutation.mutate({
+                  id: viewDoc.id,
+                  lines: Object.entries(receiveQty)
+                    .map(([line, q]) => ({ line: Number(line), quantity: Number(q || 0) }))
+                    .filter((x) => x.quantity > 0),
+                })}
+              >
+                {receiveMutation.isPending ? t("docs.receiving") : t("docs.receive")}
+              </Button>
+            </div>
+          </div>
+        </Dialog>
+      )}
     </div>
   );
 }

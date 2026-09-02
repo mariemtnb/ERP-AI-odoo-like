@@ -87,15 +87,14 @@ class VendorBillService
     {
         $bill->loadMissing('lines.product', 'purchaseOrder.lines');
         $po = $bill->purchaseOrder;
-        $poReceived = $po && $po->status === PurchaseOrder::STATUS_RECEIVED;
 
         $report = [];
         foreach ($bill->lines as $line) {
             $poLine = $po?->lines->firstWhere('product_id', $line->product_id);
             $orderedQty = $poLine ? (float) $poLine->quantity : 0.0;
             $orderedPrice = $poLine ? (float) $poLine->unit_price : null;
-            // No partial receipts in this system: a received PO delivered all it ordered.
-            $receivedQty = $poReceived ? $orderedQty : 0.0;
+            // Match against what actually arrived — supports partial receipts.
+            $receivedQty = $poLine ? (float) $poLine->received_qty : 0.0;
 
             $flags = [];
             if (! $poLine) {

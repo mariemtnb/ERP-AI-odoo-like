@@ -9,13 +9,13 @@ class PurchaseOrderLine extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['purchase_order_id', 'product_id', 'quantity', 'unit_price', 'tax_rate'];
+    protected $fillable = ['purchase_order_id', 'product_id', 'quantity', 'received_qty', 'unit_price', 'tax_rate'];
 
-    protected $attributes = ['tax_rate' => 0];
+    protected $attributes = ['received_qty' => 0, 'tax_rate' => 0];
 
     protected function casts(): array
     {
-        return ['quantity' => 'decimal:3', 'unit_price' => 'decimal:2', 'tax_rate' => 'decimal:2'];
+        return ['quantity' => 'decimal:3', 'received_qty' => 'decimal:3', 'unit_price' => 'decimal:2', 'tax_rate' => 'decimal:2'];
     }
 
     public function product(): BelongsTo
@@ -26,6 +26,12 @@ class PurchaseOrderLine extends Model
     public function subtotal(): float
     {
         return round($this->quantity * $this->unit_price, 2);
+    }
+
+    /** Quantity still to arrive. */
+    public function remaining(): float
+    {
+        return max(0.0, round((float) $this->quantity - (float) $this->received_qty, 3));
     }
 
     /** VAT within this line, at its own rate (prices are inclusive). */
@@ -44,6 +50,8 @@ class PurchaseOrderLine extends Model
             'product_sku' => $this->product?->sku,
             'product_name' => $this->product?->name,
             'quantity' => $this->quantity,
+            'received_qty' => $this->received_qty,
+            'remaining' => number_format($this->remaining(), 3, '.', ''),
             'unit_price' => $this->unit_price,
             'tax_rate' => $this->tax_rate,
             'subtotal' => number_format($this->subtotal(), 2, '.', ''),

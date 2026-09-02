@@ -34,7 +34,7 @@ class VendorBillTest extends TestCase
             'number' => 'PO-1', 'supplier_id' => $this->supplier->id,
             'status' => PurchaseOrder::STATUS_RECEIVED, 'order_date' => '2026-01-01', 'created_by' => $this->manager->id,
         ]);
-        PurchaseOrderLine::create(['purchase_order_id' => $po->id, 'product_id' => $this->product->id, 'quantity' => $qty, 'unit_price' => $price]);
+        PurchaseOrderLine::create(['purchase_order_id' => $po->id, 'product_id' => $this->product->id, 'quantity' => $qty, 'received_qty' => $qty, 'unit_price' => $price]);
 
         return $po;
     }

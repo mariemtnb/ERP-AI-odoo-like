@@ -40,3 +40,13 @@ P2 = later. **Effort:** S ≈ 1 unit · M ≈ 2–3 · L ≈ 4+.
 - [x] 8. Inventory valuation to the ledger — **done**
 
 **All 8 roadmap items are complete.**
+
+### Follow-ups (beyond the original 8) — done
+
+- [x] **Line-level VAT** — per-line rates (0 / 7 / 13 / 19 %) and a multi-rate
+  VAT return with a per-rate breakdown.
+- [x] **Real payment gateways** — Konnect and Flouci adapters behind the same
+  interface, with provider verification before a payment is settled.
+- [x] **Partial goods receipts** — receive a purchase order in instalments;
+  it sits at "partial" until complete, and vendor-bill matching reads the
+  actual received quantity.

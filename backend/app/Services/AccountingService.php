@@ -180,9 +180,10 @@ class AccountingService
      * Goods received — the stock is now an asset owed to the supplier:
      *   Dr Inventory / Cr Accounts payable
      */
-    public static function postPurchaseReceived(PurchaseOrder $po, User $user): ?JournalEntry
+    public static function postPurchaseReceived(PurchaseOrder $po, User $user, ?float $amount = null): ?JournalEntry
     {
-        $total = round((float) $po->total_amount, 2);
+        // Post the value received now (partial receipts), or the whole order.
+        $total = round($amount ?? (float) $po->total_amount, 2);
         if ($total <= 0) {
             return null;
         }

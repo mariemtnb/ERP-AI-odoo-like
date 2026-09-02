@@ -157,9 +157,20 @@ class PurchaseOrderController extends Controller
 
     public function receive(Request $request, PurchaseOrder $purchase)
     {
+        $data = $request->validate([
+            'lines' => ['sometimes', 'array'],
+            'lines.*.line' => ['required_with:lines', 'integer'],
+            'lines.*.quantity' => ['required_with:lines', 'numeric', 'min:0'],
+        ]);
+
+        // Map of line id => quantity to receive now; null means "receive the lot".
+        $receiveLines = isset($data['lines'])
+            ? collect($data['lines'])->mapWithKeys(fn ($l) => [(int) $l['line'] => (float) $l['quantity']])->all()
+            : null;
+
         return $this->transition(
             $purchase,
-            fn ($po) => DocumentService::receivePurchase($po, $request->user())
+            fn ($po) => DocumentService::receivePurchase($po, $request->user(), $receiveLines)
         );
     }
 

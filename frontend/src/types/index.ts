@@ -65,6 +65,8 @@ export interface DocLine {
   product_sku?: string;
   product_name?: string;
   quantity: string;
+  received_qty?: string;
+  remaining?: string;
   unit_price: string;
   subtotal?: string;
 }

@@ -103,37 +103,70 @@ class DocumentService
         return $po;
     }
 
-    public static function receivePurchase(PurchaseOrder $po, User $user): PurchaseOrder
+    /**
+     * Receive goods, in full or in part.
+     *
+     * `$receiveLines` maps a purchase-order-line id to the quantity arriving
+     * now; anything omitted receives nothing. Pass null to receive all that is
+     * still outstanding (the simple "receive the lot" case). The order becomes
+     * "received" once every line is complete, otherwise "partial".
+     *
+     * @param  array<int,int|float>|null  $receiveLines  [line_id => qty]
+     */
+    public static function receivePurchase(PurchaseOrder $po, User $user, ?array $receiveLines = null): PurchaseOrder
     {
-        if ($po->status !== PurchaseOrder::STATUS_CONFIRMED) {
-            throw new InvalidTransition("Only confirmed orders can be received (status: {$po->status}).");
+        if (! in_array($po->status, [PurchaseOrder::STATUS_CONFIRMED, PurchaseOrder::STATUS_PARTIAL], true)) {
+            throw new InvalidTransition("Only confirmed or partially received orders can be received (status: {$po->status}).");
         }
 
-        return DB::transaction(function () use ($po, $user) {
+        return DB::transaction(function () use ($po, $user, $receiveLines) {
+            $po->load('lines');
+            $receivedValue = 0.0;
+
             foreach ($po->lines as $line) {
-                // Blend this receipt's cost into the product's average BEFORE
-                // the quantity goes up, so the weighting uses the prior on-hand.
+                $remaining = $line->remaining();
+                if ($remaining <= 0) {
+                    continue;
+                }
+                // Take the requested amount (capped at what's outstanding), or
+                // the whole remainder when no per-line amounts were given.
+                $requested = $receiveLines !== null ? (float) ($receiveLines[$line->id] ?? 0) : $remaining;
+                $qty = min(max(0.0, $requested), $remaining);
+                if ($qty <= 0) {
+                    continue;
+                }
+
+                // Blend this receipt's cost into the average BEFORE stock rises.
                 if ($product = \App\Models\Product::find($line->product_id)) {
-                    \App\Services\InventoryValuationService::registerReceipt($product, (float) $line->quantity, (float) $line->unit_price);
+                    \App\Services\InventoryValuationService::registerReceipt($product, $qty, (float) $line->unit_price);
                 }
                 StockService::recordMovement(
                     productId: $line->product_id,
                     movementType: StockMovement::TYPE_IN,
-                    quantity: $line->quantity,
+                    quantity: $qty,
                     user: $user,
                     reason: "Goods receipt {$po->number}",
                     referenceType: 'purchase',
                     referenceId: $po->id,
                 );
+                $line->update(['received_qty' => round((float) $line->received_qty + $qty, 3)]);
+                $receivedValue += round($qty * (float) $line->unit_price, 2);
             }
+
+            if ($receivedValue <= 0) {
+                throw new InvalidTransition('Nothing was received — enter a quantity for at least one line.');
+            }
+
+            $po->load('lines');
+            $fullyReceived = $po->lines->every(fn ($l) => $l->remaining() <= 0.0005);
             $po->update([
-                'status' => PurchaseOrder::STATUS_RECEIVED,
-                'received_date' => now()->toDateString(),
+                'status' => $fullyReceived ? PurchaseOrder::STATUS_RECEIVED : PurchaseOrder::STATUS_PARTIAL,
+                'received_date' => $fullyReceived ? now()->toDateString() : $po->received_date,
             ]);
 
-            // Dr Inventory / Cr Accounts payable — same transaction as the
-            // stock movement, so books and stock can never diverge.
-            AccountingService::postPurchaseReceived($po->refresh(), $user);
+            // Post only the value that arrived now — Dr Inventory / Cr AP —
+            // in the same transaction as the stock movement.
+            AccountingService::postPurchaseReceived($po->refresh(), $user, round($receivedValue, 2));
 
             return $po;
         });

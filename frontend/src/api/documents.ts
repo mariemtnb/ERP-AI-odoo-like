@@ -36,3 +36,9 @@ export function documentsApi(kind: "purchases" | "sales") {
     },
   };
 }
+
+/** Receive specific quantities of a purchase order (partial receipt). */
+export async function receivePurchase(id: number, lines: { line: number; quantity: number }[]) {
+  const { data } = await api.post<BusinessDoc>(`/purchases/${id}/receive/`, { lines });
+  return data;
+}

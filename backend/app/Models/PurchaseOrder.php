@@ -14,6 +14,7 @@ class PurchaseOrder extends Model
     public const STATUS_DRAFT = 'draft';
     public const STATUS_PENDING_APPROVAL = 'pending_approval';
     public const STATUS_CONFIRMED = 'confirmed';
+    public const STATUS_PARTIAL = 'partial';   // some, but not all, goods received
     public const STATUS_RECEIVED = 'received';
     public const STATUS_CANCELLED = 'cancelled';
 
