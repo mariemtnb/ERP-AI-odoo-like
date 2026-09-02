@@ -197,6 +197,17 @@ Route::prefix('v1')->group(function () {
             Route::post('sales/{sale}/credit-notes', [\App\Http\Controllers\CreditNoteController::class, 'store']);
         });
 
+        // --- e-invoicing (TTN): everyone reads; managers/admins generate & submit ---
+        Route::middleware('feature:einvoicing')->group(function () {
+            Route::get('sales/{sale}/e-invoice', [\App\Http\Controllers\EInvoiceController::class, 'showForSale']);
+            Route::get('e-invoices/{eInvoice}', [\App\Http\Controllers\EInvoiceController::class, 'show']);
+            Route::middleware('role:admin,manager')->group(function () {
+                Route::post('sales/{sale}/e-invoice', [\App\Http\Controllers\EInvoiceController::class, 'generate']);
+                Route::post('e-invoices/{eInvoice}/submit', [\App\Http\Controllers\EInvoiceController::class, 'submit'])
+                    ->middleware('throttle:30,1');
+            });
+        });
+
         // --- lot / batch & expiry tracking: everyone reads; managers/admins move ---
         Route::get('lots', [\App\Http\Controllers\LotController::class, 'index']);
         Route::get('lots/alerts', [\App\Http\Controllers\LotController::class, 'alerts']);

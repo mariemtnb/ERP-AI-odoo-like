@@ -51,4 +51,16 @@ return [
         ],
     ],
 
+    // Electronic-invoicing provider. 'mock' is a built-in sandbox that submits
+    // to nothing; set 'ttn' with the credentials below to file to TTN.
+    'einvoice' => [
+        'provider' => env('EINVOICE_PROVIDER', 'mock'),
+        'ttn' => [
+            'base_url' => env('TTN_BASE_URL', 'https://www.tunceps.com.tn/api'),
+            'username' => env('TTN_USERNAME'),
+            'password' => env('TTN_PASSWORD'),
+            'api_key' => env('TTN_API_KEY'),
+        ],
+    ],
+
 ];

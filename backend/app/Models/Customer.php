@@ -10,7 +10,7 @@ class Customer extends Model
 {
     use Auditable;
 
-    protected $fillable = ['name', 'email', 'phone', 'address', 'notes', 'is_active', 'pricelist_id'];
+    protected $fillable = ['name', 'email', 'phone', 'address', 'tax_id', 'notes', 'is_active', 'pricelist_id'];
 
     protected $attributes = ['email' => '', 'phone' => '', 'address' => '', 'notes' => ''];
 
@@ -32,6 +32,7 @@ class Customer extends Model
             'email' => $this->email,
             'phone' => $this->phone,
             'address' => $this->address,
+            'tax_id' => $this->tax_id,
             'notes' => $this->notes,
             'is_active' => $this->is_active,
             'pricelist_id' => $this->pricelist_id,

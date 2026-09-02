@@ -71,7 +71,11 @@ keeps Tunisian rates and rules in configuration rather than code.
 
 ### Status
 
-- [ ] 9. Tunisian e-invoicing (TTN)
+- [x] 9. Tunisian e-invoicing (TTN) — **done.** An invoiced sale generates a
+  TEIF document (per-line VAT, both matricules, multi-rate tax breakdown) and is
+  submitted to TTN through a pluggable provider — a built-in sandbox by default,
+  the real TTN adapter behind the same interface — with an accepted invoice
+  becoming final. Behind the `einvoicing` flag; managers/admins generate & submit.
 - [ ] 10. Foreign-currency transactions + FX gain/loss
 - [ ] 11. Budgets & budget-vs-actual
 - [ ] 12. Analytic distributions (cost centres)
