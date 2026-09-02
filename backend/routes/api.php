@@ -448,6 +448,9 @@ Route::prefix('v1')->group(function () {
         Route::get('payments/summary', [PaymentController::class, 'summary']);
         Route::get('payments/{payment}', [PaymentController::class, 'show']);
         Route::post('payments', [PaymentController::class, 'store'])->middleware('role:admin,manager');
+        // Foreign-currency settlement with realized FX gain/loss.
+        Route::post('payments/settle-foreign', [PaymentController::class, 'settleForeign'])
+            ->middleware(['feature:foreign_currency', 'role:admin,manager']);
 
         // --- treasury dashboard ---
         Route::get('dashboard/treasury', [TreasuryController::class, 'dashboard']);

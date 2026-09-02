@@ -91,6 +91,38 @@ class PaymentController extends Controller
         );
     }
 
+    /** Settle a foreign-currency receivable/payable, posting realized FX gain/loss. */
+    public function settleForeign(Request $request)
+    {
+        $data = $request->validate([
+            'direction' => ['required', Rule::in(Payment::DIRECTIONS)],
+            'method' => ['required', Rule::in([Payment::METHOD_CASH, Payment::METHOD_TRANSFER, Payment::METHOD_CARD])],
+            'currency_code' => ['required', 'string', 'size:3'],
+            'foreign_amount' => ['required', 'numeric', 'gt:0'],
+            'book_rate' => ['required', 'numeric', 'gt:0'],
+            'settlement_rate' => ['required', 'numeric', 'gt:0'],
+            'payment_date' => ['sometimes', 'nullable', 'date'],
+            'customer_id' => ['sometimes', 'nullable', 'integer', 'exists:customers,id'],
+            'supplier_id' => ['sometimes', 'nullable', 'integer', 'exists:suppliers,id'],
+            'bank_account_id' => ['sometimes', 'nullable', 'integer', 'exists:bank_accounts,id'],
+            'reference_type' => ['sometimes', 'nullable', Rule::in(['sale', 'purchase', 'manual', ''])],
+            'reference_id' => ['sometimes', 'nullable', 'integer'],
+            'reference' => ['sometimes', 'nullable', 'string', 'max:80'],
+            'notes' => ['sometimes', 'nullable', 'string'],
+        ]);
+
+        try {
+            $payment = PaymentService::recordForeignSettlement($data, $request->user());
+        } catch (InvalidTransition|UnbalancedEntry $e) {
+            return response()->json(['detail' => $e->getMessage()], 422);
+        }
+
+        return response()->json(
+            $payment->load(['customer', 'supplier', 'bankAccount', 'journalEntry'])->toApi(),
+            201
+        );
+    }
+
     /** Cash vs bank collections over a period. */
     public function summary(Request $request)
     {

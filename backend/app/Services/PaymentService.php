@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Exceptions\InvalidTransition;
 use App\Models\BankAccount;
 use App\Models\CompanyProfile;
+use App\Models\Currency;
 use App\Models\Installment;
 use App\Models\Journal;
 use App\Models\JournalEntry;
@@ -281,6 +282,114 @@ class PaymentService
             'reference' => $reference,
             'notes' => "Installment {$plan->number} #{$installment->sequence}",
         ], $user);
+    }
+
+    /**
+     * Settle a foreign-currency receivable or payable and post the realized FX
+     * gain/loss.
+     *
+     * The debt was booked to receivable/payable at `book_rate`; the treasury
+     * moves the base value at `settlement_rate`. The gap is a realized gain or
+     * loss (FxService). Additive to record(): base-currency money never comes
+     * through here.
+     *
+     * @param  array<string,mixed>  $data direction, method, currency_code,
+     *         foreign_amount, book_rate, settlement_rate, customer_id|supplier_id,
+     *         bank_account_id, payment_date, reference, notes, reference_type, reference_id
+     */
+    public static function recordForeignSettlement(array $data, User $user): Payment
+    {
+        $decimals = (int) CompanyProfile::current()->currency_decimals;
+        $direction = $data['direction'];
+        $method = $data['method'];
+        $code = strtoupper((string) ($data['currency_code'] ?? ''));
+        $foreign = round((float) ($data['foreign_amount'] ?? 0), 2);
+        $bookRate = (float) ($data['book_rate'] ?? 0);
+        $settleRate = (float) ($data['settlement_rate'] ?? 0);
+
+        if (! in_array($method, [Payment::METHOD_CASH, Payment::METHOD_TRANSFER, Payment::METHOD_CARD], true)) {
+            throw new InvalidTransition('Foreign settlements use cash, bank transfer or card.');
+        }
+        $currency = Currency::find($code);
+        if (! $currency) {
+            throw new InvalidTransition("Unknown currency: {$code}.");
+        }
+        if ($currency->is_base) {
+            throw new InvalidTransition('Use an ordinary payment for the base currency.');
+        }
+        if ($foreign <= 0) {
+            throw new InvalidTransition('The foreign amount must be greater than zero.');
+        }
+        if ($bookRate <= 0 || $settleRate <= 0) {
+            throw new InvalidTransition('Both the book rate and the settlement rate must be positive.');
+        }
+
+        $fx = FxService::realized($direction, $foreign, $bookRate, $settleRate, $decimals);
+        $inbound = $direction === Payment::DIRECTION_IN;
+        $treasury = self::treasuryCode($method, $data['bank_account_id'] ?? null);
+        $counter = AccountMap::code($inbound ? 'receivable' : 'payable');
+
+        return DB::transaction(function () use ($data, $user, $decimals, $direction, $method, $code, $foreign, $bookRate, $settleRate, $fx, $inbound, $treasury, $counter) {
+            $baseSettled = round($fx['base_settled'], $decimals);
+            $baseBooked = round($fx['base_booked'], $decimals);
+            $gain = round($fx['gain'], $decimals);
+            $memo = ($data['notes'] ?? '') !== '' ? $data['notes'] : ($inbound ? 'Foreign receipt' : 'Foreign payment');
+
+            $lines = $inbound
+                ? [
+                    ['account' => $treasury, 'debit' => $baseSettled, 'label' => $memo],
+                    ['account' => $counter, 'credit' => $baseBooked, 'label' => $memo],
+                ]
+                : [
+                    ['account' => $counter, 'debit' => $baseBooked, 'label' => $memo],
+                    ['account' => $treasury, 'credit' => $baseSettled, 'label' => $memo],
+                ];
+
+            // A gain leaves debits short of credits (or the reverse); the FX line
+            // squares the entry. The direction-aware sign is handled in FxService,
+            // so here a positive gain is always an extra credit.
+            if ($gain > 0) {
+                $lines[] = ['account' => AccountMap::code('fx_gain'), 'credit' => $gain, 'label' => 'Realized FX gain'];
+            } elseif ($gain < 0) {
+                $lines[] = ['account' => AccountMap::code('fx_loss'), 'debit' => -$gain, 'label' => 'Realized FX loss'];
+            }
+
+            $entry = AccountingService::post(
+                lines: $lines,
+                user: $user,
+                memo: $memo,
+                referenceType: $data['reference_type'] ?? 'manual',
+                referenceId: $data['reference_id'] ?? null,
+                date: $data['payment_date'] ?? null,
+                journalCode: self::journalFor($method),
+            );
+
+            $payment = Payment::create([
+                'number' => DocumentService::nextNumber('PAY', Payment::class),
+                'direction' => $direction,
+                'method' => $method,
+                'amount' => $baseSettled,
+                'payment_date' => $data['payment_date'] ?? now()->toDateString(),
+                'currency_code' => $code,
+                'foreign_amount' => $foreign,
+                'book_rate' => $bookRate,
+                'settlement_rate' => $settleRate,
+                'fx_gain_loss' => $gain,
+                'customer_id' => $data['customer_id'] ?? null,
+                'supplier_id' => $data['supplier_id'] ?? null,
+                'bank_account_id' => $data['bank_account_id'] ?? null,
+                'reference_type' => $data['reference_type'] ?? '',
+                'reference_id' => $data['reference_id'] ?? null,
+                'journal_entry_id' => $entry->id,
+                'reference' => $data['reference'] ?? '',
+                'notes' => $data['notes'] ?? '',
+                'created_by' => $user->id,
+            ]);
+
+            self::touchBankBalance($payment, $decimals);
+
+            return $payment->refresh();
+        });
     }
 
     /** Cash collected and bank collections over a period — dashboard figures. */

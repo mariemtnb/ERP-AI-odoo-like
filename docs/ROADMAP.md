@@ -76,7 +76,14 @@ keeps Tunisian rates and rules in configuration rather than code.
   submitted to TTN through a pluggable provider — a built-in sandbox by default,
   the real TTN adapter behind the same interface — with an accepted invoice
   becoming final. Behind the `einvoicing` flag; managers/admins generate & submit.
-- [ ] 10. Foreign-currency transactions + FX gain/loss
+- [x] 10. Foreign-currency transactions + FX gain/loss — **first slice done.**
+  A payment can now settle a foreign-currency receivable/payable: the treasury
+  moves the base value at the settlement-date rate while receivable/payable is
+  relieved at the rate the debt was booked at, and the gap posts to a realized
+  FX gain (7600) or loss (6600) account. Behind the `foreign_currency` flag;
+  managers/admins settle. *Still to come:* carrying the currency on the invoice
+  itself (so the book rate is read, not passed in) and period-end **unrealized**
+  revaluation of open AR/AP.
 - [ ] 11. Budgets & budget-vs-actual
 - [ ] 12. Analytic distributions (cost centres)
 - [ ] 13. AR dunning / automated follow-ups

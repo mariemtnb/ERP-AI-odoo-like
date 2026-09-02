@@ -35,6 +35,7 @@ class Payment extends Model
 
     protected $fillable = [
         'number', 'direction', 'method', 'amount', 'payment_date',
+        'currency_code', 'foreign_amount', 'book_rate', 'settlement_rate', 'fx_gain_loss',
         'customer_id', 'supplier_id', 'bank_account_id', 'instrument_id',
         'installment_id', 'reference_type', 'reference_id', 'is_advance',
         'journal_entry_id', 'reference', 'notes', 'created_by',
@@ -49,6 +50,10 @@ class Payment extends Model
         return [
             'payment_date' => 'date:Y-m-d',
             'is_advance' => 'boolean',
+            'foreign_amount' => 'decimal:2',
+            'book_rate' => 'decimal:8',
+            'settlement_rate' => 'decimal:8',
+            'fx_gain_loss' => 'decimal:3',
         ];
     }
 
@@ -102,6 +107,11 @@ class Payment extends Model
             'installment_id' => $this->installment_id,
             'reference_type' => $this->reference_type,
             'reference_id' => $this->reference_id,
+            'currency_code' => $this->currency_code,
+            'foreign_amount' => $this->foreign_amount === null ? null : (string) $this->foreign_amount,
+            'book_rate' => $this->book_rate === null ? null : (string) $this->book_rate,
+            'settlement_rate' => $this->settlement_rate === null ? null : (string) $this->settlement_rate,
+            'fx_gain_loss' => $this->fx_gain_loss === null ? null : (string) $this->fx_gain_loss,
             'is_advance' => $this->is_advance,
             'journal_entry_id' => $this->journal_entry_id,
             'journal_entry_number' => $this->journalEntry?->number,
