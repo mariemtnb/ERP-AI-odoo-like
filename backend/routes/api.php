@@ -515,6 +515,16 @@ Route::prefix('v1')->group(function () {
             Route::get('reports/vat', [ReportingController::class, 'vatReturn']);
         });
 
+        // --- budgets & budget-vs-actual: managers/admins, behind the flag ---
+        Route::middleware(['feature:budgets', 'role:admin,manager'])->group(function () {
+            Route::get('budgets', [\App\Http\Controllers\BudgetController::class, 'index']);
+            Route::post('budgets', [\App\Http\Controllers\BudgetController::class, 'store']);
+            Route::get('budgets/{budget}', [\App\Http\Controllers\BudgetController::class, 'show']);
+            Route::get('budgets/{budget}/vs-actual', [\App\Http\Controllers\BudgetController::class, 'vsActual']);
+            Route::post('budgets/{budget}/lines', [\App\Http\Controllers\BudgetController::class, 'upsertLine']);
+            Route::delete('budgets/{budget}', [\App\Http\Controllers\BudgetController::class, 'destroy']);
+        });
+
         // --- OCR: invoice image → structured data (managers/admins) ---
         Route::middleware('role:admin,manager')->group(function () {
             Route::post('ocr/invoice', [\App\Http\Controllers\OcrController::class, 'invoice']);

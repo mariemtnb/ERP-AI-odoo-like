@@ -84,7 +84,14 @@ keeps Tunisian rates and rules in configuration rather than code.
   managers/admins settle. *Still to come:* carrying the currency on the invoice
   itself (so the book rate is read, not passed in) and period-end **unrealized**
   revaluation of open AR/AP.
-- [ ] 11. Budgets & budget-vs-actual
+- [x] 11. Budgets & budget-vs-actual — **done.** A budget is a named period
+  with a planned amount per GL account; budget-vs-actual reads the actuals
+  straight from the ledger (the account's posted movement over the period via
+  the trial balance), reports per-line variance and whether it is favourable
+  (income above target, expense under cap), and never drifts from the books.
+  Behind the `budgets` flag; managers/admins. *Still to come:* per-analytic
+  (cost-centre) budgets once item 12 lands, and optional soft/hard commitment
+  checks on POs and expense claims.
 - [ ] 12. Analytic distributions (cost centres)
 - [ ] 13. AR dunning / automated follow-ups
 - [ ] 14. Purchase requisitions + approval workflow
