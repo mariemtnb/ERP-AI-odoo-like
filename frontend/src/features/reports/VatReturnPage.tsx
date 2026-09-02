@@ -60,9 +60,15 @@ export default function VatReturnPage() {
               </tbody>
             </table>
           </div>
+          {(v.output_by_rate.length > 1 || v.input_by_rate.length > 1) && (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <RateTable title="Output VAT by rate" rows={v.output_by_rate} />
+              <RateTable title="Input VAT by rate" rows={v.input_by_rate} />
+            </div>
+          )}
           <p className="text-xs text-text-3">
-            Figures assume document totals include VAT at the company rate ({Number(v.rate)}%). Confirmed sales and
-            received purchases dated {v.date_from} to {v.date_to} are included.
+            VAT is summed line by line at each line's own rate, so mixed rates (0 / 7 / 13 / 19%) are exact.
+            Confirmed sales and received purchases dated {v.date_from} to {v.date_to} are included.
           </p>
         </div>
       )}
@@ -79,6 +85,27 @@ function Stat({ label, value, tone, big }: { label: string; value: string; tone:
     <div className="rounded-xl border border-border bg-surface-card p-4">
       <div className="text-xs uppercase tracking-wide text-text-3">{label}</div>
       <div className="mt-1 font-semibold" style={{ color: TONES[tone], fontSize: big ? 26 : 20 }}>{value}</div>
+    </div>
+  );
+}
+
+function RateTable({ title, rows }: { title: string; rows: { rate: number; base: number; vat: number }[] }) {
+  if (rows.length === 0) return null;
+  return (
+    <div className="rounded-xl border border-border bg-surface-card p-4">
+      <div className="mb-2 text-xs uppercase tracking-wide text-text-3">{title}</div>
+      <table className="w-full text-sm">
+        <thead><tr className="text-text-3"><th className="text-left font-normal">Rate</th><th className="text-right font-normal">Base</th><th className="text-right font-normal">VAT</th></tr></thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.rate}>
+              <td className="py-1">{r.rate}%</td>
+              <td className="py-1 text-right">{formatTnd(r.base)}</td>
+              <td className="py-1 text-right">{formatTnd(r.vat)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

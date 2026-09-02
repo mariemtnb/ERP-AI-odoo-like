@@ -9,13 +9,13 @@ class SaleLine extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['sale_id', 'product_id', 'quantity', 'unit_price', 'discount_pct'];
+    protected $fillable = ['sale_id', 'product_id', 'quantity', 'unit_price', 'discount_pct', 'tax_rate'];
 
-    protected $attributes = ['discount_pct' => 0];
+    protected $attributes = ['discount_pct' => 0, 'tax_rate' => 0];
 
     protected function casts(): array
     {
-        return ['quantity' => 'decimal:3', 'unit_price' => 'decimal:2', 'discount_pct' => 'decimal:2'];
+        return ['quantity' => 'decimal:3', 'unit_price' => 'decimal:2', 'discount_pct' => 'decimal:2', 'tax_rate' => 'decimal:2'];
     }
 
     public function product(): BelongsTo
@@ -23,10 +23,24 @@ class SaleLine extends Model
         return $this->belongsTo(Product::class);
     }
 
-    /** Line total after any per-line discount. */
+    /** Line total (VAT-inclusive) after any per-line discount. */
     public function subtotal(): float
     {
         return round($this->quantity * $this->unit_price * (1 - (float) $this->discount_pct / 100), 2);
+    }
+
+    /** The VAT contained in this line, at its own rate (prices are inclusive). */
+    public function vatAmount(): float
+    {
+        $rate = (float) $this->tax_rate;
+
+        return $rate > 0 ? round($this->subtotal() * $rate / (100 + $rate), 2) : 0.0;
+    }
+
+    /** Line total excluding VAT. */
+    public function netAmount(): float
+    {
+        return round($this->subtotal() - $this->vatAmount(), 2);
     }
 
     public function toApi(): array
@@ -39,7 +53,9 @@ class SaleLine extends Model
             'quantity' => $this->quantity,
             'unit_price' => $this->unit_price,
             'discount_pct' => $this->discount_pct,
+            'tax_rate' => $this->tax_rate,
             'subtotal' => number_format($this->subtotal(), 2, '.', ''),
+            'vat' => number_format($this->vatAmount(), 2, '.', ''),
         ];
     }
 }

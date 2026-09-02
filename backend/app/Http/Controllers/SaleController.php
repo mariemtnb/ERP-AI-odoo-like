@@ -48,6 +48,7 @@ class SaleController extends Controller
             // Optional: when omitted, the applicable pricelist decides the price.
             'lines.*.unit_price' => ['sometimes', 'nullable', 'numeric', 'min:0'],
             'lines.*.discount_pct' => ['sometimes', 'numeric', 'min:0', 'max:100'],
+            'lines.*.tax_rate' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:100'],
         ]);
     }
 
@@ -63,6 +64,7 @@ class SaleController extends Controller
                 'created_by' => $request->user()->id,
             ]);
             $customer = \App\Models\Customer::find($data['customer']);
+            $defaultRate = (float) (\App\Models\CompanyProfile::current()->default_vat_rate ?? 0);
             foreach ($data['lines'] as $line) {
                 $product = \App\Models\Product::find($line['product']);
                 // Use the given price, or let the pricelist resolve it.
@@ -75,6 +77,7 @@ class SaleController extends Controller
                     'quantity' => $line['quantity'],
                     'unit_price' => $price,
                     'discount_pct' => $line['discount_pct'] ?? 0,
+                    'tax_rate' => $line['tax_rate'] ?? $defaultRate,
                 ]);
             }
             $sale->load('lines')->recomputeTotal();

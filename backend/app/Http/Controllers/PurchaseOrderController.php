@@ -44,7 +44,14 @@ class PurchaseOrderController extends Controller
             'lines.*.product' => ['required', 'integer', 'exists:products,id'],
             'lines.*.quantity' => ['required', 'numeric', 'gt:0'],
             'lines.*.unit_price' => ['required', 'numeric', 'min:0'],
+            'lines.*.tax_rate' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:100'],
         ]);
+    }
+
+    /** Default VAT rate to apply when a line doesn't specify one. */
+    private function defaultRate(): float
+    {
+        return (float) (\App\Models\CompanyProfile::current()->default_vat_rate ?? 0);
     }
 
     public function store(Request $request)
@@ -64,6 +71,7 @@ class PurchaseOrderController extends Controller
                     'product_id' => $line['product'],
                     'quantity' => $line['quantity'],
                     'unit_price' => $line['unit_price'],
+                    'tax_rate' => $line['tax_rate'] ?? $this->defaultRate(),
                 ]);
             }
             $po->load('lines')->recomputeTotal();
@@ -98,6 +106,7 @@ class PurchaseOrderController extends Controller
                     'product_id' => $line['product'],
                     'quantity' => $line['quantity'],
                     'unit_price' => $line['unit_price'],
+                    'tax_rate' => $line['tax_rate'] ?? $this->defaultRate(),
                 ]);
             }
             $purchase->load('lines')->recomputeTotal();

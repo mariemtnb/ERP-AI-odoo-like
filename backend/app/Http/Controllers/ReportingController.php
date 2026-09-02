@@ -152,38 +152,69 @@ class ReportingController extends Controller
     public function vatReturn(Request $request)
     {
         [$from, $to] = self::range($request);
-        $rate = (float) (CompanyProfile::current()->default_vat_rate ?? 19);
-        $r = $rate / 100;
 
-        $salesGross = (float) Sale::where('status', Sale::STATUS_CONFIRMED)
-            ->whereBetween('sale_date', [$from, $to])->sum('total_amount');
+        // Output VAT: sum the VAT within every line of confirmed sales in the
+        // period, each at its own rate — so a mix of 0/7/13/19 % is exact.
+        $sales = Sale::with('lines')->where('status', Sale::STATUS_CONFIRMED)
+            ->whereBetween('sale_date', [$from, $to])->get();
+        [$salesGross, $outputVat, $outputByRate] = self::sumVat($sales);
 
-        // A purchase counts once the goods are received; use the receipt date
-        // when we have it, otherwise the order date.
-        $purchasesGross = (float) PurchaseOrder::where('status', PurchaseOrder::STATUS_RECEIVED)
-            ->whereBetween(DB::raw('COALESCE(received_date, order_date)'), [$from, $to])
-            ->sum('total_amount');
+        // Input VAT: same, over purchases already received (receipt date, else order date).
+        $purchases = PurchaseOrder::with('lines')->where('status', PurchaseOrder::STATUS_RECEIVED)
+            ->whereBetween(DB::raw('COALESCE(received_date, order_date)'), [$from, $to])->get();
+        [$purchasesGross, $inputVat, $inputByRate] = self::sumVat($purchases);
 
-        $salesNet = $r > 0 ? round($salesGross / (1 + $r), 2) : $salesGross;
-        $purchasesNet = $r > 0 ? round($purchasesGross / (1 + $r), 2) : $purchasesGross;
-        $outputVat = round($salesGross - $salesNet, 2);
-        $inputVat = round($purchasesGross - $purchasesNet, 2);
         $net = round($outputVat - $inputVat, 2);
 
         return response()->json([
             'title' => 'VAT return',
             'date_from' => $from,
             'date_to' => $to,
-            'rate' => $rate,
+            'rate' => (float) (CompanyProfile::current()->default_vat_rate ?? 19), // default, for reference
             'sales_gross' => round($salesGross, 2),
-            'sales_net' => $salesNet,
-            'output_vat' => $outputVat,
+            'sales_net' => round($salesGross - $outputVat, 2),
+            'output_vat' => round($outputVat, 2),
+            'output_by_rate' => $outputByRate,
             'purchases_gross' => round($purchasesGross, 2),
-            'purchases_net' => $purchasesNet,
-            'input_vat' => $inputVat,
+            'purchases_net' => round($purchasesGross - $inputVat, 2),
+            'input_vat' => round($inputVat, 2),
+            'input_by_rate' => $inputByRate,
             'net_vat_due' => max(0.0, $net),
             'vat_credit' => max(0.0, -$net),
         ]);
+    }
+
+    /**
+     * Total gross, total VAT, and a per-rate breakdown over a set of documents
+     * whose lines expose subtotal() and vatAmount().
+     *
+     * @return array{0: float, 1: float, 2: array<int,array{rate: float, base: float, vat: float}>}
+     */
+    private static function sumVat($documents): array
+    {
+        $gross = 0.0;
+        $vat = 0.0;
+        $byRate = [];   // rate => [base, vat]
+        foreach ($documents as $doc) {
+            foreach ($doc->lines as $line) {
+                $sub = $line->subtotal();
+                $v = $line->vatAmount();
+                $rate = (float) $line->tax_rate;
+                $gross += $sub;
+                $vat += $v;
+                $byRate[(string) $rate] ??= ['base' => 0.0, 'vat' => 0.0];
+                $byRate[(string) $rate]['base'] += $sub - $v;
+                $byRate[(string) $rate]['vat'] += $v;
+            }
+        }
+
+        $rows = [];
+        foreach ($byRate as $rate => $sums) {
+            $rows[] = ['rate' => (float) $rate, 'base' => round($sums['base'], 2), 'vat' => round($sums['vat'], 2)];
+        }
+        usort($rows, fn ($a, $b) => $a['rate'] <=> $b['rate']);
+
+        return [round($gross, 2), round($vat, 2), $rows];
     }
 
     /**

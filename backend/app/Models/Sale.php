@@ -84,6 +84,8 @@ class Sale extends Model
             'status' => $this->status,
             'sale_date' => $this->sale_date?->format('Y-m-d'),
             'total_amount' => $this->total_amount,
+            'vat_total' => number_format($this->lines->sum(fn ($l) => $l->vatAmount()), 2, '.', ''),
+            'net_total' => number_format($this->lines->sum(fn ($l) => $l->netAmount()), 2, '.', ''),
             'portal_token' => $this->portal_token,
             'emailed_at' => $this->emailed_at?->toISOString(),
             'created_by_email' => $this->creator?->email,

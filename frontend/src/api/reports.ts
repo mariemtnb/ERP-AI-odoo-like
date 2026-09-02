@@ -98,6 +98,8 @@ export async function emailSale(saleId: number) {
   return data;
 }
 
+export interface VatRateRow { rate: number; base: number; vat: number; }
+
 export interface VatReturn {
   date_from: string;
   date_to: string;
@@ -105,9 +107,11 @@ export interface VatReturn {
   sales_gross: number;
   sales_net: number;
   output_vat: number;
+  output_by_rate: VatRateRow[];
   purchases_gross: number;
   purchases_net: number;
   input_vat: number;
+  input_by_rate: VatRateRow[];
   net_vat_due: number;
   vat_credit: number;
 }
