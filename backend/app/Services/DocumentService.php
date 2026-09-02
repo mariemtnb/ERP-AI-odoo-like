@@ -111,6 +111,11 @@ class DocumentService
 
         return DB::transaction(function () use ($po, $user) {
             foreach ($po->lines as $line) {
+                // Blend this receipt's cost into the product's average BEFORE
+                // the quantity goes up, so the weighting uses the prior on-hand.
+                if ($product = \App\Models\Product::find($line->product_id)) {
+                    \App\Services\InventoryValuationService::registerReceipt($product, (float) $line->quantity, (float) $line->unit_price);
+                }
                 StockService::recordMovement(
                     productId: $line->product_id,
                     movementType: StockMovement::TYPE_IN,

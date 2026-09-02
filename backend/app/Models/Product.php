@@ -12,7 +12,7 @@ class Product extends Model
     use Auditable;
 
     protected $fillable = [
-        'sku', 'name', 'category_id', 'description', 'cost_price',
+        'sku', 'name', 'category_id', 'description', 'cost_price', 'avg_cost',
         'sale_price', 'unit', 'min_stock_level', 'is_active',
     ];
 
@@ -29,6 +29,7 @@ class Product extends Model
         return [
             'is_active' => 'boolean',
             'cost_price' => 'decimal:2',
+            'avg_cost' => 'decimal:4',
             'sale_price' => 'decimal:2',
             'quantity_in_stock' => 'decimal:3',
             'min_stock_level' => 'decimal:3',

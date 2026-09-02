@@ -111,7 +111,10 @@ class AccountingService
 
         $cogs = 0.0;
         foreach ($sale->lines as $line) {
-            $cogs += (float) $line->quantity * (float) ($line->product->cost_price ?? 0);
+            // Value the goods sold at the moving-average cost, not a frozen
+            // standard price, so Inventory relieves what the stock really cost.
+            $cogs += (float) $line->quantity * ($line->product
+                ? InventoryValuationService::unitCost($line->product) : 0.0);
         }
         $cogs = round($cogs, 2);
 
@@ -132,6 +135,44 @@ class AccountingService
             referenceId: $sale->id,
             date: $sale->sale_date?->toDateString(),
             journalCode: Journal::SALES,
+        );
+    }
+
+    /**
+     * A point-of-sale ticket — cash in, revenue recognised, inventory relieved:
+     *   Dr Cash / Cr Sales revenue        (ticket total, paid at the till)
+     *   Dr Cost of goods sold / Cr Inventory   (moving-average cost)
+     */
+    public static function postPosSale(\App\Models\PosOrder $order, User $user): ?JournalEntry
+    {
+        $revenue = round((float) $order->total_amount, 2);
+        if ($revenue <= 0) {
+            return null;
+        }
+
+        $cogs = 0.0;
+        foreach ($order->lines as $line) {
+            $cogs += (float) $line->quantity * ($line->product
+                ? InventoryValuationService::unitCost($line->product) : 0.0);
+        }
+        $cogs = round($cogs, 2);
+
+        $lines = [
+            ['account' => Account::CASH, 'debit' => $revenue, 'label' => "POS {$order->number}"],
+            ['account' => Account::REVENUE, 'credit' => $revenue, 'label' => "POS {$order->number}"],
+        ];
+        if ($cogs > 0) {
+            $lines[] = ['account' => Account::COGS, 'debit' => $cogs, 'label' => "COGS {$order->number}"];
+            $lines[] = ['account' => Account::INVENTORY, 'credit' => $cogs, 'label' => "COGS {$order->number}"];
+        }
+
+        return self::post(
+            lines: $lines,
+            user: $user,
+            memo: "POS sale {$order->number}",
+            referenceType: 'pos',
+            referenceId: $order->id,
+            journalCode: Journal::CASH,
         );
     }
 

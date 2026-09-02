@@ -37,4 +37,6 @@ P2 = later. **Effort:** S ≈ 1 unit · M ≈ 2–3 · L ≈ 4+.
 - [x] 5. Vendor bill 3-way matching — **done**
 - [x] 6. VAT return / fiscal declarations — **done**
 - [x] 7. Chatter + activities — **done**
-- [ ] 8. Inventory valuation to the ledger — *in progress*
+- [x] 8. Inventory valuation to the ledger — **done**
+
+**All 8 roadmap items are complete.**

@@ -145,6 +145,11 @@ class PosService
                 ]);
             }
 
+            // Recognise the sale in the ledger: cash in, revenue, and cost of
+            // goods sold relieving inventory at the moving-average cost — the
+            // same books discipline the confirmed-sale flow uses.
+            AccountingService::postPosSale($order->load('lines.product'), $user);
+
             return $order->load(['lines.product', 'payments', 'customer', 'creator']);
         });
     }
