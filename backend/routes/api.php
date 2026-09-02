@@ -515,6 +515,14 @@ Route::prefix('v1')->group(function () {
             Route::get('reports/vat', [ReportingController::class, 'vatReturn']);
         });
 
+        // --- AR dunning: overdue-invoice follow-ups, managers/admins, behind the flag ---
+        Route::middleware(['feature:dunning', 'role:admin,manager'])->group(function () {
+            Route::get('dunning/levels', [\App\Http\Controllers\DunningController::class, 'levels']);
+            Route::get('dunning/candidates', [\App\Http\Controllers\DunningController::class, 'candidates']);
+            Route::post('dunning/run', [\App\Http\Controllers\DunningController::class, 'run'])
+                ->middleware('throttle:10,1');
+        });
+
         // --- analytic accounting (cost centres): managers/admins, behind the flag ---
         Route::middleware(['feature:analytic', 'role:admin,manager'])->group(function () {
             Route::get('reports/analytic', [\App\Http\Controllers\AnalyticController::class, 'pnl']);

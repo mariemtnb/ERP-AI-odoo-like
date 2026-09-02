@@ -100,6 +100,14 @@ keeps Tunisian rates and rules in configuration rather than code.
   untagged shown as "unallocated". Behind the `analytic` flag; managers/admins.
   *Still to come:* capturing the unit at source on sale/PO/expense entry, and
   per-analytic budgets (feeds item 11).
-- [ ] 13. AR dunning / automated follow-ups
+- [x] 13. AR dunning / automated follow-ups — **done.** A configurable ladder
+  of reminder levels (7 / 30 / 60 days overdue by default) drives escalating
+  follow-ups on unpaid invoices. A run finds overdue invoices (total less
+  payments, past due by the company's terms), and for each sends the customer a
+  reminder email, logs it to the sale's chatter, and records the send — picking
+  the highest level reached but not yet sent, so it escalates without ever
+  repeating a level. `GET dunning/candidates` previews; `POST dunning/run`
+  sends. Behind the `dunning` flag; managers/admins. *Still to come:* a
+  scheduled daily run (today it is triggered on demand).
 - [ ] 14. Purchase requisitions + approval workflow
 - [ ] 15. Landed costs on goods receipts
