@@ -57,7 +57,9 @@ strict Content-Security-Policy, and account lockout after repeated failed
 logins).
 
 The latest additions are drawn too: **pricelists & discounts**, a customer
-**portal** where a buyer views and **pays** a shared document online, **vendor
-bills with 3-way matching**, statutory **Tunisian payroll** (CNSS / IRPP / CSS),
-the **VAT return**, per-record **chatter** (notes and activities), and
+**portal** where a buyer views and **pays** a shared document online (sandbox,
+**Konnect** or **Flouci**, with provider verification before settlement),
+**vendor bills with 3-way matching**, **partial goods receipts**, statutory
+**Tunisian payroll** (CNSS / IRPP / CSS), the **VAT return** (line-level,
+multi-rate), per-record **chatter** (notes and activities), and
 **moving-average inventory valuation** posting to the ledger.

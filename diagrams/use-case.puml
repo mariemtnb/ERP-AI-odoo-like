@@ -42,7 +42,7 @@ rectangle "Intelligent ERP" {
 
   package "Manager" #F7F4FB {
     usecase "Manage catalog\nand stock" as UC5
-    usecase "Buy and receive\ngoods" as UC6
+    usecase "Buy and receive\ngoods (partial OK)" as UC6
     usecase "Record cheques\nand traites" as UC7
     usecase "Set up instalment\nplans" as UC8
     usecase "Reconcile the bank" as UC9

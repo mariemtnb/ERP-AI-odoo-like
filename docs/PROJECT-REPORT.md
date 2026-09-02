@@ -42,18 +42,20 @@ back end (rules + storage), automated tests, and its own screen in the app.
 **Catalog & stock** — Products, multi-warehouse inventory, **lots & expiry
 dates**, and **manufacturing** (bills of materials + work orders).
 
-**Purchasing** — Suppliers, purchase orders, **automatic reordering** rules,
-**RFQs** (ask several suppliers to quote, then award the best), and **vendor
-bills with 3-way matching** — a supplier's invoice is checked against the order
-and what was received, and anything that doesn't match is flagged before it can
-be paid.
+**Purchasing** — Suppliers, purchase orders (received in full or **in part**,
+instalment by instalment), **automatic reordering** rules, **RFQs** (ask several
+suppliers to quote, then award the best), and **vendor bills with 3-way
+matching** — a supplier's invoice is checked against the order and what was
+actually received, and anything that doesn't match is flagged before it can be
+paid.
 
 **Sales** — Customers, sales orders and invoices, **pricelists & discounts**
 (customer- and quantity-based pricing), **Point of Sale (POS)** for
 over-the-counter selling, **subscriptions** (recurring billing), **returns /
 credit notes**, **shipping**, **marketing campaigns**, and a light **CRM** for
 leads. Any quote or invoice can be **emailed to the customer** with a link to a
-public **portal** where they view it and **pay online**.
+public **portal** where they view it and **pay online** through a Tunisian
+gateway (Konnect or Flouci), or a built-in sandbox.
 
 **Services** — **Projects** (tasks + timesheets) and a **Helpdesk** (support
 tickets).
@@ -69,8 +71,9 @@ claims).
 **Treasury (Tunisia)** — Cheques and *traites/kembyelet*, **instalment plans**
 ("khlas bel taqsit"), **banking** and **bank reconciliation**.
 
-**Insights** — **Reports** (including a periodic **VAT return**), a **report
-builder**, and the **AI assistant**.
+**Insights** — **Reports** (including a periodic **VAT return** computed line by
+line, so mixed rates of 0 / 7 / 13 / 19 % are exact), a **report builder**, and
+the **AI assistant**.
 
 **Everywhere** — any record (a sale, a customer, a ticket…) carries **chatter**:
 comments and **follow-up activities** with due dates that roll up into each
@@ -202,7 +205,8 @@ The [`diagrams/`](../diagrams/README.md) folder has one-page visual maps:
 ## 8. Quality
 
 Every module ships with automated tests. The full back-end test suite currently
-passes at **356 tests / 1,015 checks, with zero failures**, covering the business
+passes at **362 tests / 1,031 checks, with zero failures**, covering the business
 rules, the role and module-access boundaries, statutory payroll, pricing,
-3-way matching, the VAT return, inventory valuation, account lockout, and the
-security headers. The front end type-checks cleanly.
+multi-rate VAT, 3-way matching, partial receipts, inventory valuation, gateway
+verification, account lockout, and the security headers. The front end
+type-checks cleanly.

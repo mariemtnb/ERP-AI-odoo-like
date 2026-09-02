@@ -37,6 +37,8 @@ package "Stock & documents" #F4FBF6 {
     Moves documents through their
     lifecycle and triggers stock
     and accounting together.
+    Receipts can be partial: a line
+    tracks how much has arrived.
   }
 
   class InventoryValuationService {
@@ -90,8 +92,9 @@ package "Sales, pricing & sharing" #F7F4FB {
     approve()
     --
     3-way match: bill vs order vs
-    receipt. Anything off is an
-    exception a manager clears.
+    what actually arrived (partial
+    receipts included). Anything off
+    is an exception a manager clears.
   }
 
   class OnlinePaymentService {
@@ -99,8 +102,10 @@ package "Sales, pricing & sharing" #F7F4FB {
     confirm()
     --
     Customer pays a shared sale via
-    a pluggable gateway (sandbox by
-    default); confirm posts to bank.
+    a pluggable gateway (sandbox,
+    Konnect or Flouci). Confirm
+    verifies with the provider
+    before it posts to the bank.
   }
 
   class TunisianPayrollTax {

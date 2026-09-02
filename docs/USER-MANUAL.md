@@ -176,7 +176,10 @@ see all of them — that depends on your role and which modules are switched on.
 
 - **Suppliers** — the businesses you buy from.
 - **Purchases** — purchase orders you send to suppliers. Confirm them, then
-  **receive** the goods, which adds them to stock and records what you owe.
+  **receive** the goods. You can receive the **whole order at once, or part of
+  it** — enter the quantity that arrived for each line; the order stays
+  **partial** until everything is in. Each receipt adds stock and records what
+  you owe.
 - **Reordering** — set a minimum level per product; the app suggests (or
   creates) purchase orders when stock runs low, so you never run out.
 - **RFQs** (Requests for Quotation) — ask several suppliers to quote a price,
@@ -254,7 +257,9 @@ see all of them — that depends on your role and which modules are switched on.
 - **Reports** — ready-made reports on sales, stock, money and more.
 - **VAT Return** — the periodic tax declaration for a month: the VAT you
   collected on sales, minus the VAT you paid on purchases, giving the amount to
-  pay (or a credit to carry forward). Pick a month and read off the figure.
+  pay (or a credit to carry forward). VAT is worked out **line by line at each
+  line's own rate**, so a mix of 0 / 7 / 13 / 19 % is exact, and the screen
+  shows a breakdown per rate. Pick a month and read off the figure.
 - **Report Builder** — build your own report by choosing what to measure and
   how to group it.
 - **AI Assistant** — the assistant described in [section 5](#5-the-ai-assistant).
@@ -312,20 +317,24 @@ To sign out, use the **exit icon** at the top-right.
 3. Click products to add them to the ticket, adjust quantities.
 4. Choose **Checkout**, take payment, and finish. Stock updates automatically.
 
-### Receive goods from a supplier
+### Receive goods from a supplier (in full or in part)
 
 1. Sidebar → **Purchases** → **New**; pick the **supplier** and items.
 2. **Confirm** the order (this sends it).
-3. When the goods arrive, open the order and click **Receive** — stock goes up
-   and the amount you owe is recorded.
+3. When goods arrive, open the order and click **Receive**. A box shows each
+   line with the quantity still outstanding — accept it to receive everything,
+   or **type a smaller number** to receive only part.
+4. Stock goes up and what you owe is recorded. If some is still to come, the
+   order shows **partial**; receive again when the rest arrives.
 
 ### Email an invoice and get paid online
 
 1. Open a **confirmed sale** and click **Email to customer**.
 2. The customer receives the invoice with a link. A **portal link** also appears
    for you to copy.
-3. On that page the customer clicks **Pay online**, completes the payment, and
-   the sale shows as **Paid**.
+3. On that page the customer clicks **Pay online** and is taken to the payment
+   provider (Konnect or Flouci in production, a demo page in the sandbox). Once
+   the provider confirms the payment, the sale shows as **Paid**.
 
 ### Set up a pricelist (special prices)
 
