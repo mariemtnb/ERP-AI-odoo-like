@@ -51,6 +51,17 @@ return [
         ],
     ],
 
+    // SMS channel. 'log' just writes the message to the log (no delivery); set
+    // 'twilio' with the credentials below to send real messages.
+    'sms' => [
+        'provider' => env('SMS_PROVIDER', 'log'),
+        'twilio' => [
+            'sid' => env('TWILIO_SID'),
+            'token' => env('TWILIO_TOKEN'),
+            'from' => env('TWILIO_FROM'),
+        ],
+    ],
+
     // Electronic-invoicing provider. 'mock' is a built-in sandbox that submits
     // to nothing; set 'ttn' with the credentials below to file to TTN.
     'einvoice' => [

@@ -168,7 +168,13 @@ give credibility to a lot that already exists.
   `scheduler` service in docker-compose runs `schedule:work` — so what used to be
   manual now runs on its own. *Still to come:* a queue worker for heavy async
   work (PDF/AI/imports).
-- [ ] 18. Real email / SMS delivery
+- [x] 18. Real email / SMS delivery — **done.** Email already rides Laravel's
+  configured mailer (set `MAIL_MAILER=smtp` + credentials to deliver); SMS now
+  has a pluggable channel mirroring the payment gateways — a log channel by
+  default, a Twilio adapter behind the same `SmsSender` interface. A
+  `MessagingService` façade unifies both, and admins can see the live channels
+  and fire a test email/SMS from `admin/messaging/*` to confirm the provider is
+  wired. `.env.example` documents the SMTP and Twilio keys.
 - [ ] 19. Withholding tax + CNSS declaration
 - [ ] 20. Units of measure + product variants
 - [ ] 21. Fiscal-year closing entries

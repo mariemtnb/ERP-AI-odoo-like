@@ -615,6 +615,10 @@ Route::prefix('v1')->group(function () {
         });
 
         Route::middleware('role:admin')->prefix('admin')->group(function () {
+            // messaging: see the configured channels and send a test message
+            Route::get('messaging/channels', [\App\Http\Controllers\MessagingController::class, 'channels']);
+            Route::post('messaging/test', [\App\Http\Controllers\MessagingController::class, 'test'])
+                ->middleware('throttle:10,1');
             // organisation
             Route::get('companies', [AdministrationController::class, 'companies']);
             Route::post('companies', [AdministrationController::class, 'storeCompany']);
