@@ -99,6 +99,23 @@ Route::prefix('v1')->group(function () {
             Route::post('stock/movements', [StockMovementController::class, 'store']);
         });
 
+        // --- units of measure: everyone reads/converts; managers/admins define ---
+        Route::middleware('feature:uom')->group(function () {
+            Route::get('units', [\App\Http\Controllers\UomController::class, 'index']);
+            Route::get('units/convert', [\App\Http\Controllers\UomController::class, 'convert']);
+            Route::post('units', [\App\Http\Controllers\UomController::class, 'store'])->middleware('role:admin,manager');
+        });
+
+        // --- product variants: everyone reads; managers/admins define & generate ---
+        Route::middleware('feature:variants')->group(function () {
+            Route::get('product-attributes', [\App\Http\Controllers\VariantController::class, 'attributes']);
+            Route::middleware('role:admin,manager')->group(function () {
+                Route::post('product-attributes', [\App\Http\Controllers\VariantController::class, 'storeAttribute']);
+                Route::post('product-attributes/{attribute}/values', [\App\Http\Controllers\VariantController::class, 'storeValue']);
+                Route::post('products/{product}/variants', [\App\Http\Controllers\VariantController::class, 'generate']);
+            });
+        });
+
         // --- customers: everyone reads & creates; managers/admins modify ---
         Route::get('customers', [CustomerController::class, 'index']);
         Route::post('customers', [CustomerController::class, 'store']);

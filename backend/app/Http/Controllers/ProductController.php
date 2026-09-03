@@ -44,6 +44,7 @@ class ProductController extends Controller
             'cost_price' => ['sometimes', 'numeric', 'min:0'],
             'sale_price' => ['sometimes', 'numeric', 'min:0'],
             'unit' => ['sometimes', 'string', 'max:20'],
+            'uom_id' => ['sometimes', 'nullable', 'integer', 'exists:units_of_measure,id'],
             'min_stock_level' => ['sometimes', 'numeric', 'min:0'],
             'is_active' => ['sometimes', 'boolean'],
         ];

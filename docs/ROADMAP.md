@@ -183,7 +183,17 @@ give credibility to a lot that already exists.
   declaration report aggregates the posted payslips of a period into per-employee
   and total employee/employer contributions. Withholding behind the
   `withholding` flag; CNSS under the payroll flag; managers/admins.
-- [ ] 20. Units of measure + product variants
+- [x] 20. Units of measure + product variants — **done (foundation).** Units of
+  measure live in categories (unit/weight/volume/length) with a factor to the
+  category's reference unit, so `UomService::convert` turns boxes into pieces or
+  kg into g and refuses cross-category conversions; products can carry a
+  `uom_id`. Product variants: attributes (Size, Colour) with values, and
+  `VariantService::generate` fans a template product out into the cartesian
+  product of chosen values — each variant an ordinary product with its attribute
+  values and a `template_id` — without duplicating existing ones. Behind the
+  `uom` and `variants` flags. *Still to come:* applying UoM conversion inside
+  purchase-receipt and sales lines (the primitive is ready; the transaction
+  wiring is the follow-up).
 - [ ] 21. Fiscal-year closing entries
 - [ ] 22. CRM opportunity pipeline
 - [ ] 23. Manufacturing routings / work centres (+ basic MRP)

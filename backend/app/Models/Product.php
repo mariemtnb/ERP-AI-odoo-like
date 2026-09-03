@@ -13,7 +13,7 @@ class Product extends Model
 
     protected $fillable = [
         'sku', 'name', 'category_id', 'description', 'cost_price', 'avg_cost',
-        'sale_price', 'unit', 'min_stock_level', 'is_active',
+        'sale_price', 'unit', 'uom_id', 'template_id', 'min_stock_level', 'is_active',
     ];
 
     protected $attributes = [
@@ -46,6 +46,27 @@ class Product extends Model
         return $this->hasMany(StockMovement::class);
     }
 
+    public function uom(): BelongsTo
+    {
+        return $this->belongsTo(UnitOfMeasure::class, 'uom_id');
+    }
+
+    /** The template this product is a variant of (null for a standalone product). */
+    public function template(): BelongsTo
+    {
+        return $this->belongsTo(Product::class, 'template_id');
+    }
+
+    public function variants(): HasMany
+    {
+        return $this->hasMany(Product::class, 'template_id');
+    }
+
+    public function attributeValues(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(ProductAttributeValue::class, 'product_variant_values', 'product_id', 'attribute_value_id');
+    }
+
     public function isLowStock(): bool
     {
         return (float) $this->quantity_in_stock <= (float) $this->min_stock_level;
@@ -64,6 +85,13 @@ class Product extends Model
             'cost_price' => $this->cost_price,
             'sale_price' => $this->sale_price,
             'unit' => $this->unit,
+            'uom_id' => $this->uom_id,
+            'uom_code' => $this->uom?->code,
+            'template_id' => $this->template_id,
+            'variant_of' => $this->template?->name,
+            'attributes' => $this->relationLoaded('attributeValues')
+                ? $this->attributeValues->map(fn ($v) => $v->label())->values()->all()
+                : [],
             'quantity_in_stock' => $this->quantity_in_stock,
             'min_stock_level' => $this->min_stock_level,
             'is_low_stock' => $this->isLowStock(),
