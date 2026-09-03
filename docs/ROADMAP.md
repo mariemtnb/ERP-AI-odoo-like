@@ -130,3 +130,40 @@ keeps Tunisian rates and rules in configuration rather than code.
 feature flag, respects the role model, and keeps Tunisian rates/rules in
 configuration. The *still-to-come* notes above are deliberate follow-up slices,
 not gaps in what was delivered.
+
+## Batch 3 — core-completeness (proposed)
+
+A gap analysis against a full Odoo-class ERP surfaced the items below: the
+functionality that most stands between what is here and "core-complete."
+Ordered by value per effort — the finance reports and the scheduler unlock or
+give credibility to a lot that already exists.
+
+| #  | Feature | Priority | Effort | Why it matters | Depends on |
+|----|---|---|---|---|---|
+| 16 | **Financial statements: balance sheet, aged AR/AP, general ledger** | P0 | M | Only a trial balance and income statement exist. The balance sheet is the single most-expected report; aged receivable/payable (30/60/90 buckets) is a daily finance need; the general ledger is the per-account drill-down (grand livre). All read the existing ledger — no new posting. | accounting |
+| 17 | **Scheduler / background worker** | P0 | M | Dunning, notifications, subscription billing and asset depreciation all exist but run **on demand only**. A cron/queue worker makes them automatic — turning already-built features on. | 13, subscriptions, assets |
+| 18 | **Real email (and SMS) delivery** | P0 | S | Mail is best-effort on the array/log driver — nothing is actually delivered. A configured provider makes dunning, the customer portal and e-invoice notifications real. | 3, 13 |
+| 19 | **Withholding tax (retenue à la source) + CNSS declaration** | P1 | M | `withholding_rate` is stored but never applied to supplier payments; Tunisian AP legally needs RS plus a withholding certificate, and payroll needs the CNSS social declaration export. | accounting, payroll |
+| 20 | **Units of measure + product variants** | P1 | L | Products are a flat SKU with a free-text unit — no buy-in-cartons/sell-in-units conversion and no size/colour variants. Both are Odoo-core inventory realism. | inventory |
+| 21 | **Fiscal-year closing entries** | P1 | M | Closing a year blocks backdating but posts no closing journal to roll the net result into retained earnings and carry balances forward. | 16, fiscal years |
+| 22 | **CRM opportunity pipeline** | P2 | M | Leads have flat statuses; no kanban stages with probability, expected revenue or win/loss reasons. | crm, chatter |
+| 23 | **Manufacturing routings / work centres (+ basic MRP)** | P2 | L | Only BOMs and work orders exist — no routings, work centres, capacity, scrap, or multi-level BOM explosion driving procurement. | manufacturing |
+
+### Status
+
+- [x] 16. Financial statements (balance sheet, aged AR/AP, general ledger) —
+  **done.** All read straight from the ledger and open documents, so they agree
+  with the books by construction. The balance sheet folds the period result into
+  equity and proves assets = liabilities + equity; the general ledger gives an
+  account's opening balance, movements and running balance; aged receivables
+  bucket open invoices (total less payments) and aged payables bucket unpaid
+  vendor bills by 30/60/90 days. Managers/admins, under `reports/*`.
+  *Note:* AP aging treats an unpaid bill's whole amount as outstanding until
+  vendor-bill part-payment tracking exists.
+- [ ] 17. Scheduler / background worker
+- [ ] 18. Real email / SMS delivery
+- [ ] 19. Withholding tax + CNSS declaration
+- [ ] 20. Units of measure + product variants
+- [ ] 21. Fiscal-year closing entries
+- [ ] 22. CRM opportunity pipeline
+- [ ] 23. Manufacturing routings / work centres (+ basic MRP)

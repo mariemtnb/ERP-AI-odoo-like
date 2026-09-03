@@ -533,6 +533,11 @@ Route::prefix('v1')->group(function () {
             Route::get('reports/purchases', [ReportingController::class, 'purchasesReport']);
             Route::get('reports/stock', [ReportingController::class, 'stockReport']);
             Route::get('reports/vat', [ReportingController::class, 'vatReturn']);
+            // Financial statements — read straight from the ledger / open documents.
+            Route::get('reports/balance-sheet', [ReportingController::class, 'balanceSheet']);
+            Route::get('reports/general-ledger', [ReportingController::class, 'generalLedger']);
+            Route::get('reports/aged-receivables', [ReportingController::class, 'agedReceivables']);
+            Route::get('reports/aged-payables', [ReportingController::class, 'agedPayables']);
         });
 
         // --- AR dunning: overdue-invoice follow-ups, managers/admins, behind the flag ---

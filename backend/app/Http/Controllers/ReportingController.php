@@ -149,6 +149,44 @@ class ReportingController extends Controller
      * the usual case for a Tunisian SME, where the price on the invoice already
      * includes the TVA. The rate is a setting, so it moves with the law.
      */
+    /** Balance sheet as at a date (default today). */
+    public function balanceSheet(Request $request)
+    {
+        $asOf = date_create($request->query('as_of', '')) ?: now();
+
+        return response()->json(\App\Services\FinancialReportService::balanceSheet($asOf->format('Y-m-d')));
+    }
+
+    /** General ledger for one account over an optional range. */
+    public function generalLedger(Request $request)
+    {
+        $data = $request->validate([
+            'account_code' => ['required', 'string', 'exists:accounts,code'],
+            'from' => ['sometimes', 'nullable', 'date'],
+            'to' => ['sometimes', 'nullable', 'date'],
+        ]);
+
+        return response()->json(\App\Services\FinancialReportService::generalLedger(
+            $data['account_code'], $data['from'] ?? null, $data['to'] ?? null
+        ));
+    }
+
+    /** Aged receivables per customer as at a date. */
+    public function agedReceivables(Request $request)
+    {
+        $asOf = date_create($request->query('as_of', '')) ?: now();
+
+        return response()->json(\App\Services\FinancialReportService::agedReceivables($asOf->format('Y-m-d')));
+    }
+
+    /** Aged payables per supplier as at a date. */
+    public function agedPayables(Request $request)
+    {
+        $asOf = date_create($request->query('as_of', '')) ?: now();
+
+        return response()->json(\App\Services\FinancialReportService::agedPayables($asOf->format('Y-m-d')));
+    }
+
     public function vatReturn(Request $request)
     {
         [$from, $to] = self::range($request);
