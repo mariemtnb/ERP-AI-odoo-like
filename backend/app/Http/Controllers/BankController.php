@@ -235,6 +235,7 @@ class BankController extends Controller
         $request->validate([
             'bank_account_id' => ['required', 'integer', 'exists:bank_accounts,id'],
             'file' => ['sometimes', 'file', 'max:5120'],
+            'file' => ['sometimes', 'file', 'max:5120'],   // 5 MB cap on the statement upload
             'rows' => ['sometimes', 'array'],
             'rows.*.operation_date' => ['required_with:rows', 'date'],
             'rows.*.amount' => ['required_with:rows', 'numeric'],

@@ -33,6 +33,14 @@ class SecurityHeaders
             }
         }
 
+        // HSTS only on HTTPS: tells browsers to refuse plain HTTP for a year.
+        // Never sent over plain HTTP (which would pin an unreachable scheme in
+        // local/dev). Behind a TLS-terminating proxy, trusted-proxy config must
+        // forward X-Forwarded-Proto for isSecure() to be true.
+        if ($request->isSecure() && ! $response->headers->has('Strict-Transport-Security')) {
+            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+        }
+
         return $response;
     }
 }

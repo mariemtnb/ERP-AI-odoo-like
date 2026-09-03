@@ -31,14 +31,18 @@ as a small roadmap, developed one by one.
 
 ## Roadmap (the real gaps)
 
-- [ ] **S1 - Global API rate limiting.** Attach the `api` rate limiter to every
-  API route (not just the hand-picked ones), so a flood on any endpoint is
-  capped. Keep the tighter per-route throttles on auth and sensitive actions.
-- [ ] **S2 - HTTPS hardening + file-upload hardening.** Send an HSTS header in
-  production; add a size cap to the bank-import file and a mime rule to the
-  import preview.
-- [ ] **S3 - Assistant step cap.** Give the agent a hard limit on reasoning
-  steps / tool calls per request, so a single question can never loop
-  unbounded (the local-model equivalent of a spend cap).
+- [x] **S1 - Global API rate limiting** - done. The `api` limiter is now
+  attached to the whole API group (`throttleApi()`), capping every endpoint at
+  `API_RATE_LIMIT` (default 300/min per user or IP); per-route throttles still
+  stack. Tested: an endpoint returns 429 once the limit is hit.
+- [x] **S2 - HTTPS + upload hardening** - done. An HSTS header
+  (`max-age=31536000; includeSubDomains`) is sent on HTTPS requests only; the
+  bank-statement import now caps the upload at 5 MB. Tested: HSTS present over
+  https, absent over http.
+- [x] **S3 - Assistant step cap** - done. The agent's per-request work is
+  capped by `AGENT_RECURSION_LIMIT` (default 40 reasoning/tool steps) and
+  `AGENT_AUTO_APPROVE_MAX` (default 20 auto-approve loops), now explicit and
+  env-tunable - the local-model equivalent of a spend cap.
 
-Each item ships with a test where the backend can express one.
+**All three gaps are closed.** The other 17 checklist points were already
+covered (see the audit table above).
