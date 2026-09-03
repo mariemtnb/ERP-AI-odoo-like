@@ -51,6 +51,7 @@ import VendorBillsPage from "@/features/vendorbills/VendorBillsPage";
 import VatReturnPage from "@/features/reports/VatReturnPage";
 import PortalSalePage from "@/features/portal/PortalSalePage";
 import PortalPayPage from "@/features/portal/PortalPayPage";
+import { PrivacyPage, TermsPage } from "@/features/legal/LegalPage";
 
 // Keep results warm across tab switches: the dev backend re-bootstraps Laravel
 // on every request, so refetching all of a page's queries on each navigation is
@@ -85,6 +86,8 @@ export default function App() {
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/portal/sales/:token" element={<PortalSalePage />} />
             <Route path="/portal/pay/:token" element={<PortalPayPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/terms" element={<TermsPage />} />
             <Route element={<ProtectedRoute />}>
               <Route element={<Layout />}>
                 <Route index element={<DashboardPage />} />

@@ -178,29 +178,6 @@ export default function LandingPage() {
         });
       }
 
-      /* ---------- custom cursor ---------- */
-      const dot = el.querySelector<HTMLElement>(".cursor-dot");
-      const ring = el.querySelector<HTMLElement>(".cursor-ring");
-      if (dot && ring && !matchMedia("(hover: none)").matches) {
-        const dotX = gsap.quickSetter(dot, "x", "px");
-        const dotY = gsap.quickSetter(dot, "y", "px");
-        const ringX = gsap.quickTo(ring, "x", { duration: 0.35, ease: "power3.out" });
-        const ringY = gsap.quickTo(ring, "y", { duration: 0.35, ease: "power3.out" });
-        const move = (e: PointerEvent) => {
-          dotX(e.clientX); dotY(e.clientY);
-          ringX(e.clientX); ringY(e.clientY);
-          coreState.mouse.tx = e.clientX / innerWidth;
-          coreState.mouse.ty = e.clientY / innerHeight;
-        };
-        window.addEventListener("pointermove", move);
-        const hot = () => ring.classList.add("hot");
-        const cool = () => ring.classList.remove("hot");
-        el.querySelectorAll("a, button, .lbtn, .tilt-card, .nav-link").forEach((t) => {
-          t.addEventListener("pointerenter", hot);
-          t.addEventListener("pointerleave", cool);
-        });
-      }
-
       /* ---------- magnetic buttons ---------- */
       if (!reduce) {
         el.querySelectorAll<HTMLElement>("[data-magnetic]").forEach((btn) => {
@@ -255,8 +232,6 @@ export default function LandingPage() {
   return (
     <div className="landing" ref={root}>
       <div className="progress" />
-      <div className="cursor-ring" />
-      <div className="cursor-dot" />
       <NeuralCore state={coreState} />
 
       {/* NAV */}
@@ -463,6 +438,8 @@ export default function LandingPage() {
           <button onClick={() => scrollTo("orbit-section")}>{t("land.nav.modules")}</button>
           <button onClick={() => scrollTo("analytics")}>{t("land.nav.intelligence")}</button>
           <button onClick={goWorkspace}>{t("land.demo")}</button>
+          <button onClick={() => navigate("/privacy")}>Privacy</button>
+          <button onClick={() => navigate("/terms")}>Terms</button>
         </div>
         <small>{t("land.footer")}</small>
       </footer>
