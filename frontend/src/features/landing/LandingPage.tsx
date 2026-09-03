@@ -178,20 +178,6 @@ export default function LandingPage() {
         });
       }
 
-      /* ---------- magnetic buttons ---------- */
-      if (!reduce) {
-        el.querySelectorAll<HTMLElement>("[data-magnetic]").forEach((btn) => {
-          const qx = gsap.quickTo(btn, "x", { duration: 0.3, ease: "power3.out" });
-          const qy = gsap.quickTo(btn, "y", { duration: 0.3, ease: "power3.out" });
-          btn.addEventListener("pointermove", (e) => {
-            const r = btn.getBoundingClientRect();
-            qx((e.clientX - (r.left + r.width / 2)) * 0.28);
-            qy((e.clientY - (r.top + r.height / 2)) * 0.4);
-          });
-          btn.addEventListener("pointerleave", () => { qx(0); qy(0); });
-        });
-      }
-
       /* ---------- tilt cards + spotlight ---------- */
       if (!reduce) {
         el.querySelectorAll<HTMLElement>(".tilt-card").forEach((card) => {
@@ -246,7 +232,7 @@ export default function LandingPage() {
           <button className="nav-link" onClick={() => scrollTo("analytics")}>{t("land.nav.intelligence")}</button>
           <button className="nav-link" onClick={() => scrollTo("future")}>{t("land.nav.vision")}</button>
         </div>
-        <button className="lbtn lbtn-ghost" data-magnetic onClick={goWorkspace}>
+        <button className="lbtn lbtn-ghost" onClick={goWorkspace}>
           <span className="sheen" />{t("land.enterWorkspace")} <ArrowRight size={15} />
         </button>
       </nav>
@@ -271,10 +257,10 @@ export default function LandingPage() {
           {t("land.lede")}
         </p>
         <div className="cta-row">
-          <button className="lbtn lbtn-primary" data-magnetic onClick={goWorkspace}>
+          <button className="lbtn lbtn-primary" onClick={goWorkspace}>
             <span className="sheen" />{t("land.launchDemo")} <ArrowRight size={15} strokeWidth={2.2} />
           </button>
-          <button className="lbtn lbtn-ghost" data-magnetic onClick={() => scrollTo("ecosystem")}>
+          <button className="lbtn lbtn-ghost" onClick={() => scrollTo("ecosystem")}>
             <span className="sheen" />{t("land.seeThinks")}
           </button>
         </div>
@@ -372,11 +358,11 @@ export default function LandingPage() {
             <div className="glow-wash" />
             <span className="section-tag" style={{ margin: "0 0 18px" }}>{t("land.revenueThisMonth")}</span>
             <div className="metric-row">
-              <span className="metric-val" data-count="48250">0</span>
+              <span className="metric-val">48,250</span>
               <span className="metric-unit">TND</span>
               <span className="metric-delta">
                 <TrendingUp size={14} strokeWidth={2.4} />
-                <span data-count="12.4" data-dec="1" data-suf="%">0</span>
+                <span>12.4%</span>
               </span>
             </div>
             <div className="spark-wrap">
@@ -418,10 +404,10 @@ export default function LandingPage() {
             {t("land.ctaP")}
           </p>
           <div className="cta-row">
-            <button className="lbtn lbtn-primary" data-magnetic onClick={goWorkspace}>
+            <button className="lbtn lbtn-primary" onClick={goWorkspace}>
               <span className="sheen" />{t("land.enterWorkspace2")} <ArrowRight size={15} strokeWidth={2.2} />
             </button>
-            <button className="lbtn lbtn-ghost" data-magnetic onClick={() => scrollTo("top")}>
+            <button className="lbtn lbtn-ghost" onClick={() => scrollTo("top")}>
               <span className="sheen" />{t("land.backToTop")}
             </button>
           </div>
