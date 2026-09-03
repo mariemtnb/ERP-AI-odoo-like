@@ -38,6 +38,21 @@ services:
              cd public &&
              php -S 0.0.0.0:8000 ../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php"
 
+  scheduler:
+    # Drives the time-based jobs (notifications, dunning, subscription billing,
+    # depreciation). schedule:work is the long-running equivalent of a
+    # once-a-minute `schedule:run` cron, so no host crontab is needed.
+    build:
+      context: .
+      dockerfile: docker/backend-laravel.Dockerfile
+    env_file: .env
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    command: php artisan schedule:work
+
   ollama:
     image: ollama/ollama:latest
     dns:

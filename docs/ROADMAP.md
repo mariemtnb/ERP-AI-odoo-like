@@ -160,7 +160,14 @@ give credibility to a lot that already exists.
   vendor bills by 30/60/90 days. Managers/admins, under `reports/*`.
   *Note:* AP aging treats an unpaid bill's whole amount as outstanding until
   vendor-bill part-payment tracking exists.
-- [ ] 17. Scheduler / background worker
+- [x] 17. Scheduler / background worker — **done.** Artisan commands wrap the
+  time-based jobs (`dunning:run`, `subscriptions:bill`, `assets:depreciate`,
+  plus the existing `notifications:scan`), each respecting its module flag and
+  idempotent so a missed or repeated run is safe. `routes/console.php` schedules
+  them (dunning daily, billing daily, depreciation monthly, alerts daily), and a
+  `scheduler` service in docker-compose runs `schedule:work` — so what used to be
+  manual now runs on its own. *Still to come:* a queue worker for heavy async
+  work (PDF/AI/imports).
 - [ ] 18. Real email / SMS delivery
 - [ ] 19. Withholding tax + CNSS declaration
 - [ ] 20. Units of measure + product variants

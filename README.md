@@ -46,9 +46,12 @@ their own. Clicking one opens the relevant screen.
 
 Time-based alerts are produced by a scan — `php artisan notifications:scan`,
 meant to run on a schedule, or `POST /notifications/scan` / the "check now"
-button in the bell for managers. (There is no scheduler worker in the
-deployment yet, so for now it is run on demand.) Email/SMS aren't built — they
-need a provider; the service is shaped so a channel can be added later.
+button in the bell for managers. The `scheduler` service in docker-compose runs
+`php artisan schedule:work`, which drives this scan along with dunning,
+subscription billing and monthly depreciation (`routes/console.php`); each can
+still be run on demand. Email/SMS delivery still needs a provider configured —
+mail is currently best-effort on the log/array driver; the service is shaped so
+a channel can be added later.
 
 ## Tunisia localization
 
