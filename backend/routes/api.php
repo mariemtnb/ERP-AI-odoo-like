@@ -654,6 +654,7 @@ Route::prefix('v1')->group(function () {
             Route::get('fiscal-years', [AdministrationController::class, 'fiscalYears']);
             Route::post('fiscal-years', [AdministrationController::class, 'storeFiscalYear']);
             Route::match(['put', 'patch'], 'fiscal-years/{fiscalYear}', [AdministrationController::class, 'updateFiscalYearStatus']);
+            Route::post('fiscal-years/{fiscalYear}/close', [AdministrationController::class, 'closeFiscalYear']);
             Route::get('sequences', [AdministrationController::class, 'sequences']);
             Route::match(['put', 'patch'], 'sequences/{sequence}', [AdministrationController::class, 'updateSequence']);
 

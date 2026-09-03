@@ -163,6 +163,18 @@ class AdministrationController extends Controller
         return response()->json(FiscalYear::create($data)->toApi(), 201);
     }
 
+    /** Close a fiscal year: post the closing entry and lock the period. */
+    public function closeFiscalYear(Request $request, FiscalYear $fiscalYear)
+    {
+        try {
+            $fiscalYear = \App\Services\FiscalYearService::close($fiscalYear, $request->user());
+        } catch (\App\Exceptions\InvalidTransition|\App\Exceptions\UnbalancedEntry $e) {
+            return response()->json(['detail' => $e->getMessage()], 422);
+        }
+
+        return response()->json($fiscalYear->toApi());
+    }
+
     public function updateFiscalYearStatus(Request $request, FiscalYear $fiscalYear)
     {
         $data = $request->validate([

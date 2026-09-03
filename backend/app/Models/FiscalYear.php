@@ -22,7 +22,7 @@ class FiscalYear extends Model
 
     protected $fillable = [
         'company_id', 'name', 'starts_on', 'ends_on', 'status',
-        'closed_at', 'closed_by',
+        'closed_at', 'closed_by', 'closing_entry_id',
     ];
 
     protected $attributes = ['status' => self::OPEN];
@@ -81,6 +81,7 @@ class FiscalYear extends Model
             'accepts_postings' => $this->acceptsPostings(),
             'closed_at' => $this->closed_at?->toISOString(),
             'closed_by_email' => $this->closer?->email,
+            'closing_entry_id' => $this->closing_entry_id,
         ];
     }
 }

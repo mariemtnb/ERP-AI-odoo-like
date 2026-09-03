@@ -194,6 +194,12 @@ give credibility to a lot that already exists.
   `uom` and `variants` flags. *Still to come:* applying UoM conversion inside
   purchase-receipt and sales lines (the primitive is ready; the transaction
   wiring is the follow-up).
-- [ ] 21. Fiscal-year closing entries
+- [x] 21. Fiscal-year closing entries — **done.** Closing a year now posts a
+  closing journal (OD) that zeroes every income and expense account for the year
+  and rolls the net result into retained earnings (3100) — a profit credited, a
+  loss debited — dated the year end, then marks the year closed and links the
+  entry back to it. Balance-sheet accounts carry forward on their own. Admin
+  only, `POST admin/fiscal-years/{id}/close`; a year can only be closed once and
+  only while open.
 - [ ] 22. CRM opportunity pipeline
 - [ ] 23. Manufacturing routings / work centres (+ basic MRP)
