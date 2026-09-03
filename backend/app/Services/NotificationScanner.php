@@ -62,7 +62,7 @@ class NotificationScanner
                 'category' => 'treasury',
                 'severity' => Notification::WARNING,
                 'title' => "{$word} due on {$i->due_date->format('Y-m-d')}",
-                'body' => "{$i->number} — {$i->counterpartyLabel()} — {$i->amount}. Due soon.",
+                'body' => "{$i->number} - {$i->counterpartyLabel()} - {$i->amount}. Due soon.",
                 'link' => '/instruments',
                 'subject_type' => 'instrument',
                 'subject_id' => $i->id,
@@ -84,7 +84,7 @@ class NotificationScanner
                 'category' => 'treasury',
                 'severity' => Notification::CRITICAL,
                 'title' => "{$word} bounced",
-                'body' => "{$i->number} — {$i->counterpartyLabel()} — {$i->amount} was returned unpaid.",
+                'body' => "{$i->number} - {$i->counterpartyLabel()} - {$i->amount} was returned unpaid.",
                 'link' => '/instruments',
                 'subject_type' => 'instrument',
                 'subject_id' => $i->id,
@@ -114,7 +114,7 @@ class NotificationScanner
                 'category' => 'treasury',
                 'severity' => Notification::WARNING,
                 'title' => 'Instalment overdue',
-                'body' => "{$i->plan?->number} #{$i->sequence} — {$who} — "
+                'body' => "{$i->plan?->number} #{$i->sequence} - {$who} - "
                     . number_format($i->remainingAmount(), 3, '.', '') . ' still due.',
                 'link' => '/installments',
                 'subject_type' => 'installment',
@@ -140,7 +140,7 @@ class NotificationScanner
                 'category' => 'inventory',
                 'severity' => Notification::WARNING,
                 'title' => "Low stock: {$p->name}",
-                'body' => "{$p->sku} — " . (float) $p->quantity_in_stock . ' left '
+                'body' => "{$p->sku} - " . (float) $p->quantity_in_stock . ' left '
                     . '(minimum ' . (float) $p->min_stock_level . '). Consider restocking.',
                 'link' => '/products',
                 'subject_type' => 'product',
@@ -166,7 +166,7 @@ class NotificationScanner
                 'category' => 'purchasing',
                 'severity' => Notification::INFO,
                 'title' => 'Purchase order needs approval',
-                'body' => "{$po->number} — {$po->supplier?->name} — {$po->total_amount}.",
+                'body' => "{$po->number} - {$po->supplier?->name} - {$po->total_amount}.",
                 'link' => '/purchases',
                 'subject_type' => 'purchase',
                 'subject_id' => $po->id,

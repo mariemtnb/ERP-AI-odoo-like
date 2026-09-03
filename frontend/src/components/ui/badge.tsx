@@ -1,7 +1,7 @@
 import { type HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
-/* Soft-tint badges — design tones (neutral/emerald/amber/rose/sky/violet)
+/* Soft-tint badges - design tones (neutral/emerald/amber/rose/sky/violet)
    plus legacy aliases kept so existing screens keep working. */
 const TONES: Record<string, { bg: string; fg: string }> = {
   neutral: { bg: "var(--surface-hover)", fg: "var(--text-body)" },

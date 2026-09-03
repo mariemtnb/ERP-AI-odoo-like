@@ -151,7 +151,7 @@ export default function InstallmentsPage() {
               {rows.map((p) => (
                 <tr key={p.id} className="cursor-pointer" onClick={() => setPlanId(p.id)}>
                   <Td className="font-medium">{p.number}</Td>
-                  <Td>{p.customer_name ?? p.supplier_name ?? "—"}</Td>
+                  <Td>{p.customer_name ?? p.supplier_name ?? "-"}</Td>
                   <Td>
                     {p.installment_count} × {t(`ins.freq.${p.frequency}`)}
                     {Number(p.down_payment) > 0 && (
@@ -161,7 +161,7 @@ export default function InstallmentsPage() {
                     )}
                   </Td>
                   <Td>
-                    {p.next_due_date ?? "—"}
+                    {p.next_due_date ?? "-"}
                     {Number(p.overdue_amount ?? 0) > 0 && (
                       <Badge tone="red" className="ml-2">{t("ins.late")}</Badge>
                     )}
@@ -203,7 +203,7 @@ export default function InstallmentsPage() {
             {overdueRows.map((i) => (
               <tr key={i.id} className="cursor-pointer" onClick={() => setPlanId(i.plan_id)}>
                 <Td className="font-medium">{i.plan_number ?? `#${i.plan_id}`}</Td>
-                <Td>{i.customer_name ?? "—"}</Td>
+                <Td>{i.customer_name ?? "-"}</Td>
                 <Td>{i.sequence}</Td>
                 <Td>{i.due_date}</Td>
                 <Td>
@@ -350,7 +350,7 @@ function PlanDetail({
             <Badge tone={STATUS_TONE[plan.status] ?? "employee"}>
               {label(PLAN_STATUS, plan.status)}
             </Badge>
-            <span>{plan.customer_name ?? plan.supplier_name ?? "—"}</span>
+            <span>{plan.customer_name ?? plan.supplier_name ?? "-"}</span>
             <span className="text-text-3">
               · {plan.reference_type} #{plan.reference_id}
             </span>

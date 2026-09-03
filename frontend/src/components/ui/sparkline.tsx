@@ -1,4 +1,4 @@
-/** Sparkline — SVG mini-chart. Port of ui_kits Spark(). */
+/** Sparkline - SVG mini-chart. Port of ui_kits Spark(). */
 export function Sparkline({
   data,
   up = true,

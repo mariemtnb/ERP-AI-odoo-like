@@ -192,7 +192,7 @@ class FinancialReportService
     {
         $key = $id ?? 0;
         $byPartner[$key] ??= [
-            'partner_id' => $id, 'partner_name' => $name ?? '—',
+            'partner_id' => $id, 'partner_name' => $name ?? '-',
             'not_due' => 0.0, 'd1_30' => 0.0, 'd31_60' => 0.0, 'd61_90' => 0.0, 'd90_plus' => 0.0, 'total' => 0.0,
         ];
         $byPartner[$key][$bucket] += $amount;

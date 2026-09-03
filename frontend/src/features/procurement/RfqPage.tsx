@@ -64,7 +64,7 @@ function RfqDetail({ rfqId }: { rfqId: number }) {
     <>
       <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: 16, marginBottom: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-          <strong style={{ color: "var(--text-strong)" }}>{rfq.title} — {t("rfq.requestedItems")}</strong>
+          <strong style={{ color: "var(--text-strong)" }}>{rfq.title} - {t("rfq.requestedItems")}</strong>
           {open && <Button size="sm" variant="outline" onClick={() => setBidding((v) => !v)}>{bidding ? t("common.close") : t("rfq.enterBid")}</Button>}
         </div>
         <table style={{ width: "100%", fontSize: 13, borderCollapse: "collapse" }}>

@@ -1,5 +1,5 @@
 /**
- * NeuralCore — R3F port of design_files/landing/core.js.
+ * NeuralCore - R3F port of design_files/landing/core.js.
  * Rotating neural sphere (34 fibonacci nodes + proximity links + halo)
  * over a drifting, linked particle field. Reacts to mouse (lerped) and
  * scroll (shrinks/dims through the hero). Fixed fullscreen, DPR ≤ 2,
@@ -78,7 +78,7 @@ function Core({ state, reduce }: { state: CoreState; reduce: boolean }) {
     m.y += (m.ty - m.y) * 0.06;
     const s = state.scrollN;
 
-    // radius & rotation — same formulas as core.js
+    // radius & rotation - same formulas as core.js
     const R = Math.min(viewport.width, viewport.height) * (0.2 - s * 0.06);
     const rotY = t * 0.00022 + m.x * 0.8;
     const rotX = 0.5 + m.y * 0.5 + s * 0.6;

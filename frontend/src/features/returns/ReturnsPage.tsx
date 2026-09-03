@@ -48,9 +48,9 @@ export default function ReturnsPage() {
             {(notesQ.data?.results ?? []).map((n) => (
               <tr key={n.id} style={{ borderTop: "1px solid var(--border)" }}>
                 <Td mono>{n.number}</Td>
-                <Td mono>{n.sale_number ?? "—"}</Td>
-                <Td>{n.customer_name ?? "—"}</Td>
-                <Td>{n.reason || "—"}</Td>
+                <Td mono>{n.sale_number ?? "-"}</Td>
+                <Td>{n.customer_name ?? "-"}</Td>
+                <Td>{n.reason || "-"}</Td>
                 <Td>{n.restocked ? t("common.yes") : t("common.no")}</Td>
                 <Td mono right>{money(n.total_amount)} TND</Td>
               </tr>

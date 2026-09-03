@@ -250,11 +250,11 @@ function LeadDetail({
       {lead && (
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-2 text-sm text-text-2">
-            <p>{t("crm.companyLabel")} {lead.company || "—"}</p>
-            <p>{t("crm.sourceLabel")} {lead.source || "—"}</p>
-            <p>{t("crm.emailLabel")} {lead.email || "—"}</p>
-            <p>{t("crm.phoneLabel")} {lead.phone || "—"}</p>
-            <p>{t("crm.assignedTo")} {lead.assigned_to_email ?? "—"}</p>
+            <p>{t("crm.companyLabel")} {lead.company || "-"}</p>
+            <p>{t("crm.sourceLabel")} {lead.source || "-"}</p>
+            <p>{t("crm.emailLabel")} {lead.email || "-"}</p>
+            <p>{t("crm.phoneLabel")} {lead.phone || "-"}</p>
+            <p>{t("crm.assignedTo")} {lead.assigned_to_email ?? "-"}</p>
             <p>
               {t("crm.statusLabel")} <Badge tone={lead.status === "won" ? "green" : lead.status === "lost" ? "red" : "manager"}>{t(`crm.status.${lead.status}`)}</Badge>
             </p>

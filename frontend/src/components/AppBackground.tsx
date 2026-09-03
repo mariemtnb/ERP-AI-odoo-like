@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 /**
  * Ambient backdrop for the app shell. Kept deliberately cheap: the soft glow is
  * a static CSS gradient (GPU-composited, no per-frame cost), and the canvas is
- * transparent and only draws a slow constellation — cleared, not repainted with
+ * transparent and only draws a slow constellation - cleared, not repainted with
  * full-screen gradient fills. Throttled to ~30fps, capped device-pixel-ratio,
  * paused when the tab is hidden, and skipped entirely for reduced-motion or
  * low-core devices. This replaces an earlier version whose per-frame radial

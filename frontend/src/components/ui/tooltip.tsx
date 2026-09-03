@@ -2,7 +2,7 @@ import { type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Hover tooltip — pure CSS (group-hover), no JS, works on any child.
+ * Hover tooltip - pure CSS (group-hover), no JS, works on any child.
  * Appears after a short delay so it never nags; hidden from the
  * pointer (pointer-events-none) so it can't be "caught".
  */

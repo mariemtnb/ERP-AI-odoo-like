@@ -55,7 +55,7 @@ function RateRow({ currency: c, onSaved }: { currency: Currency; onSaved: () => 
       <Td>{c.symbol}</Td>
       <Td right mono>{c.is_base ? "1" : c.latest_rate ?? <span style={{ color: "var(--amber-400,#d99a2b)" }}>{t("cur.notSet")}</span>}</Td>
       <Td>
-        {c.is_base ? <span style={{ color: "var(--text-muted)" }}>—</span> : (
+        {c.is_base ? <span style={{ color: "var(--text-muted)" }}>-</span> : (
           <div style={{ display: "flex", gap: 6 }}>
             <input type="number" min={0} step="0.00001" value={rate} onChange={(e) => setRateInput(e.target.value)} placeholder="e.g. 3.4"
               style={{ width: 90, background: "var(--surface-hover)", border: "1px solid var(--border)", borderRadius: 8, padding: "5px 8px", color: "var(--text-strong)" }} />

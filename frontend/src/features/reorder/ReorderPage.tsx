@@ -91,7 +91,7 @@ export default function ReorderPage() {
                 <Td>{r.product_name} <span style={{ color: "var(--text-muted)" }}>· {r.sku}</span></Td>
                 <Td right mono>{r.min_qty}</Td>
                 <Td right mono>{r.reorder_qty}</Td>
-                <Td>{r.supplier_name ?? "—"}</Td>
+                <Td>{r.supplier_name ?? "-"}</Td>
                 <Td>{r.is_active ? t("common.yes") : t("common.no")}</Td>
                 <Td right><button onClick={() => del.mutate(r.id)} style={{ color: "var(--rose-400)", background: "none", border: 0, cursor: "pointer", fontSize: 13 }}>{t("common.delete")}</button></Td>
               </tr>

@@ -79,7 +79,7 @@ function SchedulePanel({ asset, onClose }: { asset: FixedAsset; onClose: () => v
   return (
     <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: 18, marginBottom: 18 }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-        <strong style={{ color: "var(--text-strong)" }}>{asset.name} — {t("ast.remainingSchedule")} ({q.data?.monthly_charge != null ? `${money(q.data.monthly_charge)}${t("ast.perMo")}` : "…"})</strong>
+        <strong style={{ color: "var(--text-strong)" }}>{asset.name} - {t("ast.remainingSchedule")} ({q.data?.monthly_charge != null ? `${money(q.data.monthly_charge)}${t("ast.perMo")}` : "…"})</strong>
         <Button variant="ghost" size="sm" onClick={onClose}>{t("common.close")}</Button>
       </div>
       <div style={{ maxHeight: 240, overflowY: "auto" }}>

@@ -134,7 +134,7 @@ function Journal({ params }: { params: { from: string; to: string } }) {
                 {entry.number}
               </span>
               <span style={{ font: "400 13px/1 var(--font-sans)", color: "var(--text-body)" }}>
-                {entry.memo || "—"}
+                {entry.memo || "-"}
               </span>
               <Badge tone={entry.reference_type === "manual" ? "neutral" : "sky"}>
                 {entry.reference_type === "manual" ? t("acc.manual") : entry.reference_type}
@@ -369,7 +369,7 @@ function ManualEntryDialog({ open, onClose }: { open: boolean; onClose: () => vo
               >
                 <option value="">{t("acc.accountPlaceholder")}</option>
                 {accounts.map((a) => (
-                  <option key={a.id} value={a.code}>{a.code} — {a.name}</option>
+                  <option key={a.id} value={a.code}>{a.code} - {a.name}</option>
                 ))}
               </Select>
               <Input

@@ -112,7 +112,7 @@ function ProjectDetail({ projectId, isManager }: { projectId: number; isManager:
       <Table head={[t("common.date"), t("prj.task"), t("prj.hours"), t("prj.billableWord"), t("docs.col.by")]}>
         {(sheetsQ.data ?? []).map((e) => (
           <tr key={e.id} style={{ borderTop: "1px solid var(--border)" }}>
-            <Td mono>{e.work_date}</Td><Td>{e.task_name ?? "—"}</Td><Td mono right>{e.hours}</Td>
+            <Td mono>{e.work_date}</Td><Td>{e.task_name ?? "-"}</Td><Td mono right>{e.hours}</Td>
             <Td>{e.billable ? t("common.yes") : t("common.no")}</Td><Td muted>{e.user_email}</Td>
           </tr>
         ))}

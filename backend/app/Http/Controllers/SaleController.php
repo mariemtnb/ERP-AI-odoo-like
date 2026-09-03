@@ -96,7 +96,7 @@ class SaleController extends Controller
     public function destroy()
     {
         return response()->json(
-            ['detail' => 'Sales cannot be deleted — cancel them instead.'],
+            ['detail' => 'Sales cannot be deleted - cancel them instead.'],
             405
         );
     }

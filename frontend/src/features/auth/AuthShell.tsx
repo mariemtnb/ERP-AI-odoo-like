@@ -4,7 +4,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useI18n } from "@/lib/i18n";
 
 /**
- * Split-screen auth layout — port of ui_kits/erp-app Login().
+ * Split-screen auth layout - port of ui_kits/erp-app Login().
  * Left: emerald-wash hero with wordmark, headline, value prop, live-model
  * footer. Right: the form column (children).
  */

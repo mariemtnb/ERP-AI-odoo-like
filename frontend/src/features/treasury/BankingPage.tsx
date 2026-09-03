@@ -140,8 +140,8 @@ export default function BankingPage() {
                   {a.is_default && <Badge tone="emerald" className="ml-2">{t("bnk.default")}</Badge>}
                   {a.branch && <p className="text-xs text-text-3">{a.branch}</p>}
                 </Td>
-                <Td>{a.bank_name ?? "—"}</Td>
-                <Td className="font-mono text-xs">{a.rib || "—"}</Td>
+                <Td>{a.bank_name ?? "-"}</Td>
+                <Td className="font-mono text-xs">{a.rib || "-"}</Td>
                 <Td>{a.gl_account_code ?? t("bnk.usesDefaultMapping")}</Td>
                 <Td>{a.last_reconciled_at ?? t("bnk.never")}</Td>
                 <Td className="text-right font-medium">

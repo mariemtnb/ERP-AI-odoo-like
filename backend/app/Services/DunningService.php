@@ -129,7 +129,7 @@ class DunningService
                 'subject_id' => $sale->id,
                 'user_id' => $user->id,
                 'body' => sprintf(
-                    'Dunning level %d (%s) sent — %d days overdue, %s TND outstanding.',
+                    'Dunning level %d (%s) sent - %d days overdue, %s TND outstanding.',
                     $level->level, $level->name, $c['days_overdue'], number_format($c['outstanding'], 3)
                 ),
             ]);

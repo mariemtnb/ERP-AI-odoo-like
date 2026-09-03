@@ -2,7 +2,7 @@ import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Button — Intelligent ERP design system (design_files/components/forms/Button).
+ * Button - Intelligent ERP design system (design_files/components/forms/Button).
  * Variants: primary (emerald) / secondary / ghost / outline / danger.
  * Sizes: sm (32px) / md (38px) / lg (46px). Loading spinner, icon slots.
  *

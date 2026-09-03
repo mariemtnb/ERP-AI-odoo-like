@@ -7,7 +7,7 @@ import { useAuth } from "@/features/auth/AuthContext";
  * Effective permissions and enabled modules for the signed-in user.
  *
  * The UI uses this to hide what a user cannot do. It is a convenience, never
- * the security boundary — the backend re-checks every request, exactly as it
+ * the security boundary - the backend re-checks every request, exactly as it
  * always has.
  */
 interface Session {

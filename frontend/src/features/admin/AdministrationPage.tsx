@@ -86,7 +86,7 @@ function OrganisationTab() {
                   <span className="font-medium">{c.name}</span>
                   {c.is_default && <Badge tone="emerald" className="ml-2">{t("bnk.default")}</Badge>}
                 </Td>
-                <Td>{c.parent_name ?? "—"}</Td>
+                <Td>{c.parent_name ?? "-"}</Td>
                 <Td>{c.currency}</Td>
                 <Td>{c.timezone}</Td>
                 <Td>{c.branch_count ?? 0}</Td>
@@ -114,8 +114,8 @@ function OrganisationTab() {
                 <Td className="font-mono">{b.code}</Td>
                 <Td>{b.name}</Td>
                 <Td>{b.company_name}</Td>
-                <Td>{b.city || "—"}</Td>
-                <Td>{b.warehouse_name ?? "—"}</Td>
+                <Td>{b.city || "-"}</Td>
+                <Td>{b.warehouse_name ?? "-"}</Td>
               </tr>
             ))}
           </TBody>
@@ -188,7 +188,7 @@ function FiscalTab() {
                     {t(`adm.fy.${y.status}`)}
                   </Badge>
                 </Td>
-                <Td>{y.closed_by_email ?? "—"}</Td>
+                <Td>{y.closed_by_email ?? "-"}</Td>
                 <Td className="text-right">
                   <Select
                     value={y.status}
@@ -310,7 +310,7 @@ function PermissionsTab() {
                 <span className="font-medium">{r.name}</span>
                 <p className="text-xs text-text-3">{r.description}</p>
               </Td>
-              <Td>{r.parent_key ?? "—"}</Td>
+              <Td>{r.parent_key ?? "-"}</Td>
               <Td className="tnum">{r.permissions?.length ?? 0}</Td>
               <Td>
                 {r.is_system ? (
@@ -456,7 +456,7 @@ function AuditTab() {
                     {row.actor === "agent" ? t("adm.ai") : row.user_email ?? row.actor}
                   </Badge>
                 </Td>
-                <Td className="font-mono text-xs">{row.ip || "—"}</Td>
+                <Td className="font-mono text-xs">{row.ip || "-"}</Td>
               </tr>
             ))}
           </TBody>
@@ -466,7 +466,7 @@ function AuditTab() {
       <Dialog
         open={detail !== null}
         onClose={() => setDetail(null)}
-        title={detail ? `${detail.auditable_type} — ${detail.event}` : t("adm.auditEntry")}
+        title={detail ? `${detail.auditable_type} - ${detail.event}` : t("adm.auditEntry")}
         className="max-w-2xl"
       >
         {detail && (
@@ -474,8 +474,8 @@ function AuditTab() {
             <div className="grid grid-cols-2 gap-2 text-text-2">
               <p>{t("adm.whenLabel")} {new Date(detail.created_at).toLocaleString()}</p>
               <p>{t("adm.whoLabel")} {detail.user_email ?? detail.actor}</p>
-              <p>{t("adm.ipLabel")} {detail.ip || "—"}</p>
-              <p>{t("adm.methodLabel")} {detail.method || "—"}</p>
+              <p>{t("adm.ipLabel")} {detail.ip || "-"}</p>
+              <p>{t("adm.methodLabel")} {detail.method || "-"}</p>
             </div>
             {detail.reason && <p className="text-text-2">{t("adm.reasonLabel")} {detail.reason}</p>}
             {detail.batch_id && (
@@ -496,8 +496,8 @@ function AuditTab() {
                     {detail.changed_fields.map((f) => (
                       <tr key={f}>
                         <Td className="font-mono text-xs">{f}</Td>
-                        <Td>{String(detail.old_values?.[f] ?? "—")}</Td>
-                        <Td>{String(detail.new_values?.[f] ?? "—")}</Td>
+                        <Td>{String(detail.old_values?.[f] ?? "-")}</Td>
+                        <Td>{String(detail.new_values?.[f] ?? "-")}</Td>
                       </tr>
                     ))}
                   </TBody>

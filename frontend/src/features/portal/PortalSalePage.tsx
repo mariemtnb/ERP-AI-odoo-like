@@ -101,7 +101,7 @@ export default function PortalSalePage() {
                     <td style={styles.td}>{l.product_name}</td>
                     <td style={{ ...styles.td, textAlign: "right" }}>{Number(l.quantity)}</td>
                     <td style={{ ...styles.td, textAlign: "right" }}>{Number(l.unit_price).toFixed(2)}</td>
-                    <td style={{ ...styles.td, textAlign: "right" }}>{Number(l.discount_pct ?? 0) > 0 ? `${Number(l.discount_pct)}%` : "—"}</td>
+                    <td style={{ ...styles.td, textAlign: "right" }}>{Number(l.discount_pct ?? 0) > 0 ? `${Number(l.discount_pct)}%` : "-"}</td>
                     <td style={{ ...styles.td, textAlign: "right" }}>{Number(l.subtotal).toFixed(2)}</td>
                   </tr>
                 ))}

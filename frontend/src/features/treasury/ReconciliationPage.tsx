@@ -151,7 +151,7 @@ export default function ReconciliationPage() {
               <tr key={row.id} className="cursor-pointer" onClick={() => setTxId(row.id)}>
                 <Td>{row.operation_date}</Td>
                 <Td className="max-w-xs truncate">{row.label}</Td>
-                <Td>{row.reference || "—"}</Td>
+                <Td>{row.reference || "-"}</Td>
                 <Td>
                   <Tooltip label={frLabel(BANK_TX_STATUS, row.status)}>
                     <Badge tone={STATUS_TONE[row.status] ?? "employee"}>

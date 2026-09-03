@@ -301,7 +301,7 @@ class ReconciliationService
             $candidates[] = [
                 'type' => ReconciliationMatch::TYPE_PAYMENT,
                 'id' => $payment->id,
-                'label' => "{$payment->number} — " . ($payment->customer?->name ?? $payment->supplier?->name ?? $payment->method),
+                'label' => "{$payment->number} - " . ($payment->customer?->name ?? $payment->supplier?->name ?? $payment->method),
                 'amount' => (string) $payment->amount,
                 'date' => $payment->payment_date?->format('Y-m-d'),
                 'score' => $score(
@@ -328,7 +328,7 @@ class ReconciliationService
             $candidates[] = [
                 'type' => ReconciliationMatch::TYPE_INSTRUMENT,
                 'id' => $instrument->id,
-                'label' => "{$instrument->number} ({$instrument->kind} {$instrument->instrument_reference}) — {$instrument->counterpartyLabel()}",
+                'label' => "{$instrument->number} ({$instrument->kind} {$instrument->instrument_reference}) - {$instrument->counterpartyLabel()}",
                 'amount' => (string) $instrument->amount,
                 'date' => $instrument->due_date?->format('Y-m-d'),
                 'score' => $score(
@@ -351,7 +351,7 @@ class ReconciliationService
             $candidates[] = [
                 'type' => ReconciliationMatch::TYPE_INSTALLMENT,
                 'id' => $installment->id,
-                'label' => "{$installment->plan?->number} #{$installment->sequence} — " . ($installment->plan?->customer?->name ?? ''),
+                'label' => "{$installment->plan?->number} #{$installment->sequence} - " . ($installment->plan?->customer?->name ?? ''),
                 'amount' => number_format($installment->remainingAmount(), 3, '.', ''),
                 'date' => $installment->due_date?->format('Y-m-d'),
                 'score' => $score(

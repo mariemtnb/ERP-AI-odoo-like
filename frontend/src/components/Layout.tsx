@@ -150,7 +150,7 @@ export default function Layout() {
   }, []);
 
   // Two visibility regimes:
-  //  • A custom (restricted) role is gated purely by its module allowlist —
+  //  • A custom (restricted) role is gated purely by its module allowlist -
   //    the role name means nothing to the built-in `roles` arrays, so those
   //    are bypassed and the allowlist decides.
   //  • A built-in role keeps the original role + feature-flag gating.
@@ -394,7 +394,7 @@ export default function Layout() {
           className="w-full flex-1"
           style={{ padding: "36px 40px", maxWidth: "var(--content-max)", margin: "0 auto" }}
         >
-          {/* Keyed remount with a fade-in only — no exit animation. An
+          {/* Keyed remount with a fade-in only - no exit animation. An
               AnimatePresence "wait" here made each navigation block on the
               previous page's exit, so rapid navigation could leave a page
               unrendered until a manual refresh. */}

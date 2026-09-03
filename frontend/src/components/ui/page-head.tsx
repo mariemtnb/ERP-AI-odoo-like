@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 
-/** Page header — title + subtitle left, actions right. Port of ui_kits PageHead(). */
+/** Page header - title + subtitle left, actions right. Port of ui_kits PageHead(). */
 export function PageHead({
   title,
   sub,

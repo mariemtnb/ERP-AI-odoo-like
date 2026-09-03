@@ -1,7 +1,7 @@
 import { type HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
-/** Shimmering placeholder — use instead of "Loading…" text. */
+/** Shimmering placeholder - use instead of "Loading…" text. */
 export function Skeleton({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div

@@ -136,8 +136,8 @@ export default function PartnersPage({
             {data!.results.map((p) => (
               <tr key={p.id} className={!p.is_active ? "opacity-50" : undefined}>
                 <Td>{p.name}</Td>
-                <Td className="text-text-2">{p.email || "—"}</Td>
-                <Td className="text-text-2">{p.phone || "—"}</Td>
+                <Td className="text-text-2">{p.email || "-"}</Td>
+                <Td className="text-text-2">{p.phone || "-"}</Td>
                 <Td>
                   <Badge tone={p.is_active ? "green" : "red"}>
                     {p.is_active ? t("common.active") : t("common.inactive")}

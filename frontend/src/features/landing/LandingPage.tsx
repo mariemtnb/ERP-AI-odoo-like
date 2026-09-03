@@ -1,5 +1,5 @@
 /**
- * Landing — port of design_files/landing/ (8 scroll scenes).
+ * Landing - port of design_files/landing/ (8 scroll scenes).
  * Prototype's hand-rolled IntersectionObserver/scroll/raf layer rebuilt on
  * GSAP + ScrollTrigger + Lenis; canvas core rebuilt in R3F (NeuralCore).
  */
@@ -276,7 +276,7 @@ export default function LandingPage() {
         </button>
       </nav>
 
-      {/* SCENE 1 — HERO */}
+      {/* SCENE 1 - HERO */}
       <header className="hero scene" id="top">
         <span className="hero-eyebrow"><span className="pulse" /> {t("land.heroEyebrow")}</span>
         <h1>
@@ -306,7 +306,7 @@ export default function LandingPage() {
         <div className="scroll-hint"><span>{t("land.scroll")}</span><span className="track" /></div>
       </header>
 
-      {/* SCENE 2 — THE AI AWAKENS */}
+      {/* SCENE 2 - THE AI AWAKENS */}
       <section className="awaken scene">
         <div className="awaken-inner">
           <h2>
@@ -320,7 +320,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* SCENE 3 — ECOSYSTEM */}
+      {/* SCENE 3 - ECOSYSTEM */}
       <section className="section scene" id="ecosystem">
         <div className="section-tag r">{t("land.platform")}</div>
         <h2 className="r d1">{t("land.ecoH")}</h2>
@@ -346,7 +346,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* SCENE 4 — MODULES ORBITING AI */}
+      {/* SCENE 4 - MODULES ORBITING AI */}
       <section className="section scene" id="orbit-section">
         <div className="section-tag r">{t("land.ecosystem")}</div>
         <h2 className="r d1">{t("land.orbitH")}</h2>
@@ -364,7 +364,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* SCENE 5 — WORKFLOW */}
+      {/* SCENE 5 - WORKFLOW */}
       <section className="section scene" id="workflow">
         <div className="section-tag r">{t("land.liveWorkflow")}</div>
         <h2 className="r d1">{t("land.workflowH")}</h2>
@@ -388,7 +388,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* SCENE 6 — LIVE ANALYTICS */}
+      {/* SCENE 6 - LIVE ANALYTICS */}
       <section className="section scene" id="analytics">
         <div className="section-tag r">{t("land.intelligence")}</div>
         <h2 className="r d1">{t("land.analyticsH")}</h2>
@@ -428,14 +428,14 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* SCENE 7 — FUTURE */}
+      {/* SCENE 7 - FUTURE */}
       <section className="future scene" id="future">
         <h2 className="r">
           {t("land.futureH1")} <span className="grad">{t("land.futureH2")}</span>
         </h2>
       </section>
 
-      {/* SCENE 8 — CTA */}
+      {/* SCENE 8 - CTA */}
       <section className="cta scene">
         <div className="cta-card r">
           <h2>{t("land.ctaH")}</h2>

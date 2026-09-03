@@ -37,7 +37,7 @@ function writeTheme(theme: Theme) {
   try {
     localStorage.setItem(STORAGE_KEY, theme);
   } catch {
-    /* storage blocked — theme still applies for this session */
+    /* storage blocked - theme still applies for this session */
   }
 }
 

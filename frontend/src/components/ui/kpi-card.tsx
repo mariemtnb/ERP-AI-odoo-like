@@ -3,7 +3,7 @@ import { Sparkline } from "./sparkline";
 import { cn } from "@/lib/utils";
 
 /**
- * KpiCard — dashboard metric tile. Port of ui_kits Kpi():
+ * KpiCard - dashboard metric tile. Port of ui_kits Kpi():
  * eyebrow label + sparkline, big tabular value + unit, delta chip
  * (▲/▼ %, emerald/rose) with "vs last month".
  */

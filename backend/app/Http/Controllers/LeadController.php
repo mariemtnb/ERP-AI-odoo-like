@@ -125,7 +125,7 @@ class LeadController extends Controller
                 'name' => $lead->company !== '' ? "{$lead->name} ({$lead->company})" : $lead->name,
                 'email' => $lead->email,
                 'phone' => $lead->phone,
-                'notes' => "Converted from lead #{$lead->id}" . ($lead->notes !== '' ? " — {$lead->notes}" : ''),
+                'notes' => "Converted from lead #{$lead->id}" . ($lead->notes !== '' ? " - {$lead->notes}" : ''),
             ]);
             $lead->update(['status' => 'won', 'customer_id' => $customer->id]);
             LeadActivity::create([

@@ -67,7 +67,7 @@ function TransferCard({
           <Select value={form.product} onChange={set("product")} required aria-label="transfer-product">
             <option value="">{t("docs.productPlaceholder")}</option>
             {products.map((p) => (
-              <option key={p.id} value={p.id}>{p.sku} — {p.name}</option>
+              <option key={p.id} value={p.id}>{p.sku} - {p.name}</option>
             ))}
           </Select>
           <div className="grid grid-cols-2 gap-3">
@@ -183,7 +183,7 @@ export default function InventoryPage() {
                     <option value="">{t("inv.selectProduct")}</option>
                     {products?.results.map((p) => (
                       <option key={p.id} value={p.id}>
-                        {p.sku} — {p.name} (stock: {Number(p.quantity_in_stock)})
+                        {p.sku} - {p.name} (stock: {Number(p.quantity_in_stock)})
                       </option>
                     ))}
                   </Select>
@@ -320,8 +320,8 @@ export default function InventoryPage() {
                     <Badge tone={typeTone[m.movement_type]}>{t(`inv.mt.${m.movement_type}`)}</Badge>
                   </Td>
                   <Td className="text-right">{Number(m.quantity)}</Td>
-                  <Td className="text-text-2">{m.warehouse_name ?? "—"}</Td>
-                  <Td className="text-text-2">{m.reason || "—"}</Td>
+                  <Td className="text-text-2">{m.warehouse_name ?? "-"}</Td>
+                  <Td className="text-text-2">{m.reason || "-"}</Td>
                   <Td className="text-text-2">{m.reference_type}</Td>
                   <Td className="text-xs text-text-2">{m.created_by_email}</Td>
                 </tr>

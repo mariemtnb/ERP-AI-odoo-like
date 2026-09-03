@@ -1,4 +1,4 @@
-/* Fonts — self-hosted equivalents of tokens/fonts.css (Google Fonts faces) */
+/* Fonts - self-hosted equivalents of tokens/fonts.css (Google Fonts faces) */
 @import "@fontsource/schibsted-grotesk/400.css";
 @import "@fontsource/schibsted-grotesk/500.css";
 @import "@fontsource/schibsted-grotesk/600.css";
@@ -116,7 +116,7 @@
   --dur-4: 480ms;
 
   /* ============================================================
-     COMPATIBILITY LAYER — the app's pre-existing HSL channel vars,
+     COMPATIBILITY LAYER - the app's pre-existing HSL channel vars,
      re-pointed at the design-system palette so all current screens
      and hsl(var(--x)/a) arbitrary values adopt the new look.
      (Migrated screens will move to the tokens above over time.)
@@ -185,7 +185,7 @@
 }
 
 /* ============================================================
-   LIGHT THEME — same design language, inverted surfaces.
+   LIGHT THEME - same design language, inverted surfaces.
    Overrides the semantic aliases + the HSL channel layer, so every
    component adapts without touching a single component file.
    Warm off-white canvas (never pure white); status hues darkened
@@ -225,10 +225,10 @@
   --text-strong: #0f1211;
   --text-body: #39423e;
   --text-muted: #5b645f;
-  /* faint is used for 11px eyebrows/captions — kept at AA (4.5:1) on light */
+  /* faint is used for 11px eyebrows/captions - kept at AA (4.5:1) on light */
   --text-faint: #626b66;
 
-  /* elevation — softer, warmer shadows on light */
+  /* elevation - softer, warmer shadows on light */
   --shadow-xs: 0 1px 2px rgba(16, 24, 20, 0.06);
   --shadow-sm: 0 1px 2px rgba(16, 24, 20, 0.06), 0 2px 6px rgba(16, 24, 20, 0.05);
   --shadow-md: 0 4px 12px rgba(16, 24, 20, 0.08), 0 1px 3px rgba(16, 24, 20, 0.06);
@@ -260,7 +260,7 @@
   --violet: 263 83% 58%;
 }
 
-/* Creme — the light theme on a warm paper background. It reuses every light
+/* Creme - the light theme on a warm paper background. It reuses every light
    token above (see the shared selector) and only warms the surfaces, so it
    keeps light's contrast while feeling softer on the eyes. */
 :root[data-theme="creme"] {

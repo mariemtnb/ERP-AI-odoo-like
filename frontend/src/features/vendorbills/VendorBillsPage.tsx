@@ -55,7 +55,7 @@ export default function VendorBillsPage() {
                   {b.supplier_ref && <span className="ml-2 text-xs text-text-3">{b.supplier_ref}</span>}
                 </Td>
                 <Td>{b.supplier_name}</Td>
-                <Td>{b.purchase_order_number ?? "—"}</Td>
+                <Td>{b.purchase_order_number ?? "-"}</Td>
                 <Td className="text-right">{Number(b.total_amount).toFixed(2)}</Td>
                 <Td><Badge tone={STATUS_TONE[b.status] ?? "neutral"}>{b.status}</Badge></Td>
               </tr>
@@ -106,7 +106,7 @@ function DetailDialog({ id, onClose, onChanged }: { id: number; onClose: () => v
                   <Td className="text-right">{m.ordered_qty}</Td>
                   <Td className="text-right">{m.received_qty}</Td>
                   <Td className="text-right">{m.billed_price.toFixed(2)}</Td>
-                  <Td className="text-right">{m.ordered_price != null ? m.ordered_price.toFixed(2) : "—"}</Td>
+                  <Td className="text-right">{m.ordered_price != null ? m.ordered_price.toFixed(2) : "-"}</Td>
                   <Td>
                     {m.flags.length === 0 ? (
                       <span className="inline-flex items-center gap-1 text-emerald-500"><CheckCircle2 className="h-4 w-4" /> OK</span>
@@ -192,7 +192,7 @@ function CreateDialog({ onClose, onSaved }: { onClose: () => void; onSaved: () =
             </Select></div>
           <div className="space-y-1.5"><Label>Purchase order (optional)</Label>
             <Select value={po} onChange={(e) => pickPo(e.target.value)}>
-              <option value="">None — direct bill</option>
+              <option value="">None - direct bill</option>
               {supplierPos.map((p: any) => <option key={p.id} value={p.id}>{p.number} ({p.status})</option>)}
             </Select></div>
           <div className="space-y-1.5"><Label>Supplier invoice #</Label>

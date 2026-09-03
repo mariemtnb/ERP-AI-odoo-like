@@ -7,7 +7,7 @@ import * as chatter from "@/api/chatter";
 
 /**
  * Comments and follow-up activities for any record. Drop it into a detail view
- * with the record's type and id — <Chatter type="sales" id={sale.id} />.
+ * with the record's type and id - <Chatter type="sales" id={sale.id} />.
  */
 export function Chatter({ type, id }: { type: string; id: number }) {
   const qc = useQueryClient();

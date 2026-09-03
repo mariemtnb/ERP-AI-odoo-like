@@ -354,7 +354,7 @@ class ReportingController extends Controller
             ->map(fn (Product $p) => [
                 'sku' => $p->sku,
                 'name' => $p->name,
-                'category' => $p->category?->name ?? '—',
+                'category' => $p->category?->name ?? '-',
                 'quantity' => $p->quantity_in_stock,
                 'min_level' => $p->min_stock_level,
                 'value' => (float) $p->quantity_in_stock * (float) $p->cost_price,

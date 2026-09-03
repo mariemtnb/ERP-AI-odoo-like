@@ -31,7 +31,7 @@ function pctDelta(current: number, previous: number): number {
   if (!previous) return current > 0 ? 100 : 0;
   return Math.round(((current - previous) / previous) * 1000) / 10;
 }
-/** Gentle 8-point micro-series ending near `value` — decorative KPI sparkline. */
+/** Gentle 8-point micro-series ending near `value` - decorative KPI sparkline. */
 function microSeries(value: number, up: boolean): number[] {
   const base = value || 1;
   return Array.from({ length: 8 }, (_, i) => {
@@ -76,7 +76,7 @@ export default function DashboardPage() {
     ? `${risk.name} is selling ~${risk.daily_consumption}/day and will run out in about ${risk.days_until_stockout} days. Consider a purchase order to avoid a stockout.`
     : low
       ? `${low.name} is low on stock (${Number(low.quantity_in_stock)}/${Number(low.min_stock_level)}). Consider a purchase order to restock before it runs out.`
-      : "Everything looks healthy right now — no stockouts on the horizon and stock is above minimums.";
+      : "Everything looks healthy right now - no stockouts on the horizon and stock is above minimums.";
 
   return (
     <div>

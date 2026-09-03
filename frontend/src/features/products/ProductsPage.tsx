@@ -29,7 +29,7 @@ function apiError(err: any): string {
   if (typeof data === "string") return data;
   return Object.entries(data)
     .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(" ") : v}`)
-    .join(" — ");
+    .join(" - ");
 }
 
 export default function ProductsPage() {
@@ -123,7 +123,7 @@ export default function ProductsPage() {
               <tr key={p.id} className={!p.is_active ? "opacity-50" : undefined}>
                 <Td className="font-mono text-xs">{p.sku}</Td>
                 <Td>{p.name}</Td>
-                <Td>{p.category_name ?? "—"}</Td>
+                <Td>{p.category_name ?? "-"}</Td>
                 <Td className="text-right">
                   {Number(p.quantity_in_stock)} {p.unit}
                   {p.is_low_stock && p.is_active && (

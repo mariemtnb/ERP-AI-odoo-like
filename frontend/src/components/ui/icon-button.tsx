@@ -2,7 +2,7 @@ import { forwardRef, type ButtonHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * IconButton — chromeless square icon button.
+ * IconButton - chromeless square icon button.
  * Port of design_files/components/forms/IconButton + .erp-iconbtn.
  */
 export interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

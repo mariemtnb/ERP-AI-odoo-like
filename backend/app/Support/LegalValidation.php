@@ -36,7 +36,7 @@ class LegalValidation
         }
         if (strlen($rib) !== self::RIB_LENGTH) {
             $warnings[] = sprintf(
-                'RIB is usually %d digits (got %d) — check with the bank.',
+                'RIB is usually %d digits (got %d) - check with the bank.',
                 self::RIB_LENGTH,
                 strlen($rib)
             );

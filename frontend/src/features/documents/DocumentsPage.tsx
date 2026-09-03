@@ -101,7 +101,7 @@ export default function DocumentsPage({
       setScanNote(
         `Extracted from ${data.supplier_name ?? "unknown supplier"}` +
           (data.invoice_number ? ` (${data.invoice_number})` : "") +
-          (hints ? ` — lines: ${hints}` : "") +
+          (hints ? ` - lines: ${hints}` : "") +
           ". Match each line to a product below."
       );
       setCreateOpen(true);
@@ -324,7 +324,7 @@ export default function DocumentsPage({
                   <option value="">{t("docs.productPlaceholder")}</option>
                   {products?.results.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.sku} — {p.name} (stock: {Number(p.quantity_in_stock)})
+                      {p.sku} - {p.name} (stock: {Number(p.quantity_in_stock)})
                     </option>
                   ))}
                 </Select>
@@ -393,7 +393,7 @@ export default function DocumentsPage({
           <div className="space-y-4">
             <div className="flex items-center justify-between text-sm">
               <span>
-                {isPurchase ? viewDoc.supplier_name : viewDoc.customer_name} —{" "}
+                {isPurchase ? viewDoc.supplier_name : viewDoc.customer_name} -{" "}
                 <Badge tone={statusTone[viewDoc.status]}>{statusLabel(viewDoc.status)}</Badge>
               </span>
               <span className="text-text-2">

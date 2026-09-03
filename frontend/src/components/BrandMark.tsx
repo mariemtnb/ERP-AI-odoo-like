@@ -2,7 +2,7 @@ import { Hexagon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
- * IntelligentERP brand mark — emerald hexagon tile + wordmark.
+ * IntelligentERP brand mark - emerald hexagon tile + wordmark.
  * Matches ui_kits/erp-app Brand(). `size="sm"` for the sidebar/topbar.
  */
 export function BrandMark({

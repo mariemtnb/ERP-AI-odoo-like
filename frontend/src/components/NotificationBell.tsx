@@ -12,7 +12,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 
 /**
  * The top-bar bell. Polls the unread count in the background and opens a panel
- * of recent notifications. This is a convenience surface — the backend is the
+ * of recent notifications. This is a convenience surface - the backend is the
  * source of truth and scopes everything to the signed-in user.
  */
 export function NotificationBell() {

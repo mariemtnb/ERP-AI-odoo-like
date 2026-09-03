@@ -56,7 +56,7 @@ export default function PortalPayPage() {
                 <button style={styles.btn} disabled={paying} onClick={confirm}>
                   {paying ? "Processing…" : "Pay now"}
                 </button>
-                <p style={styles.note}>This is a demo gateway — no real card is charged.</p>
+                <p style={styles.note}>This is a demo gateway - no real card is charged.</p>
               </>
             )}
           </>

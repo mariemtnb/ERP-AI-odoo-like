@@ -260,7 +260,7 @@ export async function listAudit(params: Record<string, unknown> = {}) {
   return data;
 }
 
-/** Activity timeline for one record — any authenticated user. */
+/** Activity timeline for one record - any authenticated user. */
 export async function getTimeline(type: string, id: number) {
   const { data } = await api.get<Paginated<AuditRow>>(`/timeline/${type}/${id}`);
   return data;

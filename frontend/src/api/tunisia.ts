@@ -111,7 +111,7 @@ export async function createBankTransaction(input: Record<string, unknown>) {
   return data;
 }
 
-/** CSV upload — the backend parses it. */
+/** CSV upload - the backend parses it. */
 export async function importStatementFile(bankAccountId: number, file: File) {
   const form = new FormData();
   form.append("bank_account_id", String(bankAccountId));

@@ -91,7 +91,7 @@ function label(key: string, lang: Lang): string {
 }
 
 function formatValue(key: string, value: unknown, lang: Lang): string {
-  if (value === null || value === undefined || value === "") return "—";
+  if (value === null || value === undefined || value === "") return "-";
   if (key === "lines" && Array.isArray(value)) {
     return value
       .map((l: any) => `${l.quantity} × ${productWord[lang]} #${l.product} @ ${l.unit_price} ${eachWord[lang]}`)

@@ -122,11 +122,11 @@ function RulesDialog({ id, onClose }: { id: number; onClose: () => void }) {
   const cats = catsQ.data ?? [];
 
   return (
-    <Dialog open onClose={onClose} title={list ? `${list.name} — rules` : "Rules"} className="max-w-2xl">
+    <Dialog open onClose={onClose} title={list ? `${list.name} - rules` : "Rules"} className="max-w-2xl">
       {!list ? <TableSkeleton rows={3} /> : (
         <div className="space-y-4">
           {(list.rules ?? []).length === 0 ? (
-            <p className="text-sm text-text-3">No rules yet — add one below.</p>
+            <p className="text-sm text-text-3">No rules yet - add one below.</p>
           ) : (
             <Table>
               <THead><tr><Th>Applies to</Th><Th>From qty</Th><Th>Price rule</Th><Th /></tr></THead>

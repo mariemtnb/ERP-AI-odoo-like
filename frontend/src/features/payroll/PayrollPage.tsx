@@ -108,10 +108,10 @@ function EmployeesTab() {
                   <span className="font-medium">{e.full_name}</span>
                   <span className="ml-2 text-xs text-text-3">{e.code}</span>
                 </Td>
-                <Td>{e.job_title || "—"}</Td>
+                <Td>{e.job_title || "-"}</Td>
                 <Td className="text-right">{formatTnd(e.base_salary)}</Td>
                 <Td className="text-right">
-                  {Number(e.outstanding_advance) > 0 ? formatTnd(e.outstanding_advance) : "—"}
+                  {Number(e.outstanding_advance) > 0 ? formatTnd(e.outstanding_advance) : "-"}
                 </Td>
                 <Td><Badge tone={e.is_active ? "green" : "red"}>{e.is_active ? t("common.active") : t("common.inactive")}</Badge></Td>
               </tr>
@@ -207,9 +207,9 @@ function AdvancesTab() {
               <tr key={a.id}>
                 <Td className="font-medium">{a.number}</Td>
                 <Td>{a.employee_name}</Td>
-                <Td>{a.reason || "—"}</Td>
+                <Td>{a.reason || "-"}</Td>
                 <Td className="text-right">{formatTnd(a.amount)}</Td>
-                <Td className="text-right">{a.status === "paid" ? formatTnd(a.remaining) : "—"}</Td>
+                <Td className="text-right">{a.status === "paid" ? formatTnd(a.remaining) : "-"}</Td>
                 <Td><Badge tone={STATUS_TONE[a.status] ?? "employee"}>{t(`pay.status.${a.status}`)}</Badge></Td>
                 <Td className="text-right">
                   {a.status === "pending" && (
@@ -396,11 +396,11 @@ function RunDetail({ id, onClose }: { id: number | null; onClose: () => void }) 
               <tr key={p.id}>
                 <Td>{p.employee_name}</Td>
                 <Td className="text-right">{formatTnd(p.base_salary)}</Td>
-                <Td className="text-right">{Number(p.earnings_total) > 0 ? formatTnd(p.earnings_total) : "—"}</Td>
-                <Td className="text-right text-text-2">{Number(p.cnss_employee) > 0 ? formatTnd(p.cnss_employee) : "—"}</Td>
-                <Td className="text-right text-text-2">{Number(p.irpp) + Number(p.css) > 0 ? formatTnd(Number(p.irpp) + Number(p.css)) : "—"}</Td>
-                <Td className="text-right">{Number(p.deductions_total) > 0 ? formatTnd(p.deductions_total) : "—"}</Td>
-                <Td className="text-right">{Number(p.advance_recovered) > 0 ? formatTnd(p.advance_recovered) : "—"}</Td>
+                <Td className="text-right">{Number(p.earnings_total) > 0 ? formatTnd(p.earnings_total) : "-"}</Td>
+                <Td className="text-right text-text-2">{Number(p.cnss_employee) > 0 ? formatTnd(p.cnss_employee) : "-"}</Td>
+                <Td className="text-right text-text-2">{Number(p.irpp) + Number(p.css) > 0 ? formatTnd(Number(p.irpp) + Number(p.css)) : "-"}</Td>
+                <Td className="text-right">{Number(p.deductions_total) > 0 ? formatTnd(p.deductions_total) : "-"}</Td>
+                <Td className="text-right">{Number(p.advance_recovered) > 0 ? formatTnd(p.advance_recovered) : "-"}</Td>
                 <Td className="text-right font-medium">{formatTnd(p.net_pay)}</Td>
                 {draft && (
                   <Td className="text-right">

@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-/** Animated segmented control — the active pill glides between options. */
+/** Animated segmented control - the active pill glides between options. */
 export function Segmented<T extends string>({
   options,
   value,

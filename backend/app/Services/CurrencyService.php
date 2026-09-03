@@ -73,7 +73,7 @@ class CurrencyService
             throw new InvalidTransition("Unknown currency: {$code}.");
         }
         if ($currency->is_base) {
-            throw new InvalidTransition('The base currency is always 1 — it has no rate.');
+            throw new InvalidTransition('The base currency is always 1 - it has no rate.');
         }
         if ($rate <= 0) {
             throw new InvalidTransition('Exchange rate must be positive.');

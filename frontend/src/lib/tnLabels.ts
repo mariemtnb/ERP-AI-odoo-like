@@ -2,7 +2,7 @@
  * Tunisian business vocabulary.
  *
  * Tunisian SMEs run their books in French, but the everyday spoken terms are
- * Arabic/Derja — a "traite" is a *kembya*, paying in instalments is *khlas bel
+ * Arabic/Derja - a "traite" is a *kembya*, paying in instalments is *khlas bel
  * taqsit*. Showing the French term with the familiar one underneath is what
  * makes these screens readable to the person actually doing the work.
  *
@@ -101,7 +101,7 @@ export function label(map: Record<string, TnLabel>, key: string): string {
   return map[key]?.en ?? key.replace(/_/g, " ");
 }
 
-/** "Émis" or "Traite / Effet de commerce · Kembya" — for tooltips and hints. */
+/** "Émis" or "Traite / Effet de commerce · Kembya" - for tooltips and hints. */
 export function frLabel(map: Record<string, TnLabel>, key: string): string {
   const entry = map[key];
   if (!entry) return "";
@@ -111,7 +111,7 @@ export function frLabel(map: Record<string, TnLabel>, key: string): string {
 /** Format an amount the Tunisian way: 3 decimals, space thousands separator. */
 export function formatTnd(value: string | number, currency = "TND", decimals = 3): string {
   const n = typeof value === "string" ? parseFloat(value) : value;
-  if (Number.isNaN(n)) return "—";
+  if (Number.isNaN(n)) return "-";
   return `${n.toLocaleString("fr-TN", {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,

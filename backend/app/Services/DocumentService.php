@@ -154,7 +154,7 @@ class DocumentService
             }
 
             if ($receivedValue <= 0) {
-                throw new InvalidTransition('Nothing was received — enter a quantity for at least one line.');
+                throw new InvalidTransition('Nothing was received - enter a quantity for at least one line.');
             }
 
             $po->load('lines');

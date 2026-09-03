@@ -56,7 +56,7 @@ export function moduleForPath(pathname: string): string | null {
 /**
  * May a user whose allowlist is `modules` reach `pathname`?
  *
- * `modules === null` means an unrestricted (built-in) role — everything is
+ * `modules === null` means an unrestricted (built-in) role - everything is
  * reachable. Otherwise only the always-allowed paths and the modules on the
  * list are; a path with no module of its own (e.g. the admin screens) is NOT
  * reachable by a restricted role.

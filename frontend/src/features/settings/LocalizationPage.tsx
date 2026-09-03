@@ -328,7 +328,7 @@ function MappingsTab() {
                 >
                   {!m.account_exists && (
                     <option value={m.account_code}>
-                      {m.account_code} — {t("loc.missing")}
+                      {m.account_code} - {t("loc.missing")}
                     </option>
                   )}
                   {(accounts ?? []).map((a) => (

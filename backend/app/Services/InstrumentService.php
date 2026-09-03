@@ -384,7 +384,7 @@ class InstrumentService
             $entry = AccountingService::post(
                 lines: $lines,
                 user: $user,
-                memo: "Bounced {$i->kind} {$i->instrument_reference}" . ($reason !== '' ? " — {$reason}" : ''),
+                memo: "Bounced {$i->kind} {$i->instrument_reference}" . ($reason !== '' ? " - {$reason}" : ''),
                 referenceType: 'instrument',
                 referenceId: $i->id,
                 date: $date,
@@ -477,7 +477,7 @@ class InstrumentService
                 $entry = AccountingService::post(
                     lines: $lines,
                     user: $user,
-                    memo: "Cancelled {$i->kind} {$i->instrument_reference}" . ($reason !== '' ? " — {$reason}" : ''),
+                    memo: "Cancelled {$i->kind} {$i->instrument_reference}" . ($reason !== '' ? " - {$reason}" : ''),
                     referenceType: 'instrument',
                     referenceId: $i->id,
                     journalCode: self::journalCode($i),

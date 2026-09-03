@@ -212,10 +212,10 @@ export default function InstrumentsPage() {
                     {i.direction === "incoming" ? t("inst.received") : t("inst.issued")}
                   </span>
                 </Td>
-                <Td>{i.instrument_reference || "—"}</Td>
-                <Td>{i.counterparty_name || "—"}</Td>
+                <Td>{i.instrument_reference || "-"}</Td>
+                <Td>{i.counterparty_name || "-"}</Td>
                 <Td>
-                  {i.due_date ?? "—"}
+                  {i.due_date ?? "-"}
                   {i.is_overdue && (
                     <AlertTriangle className="ml-1 inline h-3.5 w-3.5 text-danger" />
                   )}
@@ -458,12 +458,12 @@ function InstrumentDetail({
         </div>
 
         <div className="grid grid-cols-2 gap-2 text-sm text-text-2">
-          <p>{t("inst.referenceLabel")} {instrument.instrument_reference || "—"}</p>
+          <p>{t("inst.referenceLabel")} {instrument.instrument_reference || "-"}</p>
           <p>{t("inst.issuedLabel")} {instrument.issue_date}</p>
-          <p>{t("inst.dueLabel")} {instrument.due_date ?? "—"}</p>
-          <p>{t("inst.bankLabel")} {instrument.bank_account_label ?? "—"}</p>
-          <p>{t("inst.draweeBankLabel")} {instrument.drawee_bank_name ?? "—"}</p>
-          <p>{t("inst.placeLabel")} {instrument.place_of_issue || "—"}</p>
+          <p>{t("inst.dueLabel")} {instrument.due_date ?? "-"}</p>
+          <p>{t("inst.bankLabel")} {instrument.bank_account_label ?? "-"}</p>
+          <p>{t("inst.draweeBankLabel")} {instrument.drawee_bank_name ?? "-"}</p>
+          <p>{t("inst.placeLabel")} {instrument.place_of_issue || "-"}</p>
           {instrument.bounce_reason && (
             <p className="col-span-2 text-danger">
               {t("inst.returnedLabel")} {instrument.bounce_reason}

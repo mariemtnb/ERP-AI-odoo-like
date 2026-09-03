@@ -118,7 +118,7 @@ class PurchaseOrderController extends Controller
     public function destroy()
     {
         return response()->json(
-            ['detail' => 'Purchase orders cannot be deleted — cancel them instead.'],
+            ['detail' => 'Purchase orders cannot be deleted - cancel them instead.'],
             405
         );
     }

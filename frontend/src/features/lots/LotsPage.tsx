@@ -58,9 +58,9 @@ export default function LotsPage() {
                 <tr key={l.id} style={{ borderTop: "1px solid var(--border)" }}>
                   <Td mono>{l.lot_number}</Td>
                   <Td>{l.product_name ?? l.sku}</Td>
-                  <Td>{l.warehouse_name ?? "—"}</Td>
-                  <Td mono>{l.expiry_date ?? "—"}</Td>
-                  <Td right mono>{l.days_to_expiry ?? "—"}</Td>
+                  <Td>{l.warehouse_name ?? "-"}</Td>
+                  <Td mono>{l.expiry_date ?? "-"}</Td>
+                  <Td right mono>{l.days_to_expiry ?? "-"}</Td>
                   <Td right mono>{Number(l.quantity).toFixed(3)}</Td>
                   <Td>
                     <span style={{ fontSize: 12, fontWeight: 600, color: s.fg, background: s.bg, border: `1px solid ${s.bd}`, borderRadius: 999, padding: "2px 10px" }}>

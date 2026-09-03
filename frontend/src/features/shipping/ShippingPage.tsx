@@ -53,9 +53,9 @@ export default function ShippingPage() {
             {(listQ.data ?? []).map((s) => (
               <tr key={s.id} style={{ borderTop: "1px solid var(--border)" }}>
                 <Td mono>{s.number}{s.sale_number && <span style={{ color: "var(--text-muted)" }}> · {s.sale_number}</span>}</Td>
-                <Td>{s.customer_name ?? "—"}<div style={{ fontSize: 12, color: "var(--text-muted)" }}>{s.address}</div></Td>
+                <Td>{s.customer_name ?? "-"}<div style={{ fontSize: 12, color: "var(--text-muted)" }}>{s.address}</div></Td>
                 <Td>{s.carrier}</Td>
-                <Td mono>{s.tracking_number ?? "—"}</Td>
+                <Td mono>{s.tracking_number ?? "-"}</Td>
                 <Td><span style={{ fontSize: 12, fontWeight: 600, color: STATUS_COLOR[s.status] }}>{t(`status.${s.status}`)}</span></Td>
                 <Td right>
                   <span style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>

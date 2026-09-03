@@ -48,7 +48,7 @@ function apply(lang: Lang) {
   try {
     localStorage.setItem(STORAGE_KEY, lang);
   } catch {
-    /* storage blocked — the choice still applies for this session */
+    /* storage blocked - the choice still applies for this session */
   }
 }
 

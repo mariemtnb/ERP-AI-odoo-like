@@ -58,7 +58,7 @@ export default function UsersPage() {
             {(usersQ.data ?? []).map((u) => (
               <tr key={u.id} style={{ borderTop: "1px solid var(--border)" }}>
                 <Td>{u.email}{u.id === user?.id && <span style={{ color: "var(--text-muted)" }}> · {t("users.you")}</span>}</Td>
-                <Td>{[u.first_name, u.last_name].filter(Boolean).join(" ") || "—"}</Td>
+                <Td>{[u.first_name, u.last_name].filter(Boolean).join(" ") || "-"}</Td>
                 <Td><Badge tone={u.role}>{roleLabel(u.role)}</Badge></Td>
                 <Td><Badge tone={u.is_active ? "green" : "red"}>{u.is_active ? t("users.active") : t("users.inactive")}</Badge></Td>
                 <Td right>

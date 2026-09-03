@@ -1,5 +1,5 @@
 /* ============================================================
-   IntelligentERP — Landing experience (port of design_files/landing.css)
+   IntelligentERP - Landing experience (port of design_files/landing.css)
    Consumes the design-system tokens from src/index.css.
    Scoped under .landing; reveals driven by GSAP ScrollTrigger (adds .in).
    ============================================================ */

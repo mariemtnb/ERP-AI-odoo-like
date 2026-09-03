@@ -11,7 +11,7 @@ import { useI18n } from "@/lib/i18n";
 
 /**
  * Treasury row on the dashboard: the six figures a Tunisian SME owner checks
- * first thing — what is out in cheques, what bounced, what is late, and what
+ * first thing - what is out in cheques, what bounced, what is late, and what
  * actually came in.
  */
 export function TreasuryCards() {

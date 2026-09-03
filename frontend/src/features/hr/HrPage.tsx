@@ -133,7 +133,7 @@ function AttendanceTab({ employee }: { employee: number }) {
       </Panel>
       <Table head={[t("common.date"), t("hr.in"), t("hr.out"), t("hr.hours")]}>
         {(listQ.data ?? []).map((a) => (
-          <tr key={a.id} style={rowStyle}><Td mono>{a.work_date}</Td><Td mono>{a.check_in ?? "—"}</Td><Td mono>{a.check_out ?? "—"}</Td><Td mono right>{a.hours}</Td></tr>
+          <tr key={a.id} style={rowStyle}><Td mono>{a.work_date}</Td><Td mono>{a.check_in ?? "-"}</Td><Td mono>{a.check_out ?? "-"}</Td><Td mono right>{a.hours}</Td></tr>
         ))}
         {listQ.data?.length === 0 && <tr><Td colSpan={4} muted>{t("hr.noAttendance")}</Td></tr>}
       </Table>
@@ -168,7 +168,7 @@ function ExpensesTab({ employee }: { employee: number }) {
       <Table head={[t("common.date"), t("hr.category"), t("subs.amount"), t("common.status"), ""]}>
         {(listQ.data ?? []).map((c) => (
           <tr key={c.id} style={rowStyle}>
-            <Td mono>{c.claim_date}</Td><Td>{c.category || "—"}</Td><Td mono right>{money(c.amount)} TND</Td>
+            <Td mono>{c.claim_date}</Td><Td>{c.category || "-"}</Td><Td mono right>{money(c.amount)} TND</Td>
             <Td><Badge status={c.status} label={t(`hr.status.${c.status}`)} /></Td>
             <Td right>
               <span style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
