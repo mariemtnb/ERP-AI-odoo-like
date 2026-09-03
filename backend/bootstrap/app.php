@@ -22,6 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Security headers on every response.
         $middleware->append(SecurityHeaders::class);
+        // Apply the global `api` rate limiter to every API route, not just the
+        // hand-picked ones. Tighter per-route throttles still stack on top.
+        $middleware->throttleApi();
         $middleware->alias([
             'role' => EnsureRole::class,
             // Finer-grained successor to `role:`; existing routes keep theirs

@@ -39,8 +39,9 @@ class AppServiceProvider extends ServiceProvider
     {
         RateLimiter::for('api', function (Request $request) {
             // Keyed per user when known, per IP otherwise, so one noisy tenant
-            // cannot exhaust the budget of everyone behind the same NAT.
-            return Limit::perMinute(300)->by(
+            // cannot exhaust the budget of everyone behind the same NAT. The
+            // limit is read per request so it can be tuned by config/env.
+            return Limit::perMinute((int) config('security.api_rate_limit', 300))->by(
                 $request->user()?->id
                     ? 'user:' . $request->user()->id
                     : 'ip:' . $request->ip()
