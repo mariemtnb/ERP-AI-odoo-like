@@ -8,7 +8,12 @@ from fastapi import FastAPI, File, Header, HTTPException, UploadFile
 from langgraph.types import Command
 from pydantic import BaseModel
 
-from app.config import BACKEND_BASE_URL, OLLAMA_BASE_URL
+from app.config import (
+    AGENT_AUTO_APPROVE_MAX,
+    AGENT_RECURSION_LIMIT,
+    BACKEND_BASE_URL,
+    OLLAMA_BASE_URL,
+)
 from app.graph.agent import get_agent
 
 app = FastAPI(title="ERP AI Service")
@@ -69,7 +74,7 @@ def _pending_interrupt(agent, config):
 
 
 def _run(agent, payload, thread_id: str, auto_approve: bool = False) -> dict:
-    config = {"configurable": {"thread_id": thread_id}, "recursion_limit": 40}
+    config = {"configurable": {"thread_id": thread_id}, "recursion_limit": AGENT_RECURSION_LIMIT}
     result = agent.invoke(payload, config)
     # langgraph 0.2: pending interrupts live on the state snapshot, not the result.
     pending = _pending_interrupt(agent, config)
@@ -77,7 +82,7 @@ def _run(agent, payload, thread_id: str, auto_approve: bool = False) -> dict:
     # Auto mode: keep approving and resuming until the graph has nothing left
     # to confirm. The bound is a safety net against a tool that loops.
     if auto_approve:
-        for _ in range(20):
+        for _ in range(AGENT_AUTO_APPROVE_MAX):
             if pending is None:
                 break
             result = agent.invoke(Command(resume={"approved": True}), config)
