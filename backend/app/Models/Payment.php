@@ -36,6 +36,7 @@ class Payment extends Model
     protected $fillable = [
         'number', 'direction', 'method', 'amount', 'payment_date',
         'currency_code', 'foreign_amount', 'book_rate', 'settlement_rate', 'fx_gain_loss',
+        'withholding_amount',
         'customer_id', 'supplier_id', 'bank_account_id', 'instrument_id',
         'installment_id', 'reference_type', 'reference_id', 'is_advance',
         'journal_entry_id', 'reference', 'notes', 'created_by',
@@ -54,6 +55,7 @@ class Payment extends Model
             'book_rate' => 'decimal:8',
             'settlement_rate' => 'decimal:8',
             'fx_gain_loss' => 'decimal:3',
+            'withholding_amount' => 'decimal:3',
         ];
     }
 
@@ -112,6 +114,7 @@ class Payment extends Model
             'book_rate' => $this->book_rate === null ? null : (string) $this->book_rate,
             'settlement_rate' => $this->settlement_rate === null ? null : (string) $this->settlement_rate,
             'fx_gain_loss' => $this->fx_gain_loss === null ? null : (string) $this->fx_gain_loss,
+            'withholding_amount' => $this->withholding_amount === null ? null : (string) $this->withholding_amount,
             'is_advance' => $this->is_advance,
             'journal_entry_id' => $this->journal_entry_id,
             'journal_entry_number' => $this->journalEntry?->number,

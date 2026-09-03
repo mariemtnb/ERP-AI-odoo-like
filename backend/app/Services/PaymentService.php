@@ -392,6 +392,78 @@ class PaymentService
         });
     }
 
+    /**
+     * Pay a supplier net of withholding tax (retenue à la source).
+     *
+     * The payable is relieved in full; the treasury pays the net; the retenue
+     * is credited to the withholding-tax payable, owed to the state. Additive
+     * to record(): an ordinary payment never comes through here.
+     *
+     * @param  array<string,mixed>  $data direction is forced outbound; method,
+     *         gross_amount, withholding_rate, supplier_id, bank_account_id,
+     *         payment_date, reference, notes
+     */
+    public static function recordSupplierWithholding(array $data, User $user): Payment
+    {
+        $decimals = (int) CompanyProfile::current()->currency_decimals;
+        $method = $data['method'];
+        $gross = round((float) ($data['gross_amount'] ?? 0), $decimals);
+        $rate = (float) ($data['withholding_rate'] ?? CompanyProfile::current()->withholding_rate);
+
+        if (! in_array($method, [Payment::METHOD_CASH, Payment::METHOD_TRANSFER, Payment::METHOD_CARD], true)) {
+            throw new InvalidTransition('Withholding applies to cash, bank transfer or card payments.');
+        }
+        if ($gross <= 0) {
+            throw new InvalidTransition('The gross amount must be greater than zero.');
+        }
+        if ($rate <= 0 || $rate >= 100) {
+            throw new InvalidTransition('The withholding rate must be between 0 and 100.');
+        }
+
+        $withheld = round($gross * $rate / 100, $decimals);
+        $net = round($gross - $withheld, $decimals);
+        $treasury = self::treasuryCode($method, $data['bank_account_id'] ?? null);
+
+        return DB::transaction(function () use ($data, $user, $decimals, $method, $gross, $withheld, $net, $treasury) {
+            $memo = ($data['notes'] ?? '') !== '' ? $data['notes'] : 'Supplier payment (withholding)';
+
+            $entry = AccountingService::post(
+                lines: [
+                    ['account' => AccountMap::code('payable'), 'debit' => $gross, 'label' => $memo],
+                    ['account' => $treasury, 'credit' => $net, 'label' => $memo],
+                    ['account' => AccountMap::code('withholding_payable'), 'credit' => $withheld, 'label' => 'Retenue à la source'],
+                ],
+                user: $user,
+                memo: $memo,
+                referenceType: $data['reference_type'] ?? 'purchase',
+                referenceId: $data['reference_id'] ?? null,
+                date: $data['payment_date'] ?? null,
+                journalCode: self::journalFor($method),
+            );
+
+            $payment = Payment::create([
+                'number' => DocumentService::nextNumber('PAY', Payment::class),
+                'direction' => Payment::DIRECTION_OUT,
+                'method' => $method,
+                'amount' => $net,
+                'payment_date' => $data['payment_date'] ?? now()->toDateString(),
+                'withholding_amount' => $withheld,
+                'supplier_id' => $data['supplier_id'] ?? null,
+                'bank_account_id' => $data['bank_account_id'] ?? null,
+                'reference_type' => $data['reference_type'] ?? '',
+                'reference_id' => $data['reference_id'] ?? null,
+                'journal_entry_id' => $entry->id,
+                'reference' => $data['reference'] ?? '',
+                'notes' => $data['notes'] ?? '',
+                'created_by' => $user->id,
+            ]);
+
+            self::touchBankBalance($payment, $decimals);
+
+            return $payment->refresh();
+        });
+    }
+
     /** Cash collected and bank collections over a period — dashboard figures. */
     public static function collectionSummary(?string $from = null, ?string $to = null): array
     {

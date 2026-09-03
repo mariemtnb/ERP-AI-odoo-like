@@ -101,6 +101,19 @@ class PayrollController extends Controller
         return response()->json(\App\Models\PayrollSetting::current()->toApi());
     }
 
+    /** CNSS social-security declaration over a period (default the quarter to date). */
+    public function cnssDeclaration(Request $request)
+    {
+        $data = $request->validate([
+            'from' => ['sometimes', 'nullable', 'date'],
+            'to' => ['sometimes', 'nullable', 'date'],
+        ]);
+        $from = $data['from'] ?? now()->firstOfQuarter()->toDateString();
+        $to = $data['to'] ?? now()->toDateString();
+
+        return response()->json(\App\Services\CnssDeclarationService::forPeriod($from, $to));
+    }
+
     /** Update the rates, reliefs and IRPP scale (admin). */
     public function updateSettings(Request $request)
     {

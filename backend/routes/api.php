@@ -471,6 +471,9 @@ Route::prefix('v1')->group(function () {
         // Foreign-currency settlement with realized FX gain/loss.
         Route::post('payments/settle-foreign', [PaymentController::class, 'settleForeign'])
             ->middleware(['feature:foreign_currency', 'role:admin,manager']);
+        // Supplier payment net of withholding tax (retenue à la source).
+        Route::post('payments/withhold-supplier', [PaymentController::class, 'withholdSupplier'])
+            ->middleware(['feature:withholding', 'role:admin,manager']);
 
         // --- treasury dashboard ---
         Route::get('dashboard/treasury', [TreasuryController::class, 'dashboard']);
@@ -503,6 +506,8 @@ Route::prefix('v1')->group(function () {
             Route::get('payroll/runs', [PayrollController::class, 'runs']);
             Route::get('payroll/runs/{run}', [PayrollController::class, 'showRun']);
             Route::get('payroll/settings', [PayrollController::class, 'settings']);
+            Route::get('payroll/cnss-declaration', [PayrollController::class, 'cnssDeclaration'])
+                ->middleware('role:admin,manager');
 
             Route::middleware('role:admin,manager')->group(function () {
                 Route::post('employees', [PayrollController::class, 'storeEmployee']);

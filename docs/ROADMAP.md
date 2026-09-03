@@ -175,7 +175,14 @@ give credibility to a lot that already exists.
   `MessagingService` façade unifies both, and admins can see the live channels
   and fire a test email/SMS from `admin/messaging/*` to confirm the provider is
   wired. `.env.example` documents the SMTP and Twilio keys.
-- [ ] 19. Withholding tax + CNSS declaration
+- [x] 19. Withholding tax + CNSS declaration — **done.** A supplier payment can
+  now withhold retenue à la source: the payable is relieved in full, the
+  treasury pays the net, and the retenue is credited to a withholding-tax
+  payable (2200) owed to the state, with the withheld amount stored on the
+  payment for the certificate (rate defaults to the company profile). And a CNSS
+  declaration report aggregates the posted payslips of a period into per-employee
+  and total employee/employer contributions. Withholding behind the
+  `withholding` flag; CNSS under the payroll flag; managers/admins.
 - [ ] 20. Units of measure + product variants
 - [ ] 21. Fiscal-year closing entries
 - [ ] 22. CRM opportunity pipeline

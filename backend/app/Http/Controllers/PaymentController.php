@@ -123,6 +123,34 @@ class PaymentController extends Controller
         );
     }
 
+    /** Pay a supplier net of withholding tax (retenue à la source). */
+    public function withholdSupplier(Request $request)
+    {
+        $data = $request->validate([
+            'method' => ['required', Rule::in([Payment::METHOD_CASH, Payment::METHOD_TRANSFER, Payment::METHOD_CARD])],
+            'gross_amount' => ['required', 'numeric', 'gt:0'],
+            'withholding_rate' => ['sometimes', 'nullable', 'numeric', 'gt:0', 'lt:100'],
+            'supplier_id' => ['sometimes', 'nullable', 'integer', 'exists:suppliers,id'],
+            'bank_account_id' => ['sometimes', 'nullable', 'integer', 'exists:bank_accounts,id'],
+            'payment_date' => ['sometimes', 'nullable', 'date'],
+            'reference_type' => ['sometimes', 'nullable', Rule::in(['purchase', 'manual', ''])],
+            'reference_id' => ['sometimes', 'nullable', 'integer'],
+            'reference' => ['sometimes', 'nullable', 'string', 'max:80'],
+            'notes' => ['sometimes', 'nullable', 'string'],
+        ]);
+
+        try {
+            $payment = PaymentService::recordSupplierWithholding($data, $request->user());
+        } catch (InvalidTransition|UnbalancedEntry $e) {
+            return response()->json(['detail' => $e->getMessage()], 422);
+        }
+
+        return response()->json(
+            $payment->load(['supplier', 'bankAccount', 'journalEntry'])->toApi(),
+            201
+        );
+    }
+
     /** Cash vs bank collections over a period. */
     public function summary(Request $request)
     {
