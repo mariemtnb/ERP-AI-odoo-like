@@ -201,5 +201,11 @@ give credibility to a lot that already exists.
   entry back to it. Balance-sheet accounts carry forward on their own. Admin
   only, `POST admin/fiscal-years/{id}/close`; a year can only be closed once and
   only while open.
-- [ ] 22. CRM opportunity pipeline
+- [x] 22. CRM opportunity pipeline — **done.** Leads now move along configurable
+  stages (New → Qualified → Proposition → Negotiation → Won/Lost), each with a
+  default win probability. A lead carries an expected revenue and an optional
+  probability override, so the pipeline is forecast weighted by likelihood
+  (`crm/pipeline`), grouped by stage and excluding won/lost. Moving to a stage
+  syncs the lead's status; the lost stage requires a reason. Additive — leads
+  keep their flat status until a stage is set.
 - [ ] 23. Manufacturing routings / work centres (+ basic MRP)

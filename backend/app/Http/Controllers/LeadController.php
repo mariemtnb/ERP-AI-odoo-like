@@ -44,6 +44,9 @@ class LeadController extends Controller
             'phone' => ['sometimes', 'nullable', 'string', 'max:30'],
             'source' => ['sometimes', 'nullable', 'string', 'max:50'],
             'status' => ['sometimes', Rule::in(Lead::STATUSES)],
+            'stage_id' => ['sometimes', 'nullable', 'integer', 'exists:crm_stages,id'],
+            'expected_revenue' => ['sometimes', 'numeric', 'min:0'],
+            'probability' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:100'],
             'notes' => ['sometimes', 'nullable', 'string'],
             'assigned_to' => ['sometimes', 'nullable', 'integer', 'exists:users,id'],
         ];

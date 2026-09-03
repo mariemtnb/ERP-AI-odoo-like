@@ -192,6 +192,10 @@ Route::prefix('v1')->group(function () {
         Route::post('leads/{lead}/convert', [\App\Http\Controllers\LeadController::class, 'convert']);
         Route::delete('leads/{lead}', [\App\Http\Controllers\LeadController::class, 'destroy'])
             ->middleware('role:admin,manager');
+        // Opportunity pipeline: stages, moving leads, and the weighted forecast.
+        Route::get('crm/stages', [\App\Http\Controllers\CrmController::class, 'stages']);
+        Route::get('crm/pipeline', [\App\Http\Controllers\CrmController::class, 'pipeline']);
+        Route::post('leads/{lead}/stage', [\App\Http\Controllers\CrmController::class, 'move']);
 
         // --- sales: everyone reads & creates/confirms (employees sell) ---
         Route::get('sales', [SaleController::class, 'index']);

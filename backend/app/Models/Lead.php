@@ -15,13 +15,36 @@ class Lead extends Model
 
     protected $fillable = [
         'name', 'company', 'email', 'phone', 'source', 'status', 'notes',
+        'stage_id', 'expected_revenue', 'probability', 'lost_reason',
         'assigned_to', 'customer_id', 'created_by',
     ];
 
     protected $attributes = [
         'company' => '', 'email' => '', 'phone' => '', 'source' => '',
-        'status' => 'new', 'notes' => '',
+        'status' => 'new', 'notes' => '', 'expected_revenue' => 0, 'lost_reason' => '',
     ];
+
+    protected function casts(): array
+    {
+        return ['expected_revenue' => 'decimal:3'];
+    }
+
+    public function stage(): BelongsTo
+    {
+        return $this->belongsTo(CrmStage::class, 'stage_id');
+    }
+
+    /** The probability in effect: the lead's own override, else its stage's default. */
+    public function effectiveProbability(): int
+    {
+        return $this->probability ?? (int) ($this->stage?->probability ?? 0);
+    }
+
+    /** Expected revenue weighted by the effective probability. */
+    public function weightedValue(): float
+    {
+        return round((float) $this->expected_revenue * $this->effectiveProbability() / 100, 3);
+    }
 
     public function activities(): HasMany
     {
@@ -48,6 +71,12 @@ class Lead extends Model
             'phone' => $this->phone,
             'source' => $this->source,
             'status' => $this->status,
+            'stage_id' => $this->stage_id,
+            'stage_name' => $this->stage?->name,
+            'expected_revenue' => (string) $this->expected_revenue,
+            'probability' => $this->effectiveProbability(),
+            'weighted_value' => number_format($this->weightedValue(), 3, '.', ''),
+            'lost_reason' => $this->lost_reason,
             'notes' => $this->notes,
             'assigned_to' => $this->assigned_to,
             'assigned_to_email' => $this->assignee?->email,
