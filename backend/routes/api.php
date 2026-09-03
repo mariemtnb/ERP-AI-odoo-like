@@ -358,6 +358,15 @@ Route::prefix('v1')->group(function () {
             Route::post('work-orders/{workOrder}/{action}', [\App\Http\Controllers\ManufacturingController::class, 'woAction'])
                 ->whereIn('action', ['start', 'complete', 'cancel']);
         });
+        // Routings, work centres and MRP.
+        $mfg = \App\Http\Controllers\ManufacturingPlanningController::class;
+        Route::get('work-centres', [$mfg, 'workCentres']);
+        Route::get('boms/{bom}/routing-cost', [$mfg, 'routingCost']);
+        Route::get('products/{product}/mrp', [$mfg, 'mrp']);
+        Route::middleware('role:admin,manager')->group(function () use ($mfg) {
+            Route::post('work-centres', [$mfg, 'storeWorkCentre']);
+            Route::post('boms/{bom}/operations', [$mfg, 'addOperation']);
+        });
 
         // --- fixed assets & depreciation: everyone reads; managers/admins manage ---
         Route::get('assets', [\App\Http\Controllers\AssetController::class, 'index']);

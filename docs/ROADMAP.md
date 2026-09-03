@@ -208,4 +208,17 @@ give credibility to a lot that already exists.
   (`crm/pipeline`), grouped by stage and excluding won/lost. Moving to a stage
   syncs the lead's status; the lost stage requires a reason. Additive — leads
   keep their flat status until a stage is set.
-- [ ] 23. Manufacturing routings / work centres (+ basic MRP)
+- [x] 23. Manufacturing routings / work centres (+ basic MRP) — **done.** Work
+  centres carry an hourly cost; a BOM can carry an ordered routing of operations
+  (each at a work centre for a number of minutes), and `RoutingService` scales it
+  to any quantity to give the labour time and cost. Basic MRP (`MrpService`)
+  explodes a product's BOM level by level for a demand, nets each item against
+  stock on hand, and splits the shortfall into what to manufacture (components
+  with their own BOM) and what to purchase — with a cycle guard so a self-
+  referencing BOM can't loop. Managers/admins define; everyone reads.
+
+**All 8 Batch-3 items (16–23) are complete.** The ERP now has the three core
+financial statements, an automatic scheduler, real mail/SMS delivery, Tunisian
+withholding + CNSS, units of measure and variants, fiscal-year closing, a CRM
+pipeline, and manufacturing routings with basic MRP — the gaps the audit
+surfaced against a full Odoo-class ERP.

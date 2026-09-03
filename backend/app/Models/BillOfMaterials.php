@@ -32,6 +32,11 @@ class BillOfMaterials extends Model
         return $this->hasMany(BomComponent::class, 'bom_id');
     }
 
+    public function operations(): HasMany
+    {
+        return $this->hasMany(RoutingOperation::class, 'bom_id')->orderBy('sequence');
+    }
+
     public function toApi(): array
     {
         return [
@@ -42,6 +47,9 @@ class BillOfMaterials extends Model
             'output_quantity' => $this->output_quantity,
             'is_active' => $this->is_active,
             'components' => $this->components->map(fn ($c) => $c->toApi())->values()->all(),
+            'operations' => $this->relationLoaded('operations')
+                ? $this->operations->map(fn ($o) => $o->toApi())->values()->all()
+                : [],
         ];
     }
 }
